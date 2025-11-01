@@ -1,0 +1,151 @@
+# Workflow for creating version tags and publishing to pkg.go.dev
+#
+# This workflow can be triggered manually with a version number,
+# or automatically when VERSION file is updated.
+#
+name: Create Release Tag
+
+on:
+  # Manual trigger with version input
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.1.0, v1.0.0)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes (optional)'
+        required: false
+        type: string
+        default: 'Release version'
+  
+  # Automatic trigger when VERSION file changes
+  push:
+    branches: ["main"]
+    paths:
+      - 'VERSION'
+
+permissions:
+  contents: write
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper tagging
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Read from VERSION file
+            VERSION=$(cat VERSION)
+            # Ensure it starts with 'v'
+            if [[ ! $VERSION =~ ^v ]]; then
+              VERSION="v${VERSION}"
+            fi
+          fi
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version to create: ${VERSION}"
+      
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Error: Tag $VERSION already exists"
+            exit 1
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $VERSION does not exist, proceeding..."
+          fi
+      
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Create release notes
+        id: release_notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.release_notes }}" ]; then
+            NOTES="${{ github.event.inputs.release_notes }}"
+          else
+            # Generate default release notes
+            cat > /tmp/release_notes.txt << 'NOTES_EOF'
+          Release ${VERSION}
+          
+          Features:
+          - Complete RBAC implementation with Casbin
+          - JWT authentication with token denylist
+          - User, Group, Member, Role management
+          - Multi-tier API (Public, Internal, Private)
+          - Redis caching support
+          - MySQL/TiDB database support
+          - CLI clients (Admin, App, Anonymous)
+          - Comprehensive documentation
+          - Interactive Swagger UI
+          - Architecture diagrams
+          
+          Documentation: https://ryo-arima.github.io/locky/
+          NOTES_EOF
+            NOTES=$(cat /tmp/release_notes.txt)
+          fi
+          
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+      
+      - name: Create and push tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES="${{ steps.release_notes.outputs.notes }}"
+          
+          echo "Creating annotated tag: $VERSION"
+          git tag -a "$VERSION" -m "$NOTES"
+          
+          echo "Pushing tag to GitHub..."
+          git push origin "$VERSION"
+          
+          echo "✅ Tag $VERSION created and pushed successfully!"
+      
+      - name: Trigger pkg.go.dev indexing
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "Requesting pkg.go.dev to index the package..."
+          
+          # Request indexing via Go proxy
+          curl -f "https://proxy.golang.org/github.com/ryo-arima/locky/@v/${VERSION}.info" || {
+            echo "Warning: Failed to trigger immediate indexing, but pkg.go.dev will index automatically within minutes"
+          }
+          
+          echo ""
+          echo "✅ Package will be available at:"
+          echo "  https://pkg.go.dev/github.com/ryo-arima/locky@${VERSION}"
+          echo "  https://pkg.go.dev/github.com/ryo-arima/locky/pkg/server@${VERSION}"
+          echo "  https://pkg.go.dev/github.com/ryo-arima/locky/pkg/client@${VERSION}"
+          echo ""
+          echo "Note: It may take 5-10 minutes for pkg.go.dev to index the package"
+      
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          release_name: Release ${{ steps.version.outputs.version }}
+          body: ${{ steps.release_notes.outputs.notes }}
+          draft: false
+          prerelease: false

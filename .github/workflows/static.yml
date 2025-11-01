@@ -1,5 +1,18 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# Workflow for building and deploying documentation to GitHub Pages
+#
+# Prerequisites:
+# 1. Go to repository Settings → Pages
+# 2. Under "Build and deployment", set Source to "GitHub Actions"
+# 3. Go to Settings → Actions → General → Workflow permissions
+# 4. Select "Read and write permissions"
+# 5. Check "Allow GitHub Actions to create and approve pull requests"
+#
+# The documentation will be available at:
+# - Main: https://ryo-arima.github.io/locky/
+# - Swagger: https://ryo-arima.github.io/locky/swagger/index.html
+# - GoDoc: https://ryo-arima.github.io/locky/godoc/index.html
+#
+name: Deploy documentation to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -27,13 +40,13 @@ concurrency:
 
 jobs:
   # Build and deploy job
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
       
       - name: Setup Rust (for mdbook)
@@ -45,7 +58,9 @@ jobs:
       
       - name: Install mdbook
         run: |
+          echo "Installing mdbook..."
           cargo install mdbook --version 0.4.52
+          mdbook --version
       
       - name: Install Node.js (for mermaid-cli)
         uses: actions/setup-node@v4
@@ -54,17 +69,26 @@ jobs:
       
       - name: Install mermaid-cli
         run: |
+          echo "Installing mermaid-cli..."
           npm install -g @mermaid-js/mermaid-cli
+          mmdc --version
       
       - name: Generate architecture diagrams
         run: |
+          echo "Generating architecture diagrams..."
           chmod +x scripts/generate-architecture.sh
-          ./scripts/generate-architecture.sh || echo "Architecture diagram generation skipped"
+          ./scripts/generate-architecture.sh || {
+            echo "Warning: Architecture diagram generation failed, continuing..."
+            exit 0
+          }
       
       - name: Build documentation
         run: |
+          echo "Building documentation..."
           chmod +x scripts/build-docs.sh
           ./scripts/build-docs.sh
+          echo "Documentation build complete!"
+          ls -la docs/dist/
       
       - name: Setup Pages
         uses: actions/configure-pages@v5

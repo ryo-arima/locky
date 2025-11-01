@@ -204,6 +204,42 @@ go test -v -cover ./...
 cd docs/dist && python3 -m http.server 8000
 ```
 
+### Publishing to pkg.go.dev
+
+To make your package available on pkg.go.dev, you have two options:
+
+#### Option 1: GitHub Actions (Recommended)
+
+**Manual trigger:**
+1. Go to **Actions** tab in GitHub
+2. Select "Create Release Tag" workflow
+3. Click "Run workflow"
+4. Enter version (e.g., `v0.1.0`)
+5. Add release notes (optional)
+6. Click "Run workflow"
+
+**Automatic trigger:**
+1. Update the `VERSION` file with new version (e.g., `0.2.0`)
+2. Commit and push to main branch
+3. GitHub Actions will automatically create the tag
+
+#### Option 2: Manual Script
+
+```bash
+# Publish with default version (v0.1.0)
+./scripts/publish-to-pkggodev.sh
+
+# Or specify a version
+./scripts/publish-to-pkggodev.sh v0.2.0
+```
+
+After publishing (either method), your package will be available at:
+- https://pkg.go.dev/github.com/ryo-arima/locky
+- https://pkg.go.dev/github.com/ryo-arima/locky/pkg/server
+- https://pkg.go.dev/github.com/ryo-arima/locky/pkg/client
+
+**Note:** It may take 5-10 minutes for pkg.go.dev to index the package after tag creation.
+
 ## CLI Clients
 
 ### Admin Client
