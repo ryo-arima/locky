@@ -1,0 +1,360 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>High-Level Architecture - Locky Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Comprehensive documentation for Locky - A robust RBAC service built with Go">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Locky Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ryo-arima/locky" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/ryo-arima/locky/edit/main/docs/books/src/architecture/high-level.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="high-level-architecture"><a class="header" href="#high-level-architecture">High-Level Architecture</a></h1>
+<p>This page provides an overview of Locky's high-level architecture and how its components interact.</p>
+<h2 id="architecture-diagram"><a class="header" href="#architecture-diagram">Architecture Diagram</a></h2>
+<p><img src="../../architecture/high-level-architecture.svg" alt="High-Level Architecture" /></p>
+<h2 id="system-layers"><a class="header" href="#system-layers">System Layers</a></h2>
+<p>Locky is built on a multi-layered architecture that promotes separation of concerns and maintainability:</p>
+<h3 id="1-client-layer"><a class="header" href="#1-client-layer">1. Client Layer</a></h3>
+<p>The client layer provides multiple CLI tools for different use cases:</p>
+<ul>
+<li><strong>Admin CLI</strong> (<code>locky-client-admin</code>): Administrative operations with elevated privileges</li>
+<li><strong>App CLI</strong> (<code>locky-client-app</code>): Application-level operations for authenticated users</li>
+<li><strong>Anonymous CLI</strong> (<code>locky-client-anonymous</code>): Public operations that don't require authentication</li>
+</ul>
+<h3 id="2-api-layer"><a class="header" href="#2-api-layer">2. API Layer</a></h3>
+<p>The API layer handles HTTP requests and applies cross-cutting concerns:</p>
+<ul>
+<li><strong>Gin Router</strong>: High-performance HTTP router and middleware framework</li>
+<li><strong>Middleware Stack</strong>:
+<ul>
+<li><strong>JWT Authentication</strong>: Validates and decodes JWT tokens</li>
+<li><strong>Casbin Authorization</strong>: Enforces RBAC policies</li>
+<li><strong>Request Logger</strong>: Logs all incoming requests for auditing</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-controller-layer"><a class="header" href="#3-controller-layer">3. Controller Layer</a></h3>
+<p>Controllers are organized by access level to enforce security boundaries:</p>
+<ul>
+<li><strong>Public Controllers</strong>: Endpoints accessible without authentication (e.g., user registration, login)</li>
+<li><strong>Internal Controllers</strong>: Endpoints for authenticated internal services</li>
+<li><strong>Private Controllers</strong>: Endpoints requiring specific permissions</li>
+</ul>
+<p>Each controller handles:</p>
+<ul>
+<li><strong>User Controller</strong>: User account operations</li>
+<li><strong>Group Controller</strong>: Group management</li>
+<li><strong>Member Controller</strong>: Group membership operations</li>
+<li><strong>Role Controller</strong>: Permission management</li>
+</ul>
+<h3 id="4-business-logic-layer"><a class="header" href="#4-business-logic-layer">4. Business Logic Layer</a></h3>
+<p>Use cases implement business rules and orchestrate repository operations:</p>
+<ul>
+<li><strong>User Usecase</strong>: User business logic</li>
+<li><strong>Group Usecase</strong>: Group business logic</li>
+<li><strong>Member Usecase</strong>: Membership business logic</li>
+<li><strong>Role Usecase</strong>: Permission business logic</li>
+</ul>
+<h3 id="5-repository-layer"><a class="header" href="#5-repository-layer">5. Repository Layer</a></h3>
+<p>Repositories abstract data access and provide a clean interface to the data layer:</p>
+<ul>
+<li><strong>User Repository</strong>: User data operations</li>
+<li><strong>Group Repository</strong>: Group data operations</li>
+<li><strong>Member Repository</strong>: Membership data operations</li>
+<li><strong>Role Repository</strong>: Role and permission operations (Casbin-backed)</li>
+<li><strong>Common Repository</strong>: Shared operations (JWT token management)</li>
+<li><strong>Redis Repository</strong>: Cache operations</li>
+</ul>
+<h3 id="6-data-layer"><a class="header" href="#6-data-layer">6. Data Layer</a></h3>
+<p>The data layer consists of multiple storage systems:</p>
+<ul>
+<li><strong>MySQL/TiDB</strong>: Primary relational database for users, groups, and members</li>
+<li><strong>Redis</strong>: Caching layer for JWT token denylist and session management</li>
+<li><strong>Casbin Policies</strong>: Authorization policy storage
+<ul>
+<li><strong>Locky Policy</strong>: Application-wide permissions</li>
+<li><strong>Resource Policy</strong>: Resource-specific permissions</li>
+</ul>
+</li>
+</ul>
+<h2 id="data-flow"><a class="header" href="#data-flow">Data Flow</a></h2>
+<h3 id="authentication-flow"><a class="header" href="#authentication-flow">Authentication Flow</a></h3>
+<ol>
+<li>User sends credentials to Public Controller (Login endpoint)</li>
+<li>Controller validates credentials via User Repository</li>
+<li>JWT token is generated and returned to client</li>
+<li>Subsequent requests include JWT token in Authorization header</li>
+<li>Middleware validates token and extracts user information</li>
+<li>Casbin enforcer checks user permissions</li>
+<li>Request proceeds to appropriate controller if authorized</li>
+</ol>
+<h3 id="authorization-flow"><a class="header" href="#authorization-flow">Authorization Flow</a></h3>
+<p>Locky uses a dual-enforcer approach for fine-grained access control:</p>
+<ol>
+<li><strong>App Enforcer</strong> (<code>etc/casbin/locky/</code>): Controls access to API endpoints</li>
+<li><strong>Resource Enforcer</strong> (<code>etc/casbin/resources/</code>): Controls access to specific resources</li>
+</ol>
+<h3 id="crud-operation-flow"><a class="header" href="#crud-operation-flow">CRUD Operation Flow</a></h3>
+<ol>
+<li>Client sends request through CLI</li>
+<li>Gin router routes to appropriate controller</li>
+<li>Middleware validates authentication and authorization</li>
+<li>Controller parses and validates request</li>
+<li>Use case applies business logic</li>
+<li>Repository performs database operations</li>
+<li>Response flows back through the layers</li>
+</ol>
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<p>The system is configured through:</p>
+<ul>
+<li><strong>app.yaml</strong>: Main configuration file (database, Redis, JWT settings)</li>
+<li><strong>Casbin Model Files</strong>: Define RBAC model structure</li>
+<li><strong>Casbin Policy Files</strong>: Define actual permissions</li>
+</ul>
+<h2 id="scalability-considerations"><a class="header" href="#scalability-considerations">Scalability Considerations</a></h2>
+<ul>
+<li><strong>Stateless API</strong>: JWT tokens enable horizontal scaling</li>
+<li><strong>Redis Caching</strong>: Reduces database load</li>
+<li><strong>Connection Pooling</strong>: Efficient database connection management</li>
+<li><strong>Casbin Policy Caching</strong>: In-memory policy evaluation for fast authorization</li>
+</ul>
+<h2 id="security-features"><a class="header" href="#security-features">Security Features</a></h2>
+<ul>
+<li><strong>JWT with HS256</strong>: Secure token-based authentication</li>
+<li><strong>Token Denylist</strong>: Revoked tokens stored in Redis</li>
+<li><strong>Casbin RBAC</strong>: Policy-based authorization</li>
+<li><strong>Multi-tier Access</strong>: Public, Internal, and Private endpoint separation</li>
+<li><strong>Admin Email Check</strong>: Additional verification for administrative operations</li>
+</ul>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li>Learn more about individual <a href="./components.html">Components</a></li>
+<li>Explore the <a href="../api/overview.html">API Reference</a></li>
+<li>Review <a href="../configuration/guide.html">Configuration Guide</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../architecture/components.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../architecture/components.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

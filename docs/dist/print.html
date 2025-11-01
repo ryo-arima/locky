@@ -1,0 +1,1339 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Locky Documentation</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Comprehensive documentation for Locky - A robust RBAC service built with Go">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Locky Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ryo-arima/locky" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><strong>Locky</strong> is a robust Role-Based Access Control (RBAC) service built with Go, designed to provide comprehensive user, group, member, and role management with fine-grained permissions.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Locky implements a multi-layered architecture that combines:</p>
+<ul>
+<li><strong>JWT-based authentication</strong> for secure user identification</li>
+<li><strong>Casbin RBAC</strong> for flexible authorization policies</li>
+<li><strong>Redis caching</strong> for performance optimization</li>
+<li><strong>MySQL/TiDB</strong> for persistent data storage</li>
+</ul>
+<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
+<ul>
+<li><strong>User Management</strong>: Complete CRUD operations for user accounts</li>
+<li><strong>Group Management</strong>: Organize users into logical groups</li>
+<li><strong>Member Management</strong>: Control group membership and relationships</li>
+<li><strong>Role Management</strong>: Define and assign fine-grained permissions</li>
+<li><strong>Multi-tier API</strong>: Public, Internal, and Private endpoints with different access levels</li>
+<li><strong>Casbin Integration</strong>: Policy-based authorization with dual enforcer setup
+<ul>
+<li>App-wide permissions (locky policies)</li>
+<li>Resource-specific permissions (resource policies)</li>
+</ul>
+</li>
+</ul>
+<h2 id="architecture-highlights"><a class="header" href="#architecture-highlights">Architecture Highlights</a></h2>
+<p>Locky follows a clean architecture pattern with clear separation of concerns:</p>
+<ol>
+<li><strong>Client Layer</strong>: CLI tools for different user roles (Admin, App, Anonymous)</li>
+<li><strong>API Layer</strong>: Gin-based HTTP router with middleware stack</li>
+<li><strong>Controller Layer</strong>: Request handlers organized by access level</li>
+<li><strong>Business Logic Layer</strong>: Use case implementations</li>
+<li><strong>Repository Layer</strong>: Data access abstraction</li>
+<li><strong>Data Layer</strong>: MySQL/TiDB, Redis, and Casbin policy storage</li>
+</ol>
+<h2 id="use-cases"><a class="header" href="#use-cases">Use Cases</a></h2>
+<ul>
+<li><strong>Multi-tenant applications</strong> requiring organization-level access control</li>
+<li><strong>Enterprise systems</strong> with complex permission requirements</li>
+<li><strong>Microservices</strong> needing centralized authentication and authorization</li>
+<li><strong>APIs</strong> requiring different access levels (public, internal, private)</li>
+</ul>
+<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
+<p>See the <a href="./development/getting-started.html">Getting Started</a> guide for installation and setup instructions.</p>
+<h2 id="documentation-structure"><a class="header" href="#documentation-structure">Documentation Structure</a></h2>
+<p>This documentation is organized into the following sections:</p>
+<ul>
+<li><strong>Architecture</strong>: Deep dive into system design and components</li>
+<li><strong>API Reference</strong>: Complete API documentation with examples</li>
+<li><strong>Configuration</strong>: Setup and configuration guides</li>
+<li><strong>Development</strong>: Contributing and development workflows</li>
+<li><strong>Appendix</strong>: Additional resources (Swagger, GoDoc)</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="high-level-architecture"><a class="header" href="#high-level-architecture">High-Level Architecture</a></h1>
+<p>This page provides an overview of Locky's high-level architecture and how its components interact.</p>
+<h2 id="architecture-diagram"><a class="header" href="#architecture-diagram">Architecture Diagram</a></h2>
+<p><img src="architecture/../../architecture/high-level-architecture.svg" alt="High-Level Architecture" /></p>
+<h2 id="system-layers"><a class="header" href="#system-layers">System Layers</a></h2>
+<p>Locky is built on a multi-layered architecture that promotes separation of concerns and maintainability:</p>
+<h3 id="1-client-layer"><a class="header" href="#1-client-layer">1. Client Layer</a></h3>
+<p>The client layer provides multiple CLI tools for different use cases:</p>
+<ul>
+<li><strong>Admin CLI</strong> (<code>locky-client-admin</code>): Administrative operations with elevated privileges</li>
+<li><strong>App CLI</strong> (<code>locky-client-app</code>): Application-level operations for authenticated users</li>
+<li><strong>Anonymous CLI</strong> (<code>locky-client-anonymous</code>): Public operations that don't require authentication</li>
+</ul>
+<h3 id="2-api-layer"><a class="header" href="#2-api-layer">2. API Layer</a></h3>
+<p>The API layer handles HTTP requests and applies cross-cutting concerns:</p>
+<ul>
+<li><strong>Gin Router</strong>: High-performance HTTP router and middleware framework</li>
+<li><strong>Middleware Stack</strong>:
+<ul>
+<li><strong>JWT Authentication</strong>: Validates and decodes JWT tokens</li>
+<li><strong>Casbin Authorization</strong>: Enforces RBAC policies</li>
+<li><strong>Request Logger</strong>: Logs all incoming requests for auditing</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-controller-layer"><a class="header" href="#3-controller-layer">3. Controller Layer</a></h3>
+<p>Controllers are organized by access level to enforce security boundaries:</p>
+<ul>
+<li><strong>Public Controllers</strong>: Endpoints accessible without authentication (e.g., user registration, login)</li>
+<li><strong>Internal Controllers</strong>: Endpoints for authenticated internal services</li>
+<li><strong>Private Controllers</strong>: Endpoints requiring specific permissions</li>
+</ul>
+<p>Each controller handles:</p>
+<ul>
+<li><strong>User Controller</strong>: User account operations</li>
+<li><strong>Group Controller</strong>: Group management</li>
+<li><strong>Member Controller</strong>: Group membership operations</li>
+<li><strong>Role Controller</strong>: Permission management</li>
+</ul>
+<h3 id="4-business-logic-layer"><a class="header" href="#4-business-logic-layer">4. Business Logic Layer</a></h3>
+<p>Use cases implement business rules and orchestrate repository operations:</p>
+<ul>
+<li><strong>User Usecase</strong>: User business logic</li>
+<li><strong>Group Usecase</strong>: Group business logic</li>
+<li><strong>Member Usecase</strong>: Membership business logic</li>
+<li><strong>Role Usecase</strong>: Permission business logic</li>
+</ul>
+<h3 id="5-repository-layer"><a class="header" href="#5-repository-layer">5. Repository Layer</a></h3>
+<p>Repositories abstract data access and provide a clean interface to the data layer:</p>
+<ul>
+<li><strong>User Repository</strong>: User data operations</li>
+<li><strong>Group Repository</strong>: Group data operations</li>
+<li><strong>Member Repository</strong>: Membership data operations</li>
+<li><strong>Role Repository</strong>: Role and permission operations (Casbin-backed)</li>
+<li><strong>Common Repository</strong>: Shared operations (JWT token management)</li>
+<li><strong>Redis Repository</strong>: Cache operations</li>
+</ul>
+<h3 id="6-data-layer"><a class="header" href="#6-data-layer">6. Data Layer</a></h3>
+<p>The data layer consists of multiple storage systems:</p>
+<ul>
+<li><strong>MySQL/TiDB</strong>: Primary relational database for users, groups, and members</li>
+<li><strong>Redis</strong>: Caching layer for JWT token denylist and session management</li>
+<li><strong>Casbin Policies</strong>: Authorization policy storage
+<ul>
+<li><strong>Locky Policy</strong>: Application-wide permissions</li>
+<li><strong>Resource Policy</strong>: Resource-specific permissions</li>
+</ul>
+</li>
+</ul>
+<h2 id="data-flow"><a class="header" href="#data-flow">Data Flow</a></h2>
+<h3 id="authentication-flow"><a class="header" href="#authentication-flow">Authentication Flow</a></h3>
+<ol>
+<li>User sends credentials to Public Controller (Login endpoint)</li>
+<li>Controller validates credentials via User Repository</li>
+<li>JWT token is generated and returned to client</li>
+<li>Subsequent requests include JWT token in Authorization header</li>
+<li>Middleware validates token and extracts user information</li>
+<li>Casbin enforcer checks user permissions</li>
+<li>Request proceeds to appropriate controller if authorized</li>
+</ol>
+<h3 id="authorization-flow"><a class="header" href="#authorization-flow">Authorization Flow</a></h3>
+<p>Locky uses a dual-enforcer approach for fine-grained access control:</p>
+<ol>
+<li><strong>App Enforcer</strong> (<code>etc/casbin/locky/</code>): Controls access to API endpoints</li>
+<li><strong>Resource Enforcer</strong> (<code>etc/casbin/resources/</code>): Controls access to specific resources</li>
+</ol>
+<h3 id="crud-operation-flow"><a class="header" href="#crud-operation-flow">CRUD Operation Flow</a></h3>
+<ol>
+<li>Client sends request through CLI</li>
+<li>Gin router routes to appropriate controller</li>
+<li>Middleware validates authentication and authorization</li>
+<li>Controller parses and validates request</li>
+<li>Use case applies business logic</li>
+<li>Repository performs database operations</li>
+<li>Response flows back through the layers</li>
+</ol>
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<p>The system is configured through:</p>
+<ul>
+<li><strong>app.yaml</strong>: Main configuration file (database, Redis, JWT settings)</li>
+<li><strong>Casbin Model Files</strong>: Define RBAC model structure</li>
+<li><strong>Casbin Policy Files</strong>: Define actual permissions</li>
+</ul>
+<h2 id="scalability-considerations"><a class="header" href="#scalability-considerations">Scalability Considerations</a></h2>
+<ul>
+<li><strong>Stateless API</strong>: JWT tokens enable horizontal scaling</li>
+<li><strong>Redis Caching</strong>: Reduces database load</li>
+<li><strong>Connection Pooling</strong>: Efficient database connection management</li>
+<li><strong>Casbin Policy Caching</strong>: In-memory policy evaluation for fast authorization</li>
+</ul>
+<h2 id="security-features"><a class="header" href="#security-features">Security Features</a></h2>
+<ul>
+<li><strong>JWT with HS256</strong>: Secure token-based authentication</li>
+<li><strong>Token Denylist</strong>: Revoked tokens stored in Redis</li>
+<li><strong>Casbin RBAC</strong>: Policy-based authorization</li>
+<li><strong>Multi-tier Access</strong>: Public, Internal, and Private endpoint separation</li>
+<li><strong>Admin Email Check</strong>: Additional verification for administrative operations</li>
+</ul>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li>Learn more about individual <a href="architecture/./components.html">Components</a></li>
+<li>Explore the <a href="architecture/../api/overview.html">API Reference</a></li>
+<li>Review <a href="architecture/../configuration/guide.html">Configuration Guide</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="components-overview"><a class="header" href="#components-overview">Components Overview</a></h1>
+<p>This section provides detailed information about each layer of the Locky architecture.</p>
+<h2 id="layer-summary"><a class="header" href="#layer-summary">Layer Summary</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Layer</th><th>Purpose</th><th>Key Components</th></tr></thead><tbody>
+<tr><td><a href="architecture/./client-layer.html">Client Layer</a></td><td>User interfaces and CLI tools</td><td>Admin CLI, App CLI, Anonymous CLI</td></tr>
+<tr><td><a href="architecture/./api-layer.html">API Layer</a></td><td>HTTP routing and middleware</td><td>Gin Router, JWT Auth, Casbin RBAC, Logger</td></tr>
+<tr><td><a href="architecture/./controller-layer.html">Controller Layer</a></td><td>Request handling and validation</td><td>Public, Internal, Private Controllers</td></tr>
+<tr><td><a href="architecture/./business-layer.html">Business Logic Layer</a></td><td>Use cases and business rules</td><td>User, Group, Member, Role Usecases</td></tr>
+<tr><td><a href="architecture/./repository-layer.html">Repository Layer</a></td><td>Data access abstraction</td><td>User, Group, Member, Role Repositories</td></tr>
+<tr><td><a href="architecture/./data-layer.html">Data Layer</a></td><td>Persistent storage</td><td>MySQL/TiDB, Redis, Casbin Policies</td></tr>
+</tbody></table>
+</div>
+<h2 id="component-interaction"><a class="header" href="#component-interaction">Component Interaction</a></h2>
+<p>Each layer communicates with adjacent layers through well-defined interfaces:</p>
+<pre><code>Client → API → Controller → Business Logic → Repository → Data
+</code></pre>
+<h3 id="dependency-flow"><a class="header" href="#dependency-flow">Dependency Flow</a></h3>
+<ul>
+<li><strong>Downward Dependencies</strong>: Each layer depends only on the layer directly below it</li>
+<li><strong>Interface-Based</strong>: Layers communicate through interfaces, not concrete implementations</li>
+<li><strong>Testability</strong>: Each layer can be tested independently with mocks</li>
+</ul>
+<h2 id="common-patterns"><a class="header" href="#common-patterns">Common Patterns</a></h2>
+<h3 id="repository-pattern"><a class="header" href="#repository-pattern">Repository Pattern</a></h3>
+<p>All data access goes through repositories, providing:</p>
+<ul>
+<li>Abstraction from underlying storage</li>
+<li>Consistent error handling</li>
+<li>Transaction management</li>
+<li>Query optimization</li>
+</ul>
+<h3 id="use-case-pattern"><a class="header" href="#use-case-pattern">Use Case Pattern</a></h3>
+<p>Business logic is encapsulated in use cases:</p>
+<ul>
+<li>Single responsibility per use case</li>
+<li>Orchestration of multiple repositories</li>
+<li>Business rule validation</li>
+<li>Domain logic isolation</li>
+</ul>
+<h3 id="middleware-pattern"><a class="header" href="#middleware-pattern">Middleware Pattern</a></h3>
+<p>Cross-cutting concerns are handled by middleware:</p>
+<ul>
+<li>Authentication</li>
+<li>Authorization</li>
+<li>Logging</li>
+<li>Error handling</li>
+</ul>
+<h2 id="next-steps-1"><a class="header" href="#next-steps-1">Next Steps</a></h2>
+<p>Explore each layer in detail:</p>
+<ul>
+<li><a href="architecture/./client-layer.html">Client Layer</a></li>
+<li><a href="architecture/./api-layer.html">API Layer</a></li>
+<li><a href="architecture/./controller-layer.html">Controller Layer</a></li>
+<li><a href="architecture/./business-layer.html">Business Logic Layer</a></li>
+<li><a href="architecture/./repository-layer.html">Repository Layer</a></li>
+<li><a href="architecture/./data-layer.html">Data Layer</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="client-layer"><a class="header" href="#client-layer">Client Layer</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-layer"><a class="header" href="#api-layer">Api Layer</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="controller-layer"><a class="header" href="#controller-layer">Controller Layer</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="business-layer"><a class="header" href="#business-layer">Business Layer</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="repository-layer"><a class="header" href="#repository-layer">Repository Layer</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="data-layer"><a class="header" href="#data-layer">Data Layer</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-overview"><a class="header" href="#api-overview">API Overview</a></h1>
+<p>Locky provides a RESTful API built with the Gin framework. The API is organized into three access levels to enforce security boundaries.</p>
+<h2 id="base-url"><a class="header" href="#base-url">Base URL</a></h2>
+<pre><code>http://localhost:8080/v1
+</code></pre>
+<h2 id="access-levels"><a class="header" href="#access-levels">Access Levels</a></h2>
+<h3 id="public-endpoints-v1public"><a class="header" href="#public-endpoints-v1public">Public Endpoints (<code>/v1/public</code>)</a></h3>
+<p>Public endpoints are accessible without authentication:</p>
+<ul>
+<li><strong>User Registration</strong>: Create new user accounts</li>
+<li><strong>User Login</strong>: Authenticate and receive JWT token</li>
+<li><strong>Health Check</strong>: Service status</li>
+</ul>
+<h3 id="internal-endpoints-v1internal"><a class="header" href="#internal-endpoints-v1internal">Internal Endpoints (<code>/v1/internal</code>)</a></h3>
+<p>Internal endpoints require JWT authentication and are intended for internal services:</p>
+<ul>
+<li><strong>User Management</strong>: List, count, get user details</li>
+<li><strong>Group Management</strong>: CRUD operations for groups</li>
+<li><strong>Member Management</strong>: Manage group memberships</li>
+<li><strong>Role Management</strong>: Query roles and permissions</li>
+</ul>
+<h3 id="private-endpoints-v1private"><a class="header" href="#private-endpoints-v1private">Private Endpoints (<code>/v1/private</code>)</a></h3>
+<p>Private endpoints require both JWT authentication and specific Casbin permissions:</p>
+<ul>
+<li><strong>User Administration</strong>: Update, delete users</li>
+<li><strong>Group Administration</strong>: Full group management</li>
+<li><strong>Member Administration</strong>: Full membership control</li>
+<li><strong>Role Administration</strong>: Create, update, delete roles</li>
+</ul>
+<h2 id="authentication"><a class="header" href="#authentication">Authentication</a></h2>
+<h3 id="jwt-token"><a class="header" href="#jwt-token">JWT Token</a></h3>
+<p>All authenticated endpoints require a JWT token in the Authorization header:</p>
+<pre><code class="language-http">Authorization: Bearer &lt;jwt_token&gt;
+</code></pre>
+<h3 id="token-lifecycle"><a class="header" href="#token-lifecycle">Token Lifecycle</a></h3>
+<ol>
+<li><strong>Obtain Token</strong>: POST to <code>/v1/public/users/login</code> with credentials</li>
+<li><strong>Use Token</strong>: Include in Authorization header for subsequent requests</li>
+<li><strong>Token Expiry</strong>: Tokens expire after configured duration (default: 24 hours)</li>
+<li><strong>Token Revocation</strong>: Logout endpoint adds token to Redis denylist</li>
+</ol>
+<h2 id="authorization"><a class="header" href="#authorization">Authorization</a></h2>
+<p>Authorization is handled by Casbin with two policy sets:</p>
+<h3 id="app-policies-etccasbinlocky"><a class="header" href="#app-policies-etccasbinlocky">App Policies (<code>etc/casbin/locky/</code>)</a></h3>
+<p>Controls access to API endpoints based on user roles.</p>
+<p>Example policy:</p>
+<pre><code class="language-csv">p, admin, /v1/private/*, *
+p, user, /v1/internal/users, GET
+</code></pre>
+<h3 id="resource-policies-etccasbinresources"><a class="header" href="#resource-policies-etccasbinresources">Resource Policies (<code>etc/casbin/resources/</code>)</a></h3>
+<p>Controls access to specific resources (groups, members).</p>
+<p>Example policy:</p>
+<pre><code class="language-csv">p, user:123, group:456, read
+p, user:123, group:456, write
+</code></pre>
+<h2 id="requestresponse-format"><a class="header" href="#requestresponse-format">Request/Response Format</a></h2>
+<h3 id="request-format"><a class="header" href="#request-format">Request Format</a></h3>
+<pre><code class="language-json">{
+  "name": "example",
+  "email": "user@example.com"
+}
+</code></pre>
+<h3 id="response-format"><a class="header" href="#response-format">Response Format</a></h3>
+<pre><code class="language-json">{
+  "data": {
+    "id": 1,
+    "uuid": "f3b3b3b3-3b3b-3b3b-3b3b-3b3b3b3b3b3b",
+    "name": "example"
+  },
+  "message": "Success"
+}
+</code></pre>
+<h3 id="error-format"><a class="header" href="#error-format">Error Format</a></h3>
+<pre><code class="language-json">{
+  "error": "Invalid credentials",
+  "code": 401
+}
+</code></pre>
+<h2 id="rate-limiting"><a class="header" href="#rate-limiting">Rate Limiting</a></h2>
+<p>Currently, rate limiting is not implemented but can be added via middleware.</p>
+<h2 id="api-versioning"><a class="header" href="#api-versioning">API Versioning</a></h2>
+<p>The API is versioned in the URL path (<code>/v1/</code>). Future versions will be released as <code>/v2/</code>, etc.</p>
+<h2 id="next-steps-2"><a class="header" href="#next-steps-2">Next Steps</a></h2>
+<ul>
+<li><a href="api/./authentication.html">Authentication Details</a></li>
+<li><a href="api/./endpoints.html">Endpoint Reference</a></li>
+<li><a href="api/../appendix/swagger.html">Swagger Documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="authentication-1"><a class="header" href="#authentication-1">Authentication</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="endpoints"><a class="header" href="#endpoints">Endpoints</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="users"><a class="header" href="#users">Users</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="groups"><a class="header" href="#groups">Groups</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="members"><a class="header" href="#members">Members</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="roles"><a class="header" href="#roles">Roles</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="configuration-guide"><a class="header" href="#configuration-guide">Configuration Guide</a></h1>
+<p>Locky uses YAML-based configuration files for all runtime settings. This guide explains how to configure Locky for different environments.</p>
+<h2 id="configuration-files"><a class="header" href="#configuration-files">Configuration Files</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>File</th><th>Purpose</th><th>Status</th></tr></thead><tbody>
+<tr><td><code>etc/app.yaml</code></td><td>Runtime configuration</td><td><strong>Not in Git</strong> (local only)</td></tr>
+<tr><td><code>etc/app.yaml.example</code></td><td>Production template</td><td>In Git (template)</td></tr>
+<tr><td><code>etc/app.dev.yaml</code></td><td>Development defaults</td><td>In Git (for development)</td></tr>
+</tbody></table>
+</div>
+<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+<h3 id="development-setup"><a class="header" href="#development-setup">Development Setup</a></h3>
+<pre><code class="language-bash"># Copy development configuration
+cp etc/app.dev.yaml etc/app.yaml
+
+# Or start with Docker Compose (auto-configured)
+docker-compose up -d
+</code></pre>
+<h3 id="production-setup"><a class="header" href="#production-setup">Production Setup</a></h3>
+<pre><code class="language-bash"># Create configuration from template
+cp etc/app.yaml.example etc/app.yaml
+
+# Edit with your actual credentials
+vi etc/app.yaml
+</code></pre>
+<h2 id="configuration-sections"><a class="header" href="#configuration-sections">Configuration Sections</a></h2>
+<h3 id="server-configuration"><a class="header" href="#server-configuration">Server Configuration</a></h3>
+<pre><code class="language-yaml">Server:
+  host: "0.0.0.0"
+  port: 8080
+  jwt_secret: "your-secure-secret-256-bits"
+  jwt:
+    key: "your-jwt-key"
+</code></pre>
+<p><strong>Important</strong>:</p>
+<ul>
+<li><code>jwt_secret</code>: Must be at least 256 bits (32 characters)</li>
+<li><code>jwt.key</code>: Used for signing JWT tokens</li>
+<li>Generate secure random values for production</li>
+</ul>
+<h3 id="database-configuration"><a class="header" href="#database-configuration">Database Configuration</a></h3>
+<pre><code class="language-yaml">MySQL:
+  host: "mysql-host"
+  user: "mysql-user"
+  pass: "mysql-password"
+  port: 3306
+  db: "database-name"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600
+</code></pre>
+<p><strong>Connection Pool Settings</strong>:</p>
+<ul>
+<li><code>max_idle_conns</code>: Maximum idle connections (default: 10)</li>
+<li><code>max_open_conns</code>: Maximum open connections (default: 100)</li>
+<li><code>conn_max_lifetime</code>: Connection lifetime in seconds (default: 3600)</li>
+</ul>
+<h3 id="redis-configuration"><a class="header" href="#redis-configuration">Redis Configuration</a></h3>
+<pre><code class="language-yaml">Redis:
+  host: "redis-host"
+  port: 6379
+  pass: "redis-password"
+  db: 0
+</code></pre>
+<p><strong>Note</strong>: The <code>db</code> field accepts either integer or string format.</p>
+<h3 id="casbin-configuration"><a class="header" href="#casbin-configuration">Casbin Configuration</a></h3>
+<pre><code class="language-yaml">Casbin:
+  app_model: "etc/casbin/locky/model.conf"
+  app_policy: "etc/casbin/locky/policy.csv"
+  resource_model: "etc/casbin/resources/model.conf"
+  resource_policy: "etc/casbin/resources/policy.csv"
+</code></pre>
+<p><strong>Dual Enforcer Setup</strong>:</p>
+<ul>
+<li><strong>App Enforcer</strong>: Controls API endpoint access</li>
+<li><strong>Resource Enforcer</strong>: Controls resource-level permissions</li>
+</ul>
+<h2 id="environment-specific-configuration"><a class="header" href="#environment-specific-configuration">Environment-Specific Configuration</a></h2>
+<h3 id="development"><a class="header" href="#development">Development</a></h3>
+<p>Development configuration (<code>app.dev.yaml</code>) includes:</p>
+<ul>
+<li>Localhost database connections</li>
+<li>Default credentials for Docker Compose</li>
+<li>Debug-friendly settings</li>
+</ul>
+<h3 id="production"><a class="header" href="#production">Production</a></h3>
+<p>Production configuration must include:</p>
+<ul>
+<li>Secure JWT secrets (256+ bits)</li>
+<li>Production database credentials</li>
+<li>Redis credentials</li>
+<li>Appropriate connection pool sizes</li>
+<li>Production-grade Casbin policies</li>
+</ul>
+<h2 id="security-best-practices"><a class="header" href="#security-best-practices">Security Best Practices</a></h2>
+<ol>
+<li><strong>Never commit <code>etc/app.yaml</code></strong> - It's in <code>.gitignore</code> for a reason</li>
+<li><strong>Use environment variables</strong> for sensitive data (optional approach)</li>
+<li><strong>Rotate JWT secrets</strong> regularly</li>
+<li><strong>Use strong passwords</strong> for MySQL and Redis</li>
+<li><strong>Limit connection pool sizes</strong> based on your infrastructure</li>
+<li><strong>Review Casbin policies</strong> before deployment</li>
+</ol>
+<h2 id="environment-variables-alternative"><a class="header" href="#environment-variables-alternative">Environment Variables (Alternative)</a></h2>
+<p>While Locky primarily uses YAML configuration, you can also use environment variables:</p>
+<pre><code class="language-bash">export LOCKY_JWT_SECRET="your-secret"
+export LOCKY_MYSQL_PASSWORD="your-db-password"
+export LOCKY_REDIS_PASSWORD="your-redis-password"
+</code></pre>
+<h2 id="validation"><a class="header" href="#validation">Validation</a></h2>
+<p>Validate your configuration before starting:</p>
+<pre><code class="language-bash"># Test database connection
+go run cmd/server/main.go --config etc/app.yaml --validate
+
+# Check Casbin policies
+casbin-cli check etc/casbin/locky/model.conf etc/casbin/locky/policy.csv
+</code></pre>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="connection-errors"><a class="header" href="#connection-errors">Connection Errors</a></h3>
+<pre><code>Error: dial tcp: lookup mysql-host: no such host
+</code></pre>
+<p><strong>Solution</strong>: Verify hostname and network connectivity</p>
+<h3 id="jwt-errors"><a class="header" href="#jwt-errors">JWT Errors</a></h3>
+<pre><code>Error: jwt_secret must be at least 256 bits
+</code></pre>
+<p><strong>Solution</strong>: Generate a longer secret:</p>
+<pre><code class="language-bash">openssl rand -base64 32
+</code></pre>
+<h3 id="casbin-errors"><a class="header" href="#casbin-errors">Casbin Errors</a></h3>
+<pre><code>Error: failed to load casbin policy
+</code></pre>
+<p><strong>Solution</strong>: Check file paths and CSV format in policy files</p>
+<h2 id="next-steps-3"><a class="header" href="#next-steps-3">Next Steps</a></h2>
+<ul>
+<li><a href="configuration/./environment.html">Environment Variables</a></li>
+<li><a href="configuration/./casbin.html">Casbin Policies</a></li>
+<li><a href="configuration/../development/getting-started.html">Getting Started</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="environment"><a class="header" href="#environment">Environment</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="casbin"><a class="header" href="#casbin">Casbin</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started-1"><a class="header" href="#getting-started-1">Getting Started</a></h1>
+<p>This guide will help you get Locky up and running on your local machine.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<ul>
+<li><strong>Go 1.22+</strong>: <a href="https://golang.org/dl/">Download</a></li>
+<li><strong>MySQL 8.0+</strong> or <strong>TiDB</strong>: Database server</li>
+<li><strong>Redis 6.0+</strong>: Cache server</li>
+<li><strong>Docker &amp; Docker Compose</strong> (optional): For quick setup</li>
+</ul>
+<h2 id="quick-start-with-docker-compose"><a class="header" href="#quick-start-with-docker-compose">Quick Start with Docker Compose</a></h2>
+<p>The fastest way to get started:</p>
+<pre><code class="language-bash"># Clone the repository
+git clone https://github.com/ryo-arima/locky.git
+cd locky
+
+# Start MySQL and Redis
+docker-compose up -d
+
+# Copy development configuration
+cp etc/app.dev.yaml etc/app.yaml
+
+# Run database migrations (if any)
+# TODO: Add migration commands
+
+# Build the server
+go build -o .bin/locky-server ./cmd/server/main.go
+
+# Start the server
+./.bin/locky-server
+</code></pre>
+<p>The server will start on <code>http://localhost:8080</code>.</p>
+<h2 id="manual-setup"><a class="header" href="#manual-setup">Manual Setup</a></h2>
+<h3 id="1-install-dependencies"><a class="header" href="#1-install-dependencies">1. Install Dependencies</a></h3>
+<pre><code class="language-bash"># Install Go dependencies
+go mod download
+go mod vendor
+</code></pre>
+<h3 id="2-setup-database"><a class="header" href="#2-setup-database">2. Setup Database</a></h3>
+<pre><code class="language-bash"># Create MySQL database
+mysql -u root -p
+&gt; CREATE DATABASE locky;
+&gt; CREATE USER 'locky'@'localhost' IDENTIFIED BY 'password';
+&gt; GRANT ALL PRIVILEGES ON locky.* TO 'locky'@'localhost';
+&gt; FLUSH PRIVILEGES;
+</code></pre>
+<h3 id="3-setup-redis"><a class="header" href="#3-setup-redis">3. Setup Redis</a></h3>
+<pre><code class="language-bash"># Start Redis (macOS with Homebrew)
+brew services start redis
+
+# Or with Docker
+docker run -d -p 6379:6379 redis:alpine
+</code></pre>
+<h3 id="4-configure-application"><a class="header" href="#4-configure-application">4. Configure Application</a></h3>
+<pre><code class="language-bash"># Copy configuration template
+cp etc/app.yaml.example etc/app.yaml
+
+# Edit configuration
+vi etc/app.yaml
+</code></pre>
+<p>Update the following sections:</p>
+<ul>
+<li>MySQL connection details</li>
+<li>Redis connection details</li>
+<li>JWT secrets</li>
+</ul>
+<h3 id="5-build-the-application"><a class="header" href="#5-build-the-application">5. Build the Application</a></h3>
+<pre><code class="language-bash"># Build all binaries
+make build
+
+# Or build individually
+go build -o .bin/locky-server ./cmd/server/main.go
+go build -o .bin/locky-client-admin ./cmd/client/admin/main.go
+go build -o .bin/locky-client-app ./cmd/client/app/main.go
+go build -o .bin/locky-client-anonymous ./cmd/client/anonymous/main.go
+</code></pre>
+<h3 id="6-run-the-server"><a class="header" href="#6-run-the-server">6. Run the Server</a></h3>
+<pre><code class="language-bash">./.bin/locky-server
+</code></pre>
+<h2 id="verify-installation"><a class="header" href="#verify-installation">Verify Installation</a></h2>
+<h3 id="check-server-status"><a class="header" href="#check-server-status">Check Server Status</a></h3>
+<pre><code class="language-bash"># Health check
+curl http://localhost:8080/v1/public/health
+
+# Expected response:
+# {"status": "ok"}
+</code></pre>
+<h3 id="register-a-user"><a class="header" href="#register-a-user">Register a User</a></h3>
+<pre><code class="language-bash">curl -X POST http://localhost:8080/v1/public/users/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "securepassword"
+  }'
+</code></pre>
+<h3 id="login"><a class="header" href="#login">Login</a></h3>
+<pre><code class="language-bash">curl -X POST http://localhost:8080/v1/public/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "securepassword"
+  }'
+
+# Save the JWT token from response
+export TOKEN="&lt;jwt_token_here&gt;"
+</code></pre>
+<h3 id="access-protected-endpoint"><a class="header" href="#access-protected-endpoint">Access Protected Endpoint</a></h3>
+<pre><code class="language-bash">curl http://localhost:8080/v1/internal/users \
+  -H "Authorization: Bearer $TOKEN"
+</code></pre>
+<h2 id="using-the-cli-clients"><a class="header" href="#using-the-cli-clients">Using the CLI Clients</a></h2>
+<h3 id="admin-client"><a class="header" href="#admin-client">Admin Client</a></h3>
+<pre><code class="language-bash">./.bin/locky-client-admin --help
+</code></pre>
+<h3 id="app-client"><a class="header" href="#app-client">App Client</a></h3>
+<pre><code class="language-bash">./.bin/locky-client-app --help
+</code></pre>
+<h3 id="anonymous-client"><a class="header" href="#anonymous-client">Anonymous Client</a></h3>
+<pre><code class="language-bash">./.bin/locky-client-anonymous --help
+</code></pre>
+<h2 id="makefile-commands"><a class="header" href="#makefile-commands">Makefile Commands</a></h2>
+<p>Locky includes a Makefile for common tasks:</p>
+<pre><code class="language-bash"># Build all binaries
+make build
+
+# Run tests
+make test
+
+# Clean build artifacts
+make clean
+
+# Generate documentation
+make docs
+
+# Start development environment
+make dev-up
+
+# Stop development environment
+make dev-down
+</code></pre>
+<h2 id="development-workflow"><a class="header" href="#development-workflow">Development Workflow</a></h2>
+<ol>
+<li><strong>Make Changes</strong>: Edit source code</li>
+<li><strong>Build</strong>: <code>make build</code></li>
+<li><strong>Test</strong>: <code>make test</code></li>
+<li><strong>Run</strong>: <code>./.bin/locky-server</code></li>
+<li><strong>Verify</strong>: Test with curl or CLI clients</li>
+</ol>
+<h2 id="troubleshooting-1"><a class="header" href="#troubleshooting-1">Troubleshooting</a></h2>
+<h3 id="port-already-in-use"><a class="header" href="#port-already-in-use">Port Already in Use</a></h3>
+<pre><code class="language-bash"># Find process using port 8080
+lsof -i :8080
+
+# Kill the process
+kill -9 &lt;PID&gt;
+</code></pre>
+<h3 id="database-connection-failed"><a class="header" href="#database-connection-failed">Database Connection Failed</a></h3>
+<ul>
+<li>Verify MySQL is running: <code>mysql -u root -p</code></li>
+<li>Check credentials in <code>etc/app.yaml</code></li>
+<li>Ensure database exists: <code>SHOW DATABASES;</code></li>
+</ul>
+<h3 id="redis-connection-failed"><a class="header" href="#redis-connection-failed">Redis Connection Failed</a></h3>
+<ul>
+<li>Verify Redis is running: <code>redis-cli ping</code></li>
+<li>Check Redis host/port in configuration</li>
+<li>Test connection: <code>redis-cli -h localhost -p 6379</code></li>
+</ul>
+<h3 id="casbin-policy-errors"><a class="header" href="#casbin-policy-errors">Casbin Policy Errors</a></h3>
+<ul>
+<li>Verify policy files exist in <code>etc/casbin/</code></li>
+<li>Check CSV format (no trailing commas)</li>
+<li>Validate model syntax</li>
+</ul>
+<h2 id="next-steps-4"><a class="header" href="#next-steps-4">Next Steps</a></h2>
+<ul>
+<li><a href="development/../configuration/guide.html">Configuration Guide</a></li>
+<li><a href="development/./building.html">Building</a></li>
+<li><a href="development/./testing.html">Testing</a></li>
+<li><a href="development/../api/overview.html">API Overview</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="building"><a class="header" href="#building">Building</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing"><a class="header" href="#contributing">Contributing</a></h1>
+<p>This page is under construction.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="swagger-documentation"><a class="header" href="#swagger-documentation">Swagger Documentation</a></h1>
+<p>Locky provides comprehensive API documentation via Swagger/OpenAPI specification.</p>
+<h2 id="accessing-swagger-ui"><a class="header" href="#accessing-swagger-ui">Accessing Swagger UI</a></h2>
+<h3 id="github-pages-recommended"><a class="header" href="#github-pages-recommended">GitHub Pages (Recommended)</a></h3>
+<p>View the interactive Swagger UI online:</p>
+<p><strong><a href="appendix/../../swagger/index.html">📖 Open Swagger UI</a></strong> (Opens in new tab when hosted on GitHub Pages)</p>
+<h3 id="local-development"><a class="header" href="#local-development">Local Development</a></h3>
+<p>When running Locky locally, Swagger UI is available at:</p>
+<pre><code>http://localhost:8080/swagger/index.html
+</code></pre>
+<h3 id="swagger-files"><a class="header" href="#swagger-files">Swagger Files</a></h3>
+<p>The Swagger specification is maintained in:</p>
+<ul>
+<li><strong>Source</strong>: <code>docs/swagger/swagger.yaml</code></li>
+<li><strong>Online</strong>: <a href="appendix/../../swagger/swagger.yaml">swagger.yaml</a></li>
+<li><strong>Generated</strong>: Auto-generated from code annotations</li>
+</ul>
+<h2 id="swagger-specification-overview"><a class="header" href="#swagger-specification-overview">Swagger Specification Overview</a></h2>
+<p>The Swagger specification includes:</p>
+<h3 id="api-information"><a class="header" href="#api-information">API Information</a></h3>
+<ul>
+<li><strong>Title</strong>: Locky API</li>
+<li><strong>Version</strong>: 1.0.0</li>
+<li><strong>Base Path</strong>: <code>/v1</code></li>
+<li><strong>Schemes</strong>: HTTP, HTTPS</li>
+<li><strong>Consumes</strong>: <code>application/json</code></li>
+<li><strong>Produces</strong>: <code>application/json</code></li>
+</ul>
+<h3 id="endpoints-documented"><a class="header" href="#endpoints-documented">Endpoints Documented</a></h3>
+<h4 id="public-endpoints"><a class="header" href="#public-endpoints">Public Endpoints</a></h4>
+<ul>
+<li><code>POST /v1/public/users/register</code> - User registration</li>
+<li><code>POST /v1/public/users/login</code> - User authentication</li>
+<li><code>GET /v1/public/health</code> - Health check</li>
+</ul>
+<h4 id="internal-endpoints"><a class="header" href="#internal-endpoints">Internal Endpoints</a></h4>
+<ul>
+<li><code>GET /v1/internal/users</code> - List users</li>
+<li><code>GET /v1/internal/users/count</code> - Count users</li>
+<li><code>GET /v1/internal/users/{id}</code> - Get user details</li>
+<li><code>GET /v1/internal/groups</code> - List groups</li>
+<li><code>GET /v1/internal/groups/count</code> - Count groups</li>
+<li><code>GET /v1/internal/members</code> - List members</li>
+<li><code>GET /v1/internal/roles</code> - List roles</li>
+</ul>
+<h4 id="private-endpoints"><a class="header" href="#private-endpoints">Private Endpoints</a></h4>
+<ul>
+<li><code>PUT /v1/private/users/{id}</code> - Update user</li>
+<li><code>DELETE /v1/private/users/{id}</code> - Delete user</li>
+<li><code>POST /v1/private/groups</code> - Create group</li>
+<li><code>PUT /v1/private/groups/{id}</code> - Update group</li>
+<li><code>DELETE /v1/private/groups/{id}</code> - Delete group</li>
+<li><code>POST /v1/private/members</code> - Add member</li>
+<li><code>DELETE /v1/private/members/{id}</code> - Remove member</li>
+<li><code>POST /v1/private/roles</code> - Create role</li>
+<li><code>PUT /v1/private/roles/{id}</code> - Update role</li>
+<li><code>DELETE /v1/private/roles/{id}</code> - Delete role</li>
+</ul>
+<h3 id="data-models"><a class="header" href="#data-models">Data Models</a></h3>
+<p>The specification includes complete schemas for:</p>
+<h4 id="request-models"><a class="header" href="#request-models">Request Models</a></h4>
+<ul>
+<li><code>UserRequest</code> - User registration/update</li>
+<li><code>GroupRequest</code> - Group creation/update</li>
+<li><code>MemberRequest</code> - Member addition</li>
+<li><code>RoleRequest</code> - Role creation/update</li>
+</ul>
+<h4 id="response-models"><a class="header" href="#response-models">Response Models</a></h4>
+<ul>
+<li><code>User</code> - User object</li>
+<li><code>Group</code> - Group object</li>
+<li><code>Member</code> - Member object</li>
+<li><code>Role</code> - Role object</li>
+<li><code>Count</code> - Count response</li>
+</ul>
+<h4 id="common-properties"><a class="header" href="#common-properties">Common Properties</a></h4>
+<p>All models include:</p>
+<ul>
+<li><code>id</code> - Unique identifier (uint64)</li>
+<li><code>uuid</code> - UUID string</li>
+<li><code>created_at</code> - Creation timestamp</li>
+<li><code>updated_at</code> - Last update timestamp</li>
+<li><code>deleted_at</code> - Soft delete timestamp (nullable)</li>
+</ul>
+<h2 id="using-swagger-ui"><a class="header" href="#using-swagger-ui">Using Swagger UI</a></h2>
+<h3 id="try-out-api-endpoints"><a class="header" href="#try-out-api-endpoints">Try Out API Endpoints</a></h3>
+<ol>
+<li>Open Swagger UI in browser</li>
+<li>Click on an endpoint to expand</li>
+<li>Click "Try it out"</li>
+<li>Fill in parameters</li>
+<li>Click "Execute"</li>
+<li>View response</li>
+</ol>
+<h3 id="authentication-2"><a class="header" href="#authentication-2">Authentication</a></h3>
+<p>For protected endpoints:</p>
+<ol>
+<li>Get JWT token via <code>/v1/public/users/login</code></li>
+<li>Click "Authorize" button in Swagger UI</li>
+<li>Enter token in format: <code>Bearer &lt;token&gt;</code></li>
+<li>Click "Authorize"</li>
+<li>Try protected endpoints</li>
+</ol>
+<h2 id="generating-swagger-documentation"><a class="header" href="#generating-swagger-documentation">Generating Swagger Documentation</a></h2>
+<h3 id="from-code-annotations"><a class="header" href="#from-code-annotations">From Code Annotations</a></h3>
+<p>Locky uses <code>swaggo/swag</code> for generating Swagger docs from code comments:</p>
+<pre><code class="language-bash"># Install swag CLI
+go install github.com/swaggo/swag/cmd/swag@latest
+
+# Generate documentation
+swag init -g cmd/server/main.go -o docs/swagger
+
+# Documentation will be generated in docs/swagger/
+</code></pre>
+<h3 id="swagger-annotations-example"><a class="header" href="#swagger-annotations-example">Swagger Annotations Example</a></h3>
+<pre><code class="language-go">// @Summary Register a new user
+// @Description Create a new user account
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body entity.UserRequest true "User registration request"
+// @Success 201 {object} entity.User
+// @Failure 400 {object} map[string]string
+// @Router /v1/public/users/register [post]
+func (c *userController) Register(ctx *gin.Context) {
+    // Implementation
+}
+</code></pre>
+<h2 id="swagger-vs-openapi"><a class="header" href="#swagger-vs-openapi">Swagger vs OpenAPI</a></h2>
+<ul>
+<li><strong>OpenAPI 3.0</strong>: Modern specification format</li>
+<li><strong>Swagger 2.0</strong>: Legacy format (currently used by Locky)</li>
+<li><strong>Migration</strong>: Consider upgrading to OpenAPI 3.0</li>
+</ul>
+<h2 id="interactive-documentation"><a class="header" href="#interactive-documentation">Interactive Documentation</a></h2>
+<h3 id="swagger-editor"><a class="header" href="#swagger-editor">Swagger Editor</a></h3>
+<p>Edit the specification online:</p>
+<ol>
+<li>Visit <a href="https://editor.swagger.io/">Swagger Editor</a></li>
+<li>Paste contents of <code>docs/swagger/swagger.yaml</code></li>
+<li>View formatted documentation</li>
+<li>Validate specification</li>
+</ol>
+<h3 id="postman-integration"><a class="header" href="#postman-integration">Postman Integration</a></h3>
+<p>Import Swagger spec into Postman:</p>
+<ol>
+<li>Open Postman</li>
+<li>Click "Import"</li>
+<li>Select <code>docs/swagger/swagger.yaml</code></li>
+<li>Use generated collection for testing</li>
+</ol>
+<h2 id="api-testing-with-swagger"><a class="header" href="#api-testing-with-swagger">API Testing with Swagger</a></h2>
+<p>Swagger UI provides built-in testing:</p>
+<ol>
+<li><strong>Authentication</strong>: Test login flow</li>
+<li><strong>CRUD Operations</strong>: Test all endpoints</li>
+<li><strong>Validation</strong>: Verify request/response schemas</li>
+<li><strong>Error Handling</strong>: Test error scenarios</li>
+</ol>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="maintaining-documentation"><a class="header" href="#maintaining-documentation">Maintaining Documentation</a></h3>
+<ul>
+<li>Update Swagger annotations when changing APIs</li>
+<li>Regenerate docs after code changes</li>
+<li>Validate specification regularly</li>
+<li>Keep examples up-to-date</li>
+</ul>
+<h3 id="documentation-quality"><a class="header" href="#documentation-quality">Documentation Quality</a></h3>
+<ul>
+<li>Clear descriptions for all endpoints</li>
+<li>Comprehensive parameter documentation</li>
+<li>Example request/response bodies</li>
+<li>Document all error codes</li>
+</ul>
+<h2 id="swagger-tools"><a class="header" href="#swagger-tools">Swagger Tools</a></h2>
+<h3 id="cli-tools"><a class="header" href="#cli-tools">CLI Tools</a></h3>
+<pre><code class="language-bash"># Validate Swagger spec
+swagger validate docs/swagger/swagger.yaml
+
+# Generate client SDKs
+swagger generate client -f docs/swagger/swagger.yaml
+
+# Generate server code
+swagger generate server -f docs/swagger/swagger.yaml
+</code></pre>
+<h3 id="online-validators"><a class="header" href="#online-validators">Online Validators</a></h3>
+<ul>
+<li><a href="https://validator.swagger.io/">Swagger Validator</a></li>
+<li><a href="https://apitools.dev/swagger-parser/online/">OpenAPI Validator</a></li>
+</ul>
+<h2 id="next-steps-5"><a class="header" href="#next-steps-5">Next Steps</a></h2>
+<ul>
+<li><a href="appendix/../api/overview.html">API Overview</a></li>
+<li><a href="appendix/../api/authentication.html">Authentication</a></li>
+<li><a href="appendix/../api/endpoints.html">Endpoint Reference</a></li>
+<li><a href="appendix/./godoc.html">GoDoc</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="godoc"><a class="header" href="#godoc">GoDoc</a></h1>
+<p>Locky's Go package documentation is generated using standard Go documentation tools.</p>
+<h2 id="viewing-godoc"><a class="header" href="#viewing-godoc">Viewing GoDoc</a></h2>
+<h3 id="online---pkggodev-recommended"><a class="header" href="#online---pkggodev-recommended">Online - pkg.go.dev (Recommended)</a></h3>
+<p>View the official Go documentation online:</p>
+<p><strong><a href="https://pkg.go.dev/github.com/ryo-arima/locky">📖 View on pkg.go.dev</a></strong></p>
+<p>Available packages:</p>
+<ul>
+<li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/server">github.com/ryo-arima/locky/pkg/server</a></li>
+<li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/client">github.com/ryo-arima/locky/pkg/client</a></li>
+<li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/config">github.com/ryo-arima/locky/pkg/config</a></li>
+<li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/entity">github.com/ryo-arima/locky/pkg/entity</a></li>
+</ul>
+<h3 id="github-pages"><a class="header" href="#github-pages">GitHub Pages</a></h3>
+<p><strong><a href="appendix/../../godoc/index.html">📖 GoDoc Overview</a></strong> (Links to pkg.go.dev)</p>
+<h3 id="local-documentation"><a class="header" href="#local-documentation">Local Documentation</a></h3>
+<p>Generate and view documentation locally:</p>
+<pre><code class="language-bash"># Install godoc tool (if not already installed)
+go install golang.org/x/tools/cmd/godoc@latest
+
+# Start local documentation server
+godoc -http=:6060
+
+# Open in browser
+open http://localhost:6060/pkg/github.com/ryo-arima/locky/
+</code></pre>
+<h3 id="generated-html"><a class="header" href="#generated-html">Generated HTML</a></h3>
+<p>Pre-generated HTML documentation is available in:</p>
+<pre><code>docs/godoc/
+</code></pre>
+<h2 id="package-structure"><a class="header" href="#package-structure">Package Structure</a></h2>
+<h3 id="main-packages"><a class="header" href="#main-packages">Main Packages</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Package</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pkg/server</code></td><td>HTTP server implementation</td></tr>
+<tr><td><code>pkg/client</code></td><td>CLI client implementations</td></tr>
+<tr><td><code>pkg/config</code></td><td>Configuration management</td></tr>
+<tr><td><code>pkg/entity</code></td><td>Data models and DTOs</td></tr>
+</tbody></table>
+</div>
+<h3 id="server-packages"><a class="header" href="#server-packages">Server Packages</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Package</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pkg/server/controller</code></td><td>Request handlers</td></tr>
+<tr><td><code>pkg/server/middleware</code></td><td>Middleware components</td></tr>
+<tr><td><code>pkg/server/repository</code></td><td>Data access layer</td></tr>
+</tbody></table>
+</div>
+<h3 id="entity-packages"><a class="header" href="#entity-packages">Entity Packages</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Package</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pkg/entity/model</code></td><td>Database models</td></tr>
+<tr><td><code>pkg/entity/request</code></td><td>Request DTOs</td></tr>
+<tr><td><code>pkg/entity/response</code></td><td>Response DTOs</td></tr>
+</tbody></table>
+</div>
+<h3 id="client-packages"><a class="header" href="#client-packages">Client Packages</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Package</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pkg/client/controller</code></td><td>CLI command handlers</td></tr>
+<tr><td><code>pkg/client/repository</code></td><td>API client layer</td></tr>
+<tr><td><code>pkg/client/usecase</code></td><td>Client business logic</td></tr>
+</tbody></table>
+</div>
+<h2 id="key-types-and-functions"><a class="header" href="#key-types-and-functions">Key Types and Functions</a></h2>
+<h3 id="configuration-1"><a class="header" href="#configuration-1">Configuration</a></h3>
+<pre><code class="language-go">// BaseConfig holds application configuration
+type BaseConfig struct {
+    YamlConfig YamlConfig
+    DB         *gorm.DB
+}
+
+// LoadConfig loads configuration from YAML file
+func LoadConfig(path string) (*BaseConfig, error)
+</code></pre>
+<h3 id="server"><a class="header" href="#server">Server</a></h3>
+<pre><code class="language-go">// InitRouter initializes the Gin router with all routes and middleware
+func InitRouter(conf config.BaseConfig) *gin.Engine
+
+// Start starts the HTTP server
+func Start(router *gin.Engine, port int) error
+</code></pre>
+<h3 id="repository"><a class="header" href="#repository">Repository</a></h3>
+<pre><code class="language-go">// UserRepository provides user data access
+type UserRepository interface {
+    ListUsers(filters map[string]interface{}) ([]model.User, error)
+    GetUser(id uint) (*model.User, error)
+    CreateUser(user *model.User) error
+    UpdateUser(user *model.User) error
+    DeleteUser(id uint) error
+}
+</code></pre>
+<h3 id="entity-models"><a class="header" href="#entity-models">Entity Models</a></h3>
+<pre><code class="language-go">// User represents a user account
+type User struct {
+    ID        uint      `gorm:"primaryKey"`
+    UUID      string    `gorm:"uniqueIndex"`
+    Name      string
+    Email     string    `gorm:"uniqueIndex"`
+    Password  string
+    CreatedAt time.Time
+    UpdatedAt time.Time
+    DeletedAt *time.Time `gorm:"index"`
+}
+</code></pre>
+<h2 id="documentation-standards"><a class="header" href="#documentation-standards">Documentation Standards</a></h2>
+<h3 id="package-comments"><a class="header" href="#package-comments">Package Comments</a></h3>
+<p>Every package should have a package-level comment:</p>
+<pre><code class="language-go">// Package server implements the HTTP server and routing logic.
+//
+// The server package provides:
+//   - Gin-based HTTP routing
+//   - Middleware integration (JWT, Casbin, logging)
+//   - Controller initialization
+//   - Repository wiring
+//
+// Example usage:
+//
+//   config := config.LoadConfig("etc/app.yaml")
+//   router := server.InitRouter(config)
+//   server.Start(router, 8080)
+package server
+</code></pre>
+<h3 id="function-comments"><a class="header" href="#function-comments">Function Comments</a></h3>
+<p>All exported functions must have documentation:</p>
+<pre><code class="language-go">// ListUsers retrieves a list of users based on the provided filters.
+//
+// Filters can include:
+//   - name: Filter by name (partial match)
+//   - email: Filter by email (exact match)
+//   - limit: Maximum number of results
+//   - offset: Number of results to skip
+//
+// Returns a slice of User models and an error if the operation fails.
+func (r *userRepository) ListUsers(filters map[string]interface{}) ([]model.User, error)
+</code></pre>
+<h3 id="type-comments"><a class="header" href="#type-comments">Type Comments</a></h3>
+<p>All exported types must be documented:</p>
+<pre><code class="language-go">// User represents a user account in the system.
+//
+// Users can belong to multiple groups and have various roles
+// that determine their permissions within the application.
+type User struct {
+    ID        uint      `gorm:"primaryKey" json:"id"`
+    UUID      string    `gorm:"uniqueIndex" json:"uuid"`
+    Name      string    `json:"name"`
+    Email     string    `gorm:"uniqueIndex" json:"email"`
+    Password  string    `json:"-"` // Never serialize password
+    CreatedAt time.Time `json:"created_at"`
+    UpdatedAt time.Time `json:"updated_at"`
+    DeletedAt *time.Time `gorm:"index" json:"deleted_at,omitempty"`
+}
+</code></pre>
+<h2 id="generating-documentation"><a class="header" href="#generating-documentation">Generating Documentation</a></h2>
+<h3 id="standard-godoc"><a class="header" href="#standard-godoc">Standard godoc</a></h3>
+<pre><code class="language-bash"># Generate HTML documentation
+godoc -html github.com/ryo-arima/locky &gt; docs/godoc/index.html
+
+# Generate documentation for specific package
+godoc -html github.com/ryo-arima/locky/pkg/server &gt; docs/godoc/server.html
+</code></pre>
+<h3 id="pkgsite-modern-godoc"><a class="header" href="#pkgsite-modern-godoc">pkgsite (Modern godoc)</a></h3>
+<pre><code class="language-bash"># Install pkgsite
+go install golang.org/x/pkgsite/cmd/pkgsite@latest
+
+# Run local server
+pkgsite -http=:6060
+
+# View documentation
+open http://localhost:6060/github.com/ryo-arima/locky
+</code></pre>
+<h2 id="documentation-best-practices"><a class="header" href="#documentation-best-practices">Documentation Best Practices</a></h2>
+<h3 id="writing-good-documentation"><a class="header" href="#writing-good-documentation">Writing Good Documentation</a></h3>
+<ol>
+<li><strong>Start with a summary</strong>: One-line description of what it does</li>
+<li><strong>Explain the why</strong>: Not just what, but why it exists</li>
+<li><strong>Provide examples</strong>: Show common usage patterns</li>
+<li><strong>Document parameters</strong>: Explain each parameter's purpose</li>
+<li><strong>Document return values</strong>: Explain what's returned and when</li>
+<li><strong>Document errors</strong>: List possible error conditions</li>
+<li><strong>Link related items</strong>: Reference related types/functions</li>
+</ol>
+<h3 id="example-structure"><a class="header" href="#example-structure">Example Structure</a></h3>
+<pre><code class="language-go">// FunctionName does something specific.
+//
+// More detailed explanation of what the function does,
+// why it exists, and how it should be used.
+//
+// Parameters:
+//   - param1: Description of first parameter
+//   - param2: Description of second parameter
+//
+// Returns:
+//   - result: Description of return value
+//   - error: Possible error conditions
+//
+// Example:
+//
+//   result, err := FunctionName(arg1, arg2)
+//   if err != nil {
+//       log.Fatal(err)
+//   }
+//   fmt.Println(result)
+func FunctionName(param1 string, param2 int) (result string, err error)
+</code></pre>
+<h2 id="package-dependencies"><a class="header" href="#package-dependencies">Package Dependencies</a></h2>
+<p>View package dependencies:</p>
+<pre><code class="language-bash"># Generate dependency graph
+go mod graph
+
+# Visualize with graphviz
+go mod graph | dot -Tsvg -o docs/dependencies.svg
+</code></pre>
+<h2 id="code-examples-in-documentation"><a class="header" href="#code-examples-in-documentation">Code Examples in Documentation</a></h2>
+<p>GoDoc supports executable examples:</p>
+<pre><code class="language-go">// Example_listUsers demonstrates how to list users
+func Example_listUsers() {
+    config := config.LoadConfig("etc/app.yaml")
+    repo := repository.NewUserRepository(config)
+    
+    users, err := repo.ListUsers(map[string]interface{}{
+        "limit": 10,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    for _, user := range users {
+        fmt.Println(user.Name)
+    }
+}
+</code></pre>
+<h2 id="testing-documentation"><a class="header" href="#testing-documentation">Testing Documentation</a></h2>
+<p>Verify documentation builds correctly:</p>
+<pre><code class="language-bash"># Check for documentation issues
+go vet ./...
+
+# Run documentation tests
+go test -v ./...
+</code></pre>
+<h2 id="next-steps-6"><a class="header" href="#next-steps-6">Next Steps</a></h2>
+<ul>
+<li><a href="appendix/./swagger.html">Swagger Documentation</a></li>
+<li><a href="appendix/../api/overview.html">API Reference</a></li>
+<li><a href="appendix/../development/contributing.html">Contributing</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locky - Go Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 { color: #333; }
+        .package-list {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .package-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .package-list li {
+            margin: 10px 0;
+        }
+        .package-list a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        .package-list a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Locky - Go Documentation</h1>
+    <p>Go package documentation for Locky RBAC service.</p>
+    
+    <div class="package-list">
+        <h2>Available on pkg.go.dev</h2>
+        <ul>
+            <li><a href="https://pkg.go.dev/github.com/ryo-arima/locky" target="_blank">github.com/ryo-arima/locky</a> - Main package</li>
+            <li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/server" target="_blank">pkg/server</a> - HTTP server implementation</li>
+            <li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/client" target="_blank">pkg/client</a> - CLI client implementations</li>
+            <li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/config" target="_blank">pkg/config</a> - Configuration management</li>
+            <li><a href="https://pkg.go.dev/github.com/ryo-arima/locky/pkg/entity" target="_blank">pkg/entity</a> - Data models and DTOs</li>
+        </ul>
+    </div>
+
+    <h2>Local Documentation</h2>
+    <p>To view documentation locally, run:</p>
+    <pre><code>godoc -http=:6060
+open http://localhost:6060/pkg/github.com/ryo-arima/locky/</code></pre>
+
+    <div class="back-link">
+        <a href="../">← Back to Documentation Home</a>
+    </div>
+</body>
+</html>
