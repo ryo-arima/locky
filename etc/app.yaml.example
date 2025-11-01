@@ -1,0 +1,39 @@
+Application:
+  Common: {}
+  Server:
+    port: 8000
+    admin:
+      emails:
+        - "admin@example.com"
+    jwt_secret: "CHANGE_THIS_JWT_SECRET_IN_PRODUCTION"
+    log_level: "debug"
+    jwt:
+      key: "CHANGE_THIS_JWT_KEY"
+    mail:
+      host: "smtp.example.com"
+      port: 587
+      user: "your-smtp-username"
+    tmp:
+      letters: ""
+      length: 6
+  Client:
+    HomePath: "etc/.locker"
+    ServerEndpoint: "http://localhost:8000"
+    UserEmail: "user@example.com"
+    UserPassword: "CHANGE_THIS_PASSWORD"
+    HomeDir: "etc/.locker"
+    TemplatesDir: "pkg/client/repository/templates/"
+
+MySQL:
+  host: "localhost"
+  user: "username"
+  pass: "password"
+  port: 3306
+  db: "database_name"
+
+Redis:
+  host: "localhost"
+  port: 6379
+  user: "default"
+  pass: "redis_password"
+  db: "redis_database_name"

@@ -1,0 +1,39 @@
+Application:
+  Common: {}
+  Server:
+    port: 8000
+    admin:
+      emails:
+        - "admin@mail.com"
+    jwt_secret: "development-jwt-secret-key-not-for-production"
+    log_level: "debug"
+    jwt:
+      key: "development-key"
+    mail:
+      host: "smtp.mail.com"
+      port: 587
+      user: ""
+    tmp:
+      letters: ""
+      length: 6
+  Client:
+    HomePath: "etc/.locky"
+    ServerEndpoint: "http://localhost:8000"
+    UserEmail: "user1@mail.com"
+    UserPassword: "development-password"
+    HomeDir: "etc/.locky"
+    TemplatesDir: "pkg/client/repository/templates/"
+
+MySQL:
+  host: "localhost"
+  user: "user"
+  pass: "password"
+  port: 3306
+  db: "locky"
+
+Redis:
+  host: "localhost"
+  port: 6379
+  user: "default"
+  pass: "mysecretpassword"
+  db: "locky"

@@ -1,0 +1,56 @@
+services:
+  mysql:
+    platform: linux/x86_64
+    image: mysql:8.0.27
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: locky
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      TZ: 'Asia/Tokyo'
+  phpmyadmin:
+    platform: linux/x86_64
+    image: phpmyadmin
+    depends_on:
+      - mysql
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=mysql
+    ports:
+      - "3001:80"
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--port", "6379", "--requirepass", "mysecretpassword", "--user", "default", "on", ">mysecretpassword", "+@all", "~*"]
+  
+  # Swagger UI for API documentation
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: locky-swagger-ui
+    ports:
+      - "3002:8080"
+    environment:
+      - SWAGGER_JSON=/swagger/swagger.yaml
+    volumes:
+      - ./docs/swagger:/swagger:ro
+  
+  # Go documentation server
+  godoc:
+    image: golang:1.24
+    container_name: locky-godoc
+    ports:
+      - "3003:6060"
+    volumes:
+      - .:/go/src/github.com/ryo-arima/locky:ro
+    working_dir: /go/src/github.com/ryo-arima/locky
+    command: sh -c "cd /tmp && go install golang.org/x/tools/cmd/godoc@latest && godoc -index -http=:6060"
+    environment:
+      - GOPATH=/go
+      - GOTOOLCHAIN=auto
+      - GOFLAGS=-mod=mod
