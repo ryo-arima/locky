@@ -8,7 +8,10 @@ Locky provides comprehensive API documentation via Swagger/OpenAPI specification
 
 View the interactive Swagger UI online:
 
-**[📖 Open Swagger UI](../../swagger/index.html)** (Opens in new tab when hosted on GitHub Pages)
+**[📖 Open Swagger UI](https://ryo-arima.github.io/locky/swagger/index.html)** (Opens in new window)
+
+Or use the relative link when browsing documentation:
+**[📖 Open Swagger UI](../../swagger/index.html)**
 
 ### Local Development
 

@@ -112,8 +112,8 @@ Comprehensive documentation is available at **[https://ryo-arima.github.io/locky
 - **[Architecture](https://ryo-arima.github.io/locky/architecture/high-level.html)** - System design and components
 - **[API Reference](https://ryo-arima.github.io/locky/api/overview.html)** - REST API documentation
 - **[Configuration](https://ryo-arima.github.io/locky/configuration/guide.html)** - Configuration guide
-- **[Swagger UI](https://ryo-arima.github.io/locky/swagger/)** - Interactive API documentation
-- **[GoDoc](https://pkg.go.dev/github.com/ryo-arima/locky)** - Go package documentation
+- **[Swagger UI](https://ryo-arima.github.io/locky/swagger/index.html)** - Interactive API documentation
+- **[GoDoc](https://ryo-arima.github.io/locky/godoc/index.html)** - Go package documentation
 
 ## API Endpoints
 
@@ -137,7 +137,7 @@ Comprehensive documentation is available at **[https://ryo-arima.github.io/locky
 - `POST /v1/private/groups` - Create group
 - `POST /v1/private/roles` - Create role
 
-[Full API documentation →](https://ryo-arima.github.io/locky/swagger/)
+[Full API documentation →](https://ryo-arima.github.io/locky/swagger/index.html)
 
 ## Configuration
 
@@ -285,8 +285,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Links
 
 - **Documentation**: https://ryo-arima.github.io/locky/
-- **API Documentation**: https://ryo-arima.github.io/locky/swagger/
-- **GoDoc**: https://pkg.go.dev/github.com/ryo-arima/locky
+- **API Documentation**: https://ryo-arima.github.io/locky/swagger/index.html
+- **GoDoc**: https://ryo-arima.github.io/locky/godoc/index.html (or [pkg.go.dev](https://pkg.go.dev/github.com/ryo-arima/locky) when published)
 - **Issue Tracker**: https://github.com/ryo-arima/locky/issues
 - **Discussions**: https://github.com/ryo-arima/locky/discussions
 

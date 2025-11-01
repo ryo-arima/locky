@@ -4,21 +4,18 @@ Locky's Go package documentation is generated using standard Go documentation to
 
 ## Viewing GoDoc
 
-### Online - pkg.go.dev (Recommended)
-
-View the official Go documentation online:
-
-**[📖 View on pkg.go.dev](https://pkg.go.dev/github.com/ryo-arima/locky)**
-
-Available packages:
-- [github.com/ryo-arima/locky/pkg/server](https://pkg.go.dev/github.com/ryo-arima/locky/pkg/server)
-- [github.com/ryo-arima/locky/pkg/client](https://pkg.go.dev/github.com/ryo-arima/locky/pkg/client)
-- [github.com/ryo-arima/locky/pkg/config](https://pkg.go.dev/github.com/ryo-arima/locky/pkg/config)
-- [github.com/ryo-arima/locky/pkg/entity](https://pkg.go.dev/github.com/ryo-arima/locky/pkg/entity)
-
 ### GitHub Pages
 
-**[📖 GoDoc Overview](../../godoc/index.html)** (Links to pkg.go.dev)
+**[📖 GoDoc Overview](https://ryo-arima.github.io/locky/godoc/index.html)** (Links to pkg.go.dev)
+
+Or use the relative link when browsing documentation:
+**[📖 GoDoc Overview](../../godoc/index.html)**
+
+### Online - pkg.go.dev (When Published)
+
+Once the package is published, view the official Go documentation online:
+
+**[📖 View on pkg.go.dev](https://pkg.go.dev/github.com/ryo-arima/locky)**
 
 ### Local Documentation
 
