@@ -9,9 +9,13 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/controller"
 	"github.com/ryo-arima/locky/pkg/server/middleware"
 	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
 func InitRouter(conf config.BaseConfig) *gin.Engine {
+	// Set Gin to use our custom logger
+	gin.DefaultWriter = middleware.NewGinLoggerWriter(conf.Logger)
+	gin.DefaultErrorWriter = middleware.NewGinLoggerWriter(conf.Logger)
 
 	redisClient, err := repository.NewRedisClient(conf.YamlConfig.Redis)
 	if err != nil {
@@ -37,9 +41,13 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 
 	userRepository := repository.NewUserRepository(conf)
 	commonRepository := repository.NewCommonRepository(conf, redisClient)
-	userControllerForPublic := controller.NewUserControllerForPublic(userRepository, commonRepository)
-	userControllerForInternal := controller.NewUserControllerForInternal(userRepository, commonRepository)
-	userControllerForPrivate := controller.NewUserControllerForPrivate(userRepository, commonRepository)
+
+	// Initialize usecase layer
+	userUsecase := usecase.NewUserUsecase(userRepository)
+
+	userControllerForPublic := controller.NewUserControllerForPublic(userUsecase, commonRepository, conf)
+	userControllerForInternal := controller.NewUserControllerForInternal(userUsecase, commonRepository)
+	userControllerForPrivate := controller.NewUserControllerForPrivate(userUsecase, commonRepository)
 
 	groupRepository := repository.NewGroupRepository(conf)
 	groupControllerForInternal := controller.NewGroupControllerForInternal(groupRepository, commonRepository)
@@ -59,10 +67,12 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	router := gin.Default()
 
 	loggerMW := middleware.LoggerWithConfig(conf)
+	requestIDMW := middleware.RequestID()
 
 	// OpenStack Keystone-style API versioning and structure
 	// v1 API with proper versioning
 	v1 := router.Group("/v1")
+	v1.Use(requestIDMW) // Apply RequestID to all v1 routes
 
 	// Authentication endpoints (Keystone-style, no middleware for login)
 	auth := v1.Group("/share/common/auth")

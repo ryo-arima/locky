@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/gin-gonic/gin"
 )
 
 // RolePermission represents one permission definition (resource, action).
@@ -26,11 +27,11 @@ type RolePermission struct {
 // - DeleteRole(): delete all role lines
 // All call SavePolicy() for persistence to file (when adapter is file).
 type RoleRepository interface {
-	ListRoles() ([]string, error)
-	GetRolePermissions(role string) ([]RolePermission, error)
-	CreateRole(role string, perms []RolePermission) error
-	UpdateRole(role string, perms []RolePermission) error
-	DeleteRole(role string) error
+	ListRoles(c *gin.Context) ([]string, error)
+	GetRolePermissions(c *gin.Context, role string) ([]RolePermission, error)
+	CreateRole(c *gin.Context, role string, perms []RolePermission) error
+	UpdateRole(c *gin.Context, role string, perms []RolePermission) error
+	DeleteRole(c *gin.Context, role string) error
 }
 
 type roleRepository struct {
@@ -52,7 +53,7 @@ func NewRoleRepository(appEnf *casbin.Enforcer, resourceEnf *casbin.Enforcer) Ro
 func (r *roleRepository) target() *casbin.Enforcer { return r.resourceEnforcer }
 
 // ListRoles: enumerate subjects in group policy
-func (r *roleRepository) ListRoles() ([]string, error) {
+func (r *roleRepository) ListRoles(c *gin.Context) ([]string, error) {
 	subs, err := r.target().GetAllSubjects()
 	if err != nil {
 		return nil, err
@@ -76,7 +77,7 @@ func (r *roleRepository) ListRoles() ([]string, error) {
 // GetRolePermissions: extract (resource,action) from all policy lines for specified role.
 // Policy storage format: p, <role>, <resource>, <action>
 // Error if role is unspecified/blank.
-func (r *roleRepository) GetRolePermissions(role string) ([]RolePermission, error) {
+func (r *roleRepository) GetRolePermissions(c *gin.Context, role string) ([]RolePermission, error) {
 	if strings.TrimSpace(role) == "" {
 		return nil, errors.New("role required")
 	}
@@ -98,20 +99,20 @@ func (r *roleRepository) GetRolePermissions(role string) ([]RolePermission, erro
 
 // roleExists: simple check that role exists if 1 or more permissions exist.
 // (A role with empty permissions is considered conceptually non-existent)
-func (r *roleRepository) roleExists(role string) bool {
-	perms, _ := r.GetRolePermissions(role)
+func (r *roleRepository) roleExists(c *gin.Context, role string) bool {
+	perms, _ := r.GetRolePermissions(c, role)
 	return len(perms) > 0
 }
 
 // CreateRole: add new role. Error if duplicate exists.
 // If perms is empty, automatically grant roles:read as fallback,
 // providing minimum permission to view self (roles list).
-func (r *roleRepository) CreateRole(role string, perms []RolePermission) error {
+func (r *roleRepository) CreateRole(c *gin.Context, role string, perms []RolePermission) error {
 	role = strings.TrimSpace(role)
 	if role == "" {
 		return errors.New("role name required")
 	}
-	if r.roleExists(role) {
+	if r.roleExists(c, role) {
 		return errors.New("role already exists")
 	}
 	if len(perms) == 0 {
@@ -128,7 +129,7 @@ func (r *roleRepository) CreateRole(role string, perms []RolePermission) error {
 // UpdateRole: delete all permissions for existing role with RemoveFilteredPolicy, then re-insert new permissions.
 // When perms is empty, grant roles:read as minimum permission like Create.
 // Note: Full replacement, not differential update.
-func (r *roleRepository) UpdateRole(role string, perms []RolePermission) error {
+func (r *roleRepository) UpdateRole(c *gin.Context, role string, perms []RolePermission) error {
 	role = strings.TrimSpace(role)
 	if role == "" {
 		return errors.New("role name required")
@@ -148,7 +149,7 @@ func (r *roleRepository) UpdateRole(role string, perms []RolePermission) error {
 }
 
 // DeleteRole: delete all policy lines for specified role. If non-existent, leave to RemoveFilteredPolicy result.
-func (r *roleRepository) DeleteRole(role string) error {
+func (r *roleRepository) DeleteRole(c *gin.Context, role string) error {
 	role = strings.TrimSpace(role)
 	if role == "" {
 		return errors.New("role name required")

@@ -118,7 +118,6 @@ func (cr *commonRepository) ValidateJWTToken(tokenString string) (*model.JWTClai
 
 	// Decode payload
 	payloadBytes, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(parts[1])
-	err = nil
 	if err != nil {
 		return nil, errors.New("invalid token payload")
 	}

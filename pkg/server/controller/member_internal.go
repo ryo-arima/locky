@@ -37,7 +37,7 @@ type memberControllerForInternal struct {
 //
 // Route: GET /v1/internal/members
 // Security: Bearer token
-func (memberController memberControllerForInternal) GetMembers(c *gin.Context) {
+func (rcvr memberControllerForInternal) GetMembers(c *gin.Context) {
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -73,7 +73,7 @@ func (memberController memberControllerForInternal) GetMembers(c *gin.Context) {
 			filter.Offset = n
 		}
 	}
-	members, err := memberController.MemberRepository.ListMembers(filter)
+	members, err := rcvr.MemberRepository.ListMembers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Members: []response.Member{}})
 		return
@@ -89,7 +89,7 @@ func (memberController memberControllerForInternal) GetMembers(c *gin.Context) {
 //
 // Route: POST /v1/internal/members
 // Security: Bearer token
-func (memberController memberControllerForInternal) CreateMember(c *gin.Context) {
+func (rcvr memberControllerForInternal) CreateMember(c *gin.Context) {
 	// swagger:operation POST /internal/members members createMemberInternal
 	// ---
 	// summary: Create a new member.
@@ -121,7 +121,7 @@ func (memberController memberControllerForInternal) CreateMember(c *gin.Context)
 	}
 	now := time.Now()
 	m := model.Members{UUID: uuid.New().String(), GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, CreatedAt: &now, UpdatedAt: &now}
-	resDB := memberController.MemberRepository.CreateMember(&m)
+	resDB := rcvr.MemberRepository.CreateMember(c, &m)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -133,7 +133,7 @@ func (memberController memberControllerForInternal) CreateMember(c *gin.Context)
 //
 // Route: PUT /v1/internal/members/{id}
 // Security: Bearer token
-func (memberController memberControllerForInternal) UpdateMember(c *gin.Context) {
+func (rcvr memberControllerForInternal) UpdateMember(c *gin.Context) {
 	// swagger:operation PUT /internal/members/{id} members updateMemberInternal
 	// ---
 	// summary: Update a member.
@@ -170,7 +170,7 @@ func (memberController memberControllerForInternal) UpdateMember(c *gin.Context)
 	}
 	now := time.Now()
 	upd := model.Members{ID: memberRequest.ID, GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, UpdatedAt: &now}
-	resDB := memberController.MemberRepository.UpdateMember(&upd)
+	resDB := rcvr.MemberRepository.UpdateMember(c, &upd)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -182,7 +182,7 @@ func (memberController memberControllerForInternal) UpdateMember(c *gin.Context)
 //
 // Route: DELETE /v1/internal/members/{id}
 // Security: Bearer token
-func (memberController memberControllerForInternal) DeleteMember(c *gin.Context) {
+func (rcvr memberControllerForInternal) DeleteMember(c *gin.Context) {
 	// swagger:operation DELETE /internal/members/{id} members deleteMemberInternal
 	// ---
 	// summary: Delete a member.
@@ -211,7 +211,7 @@ func (memberController memberControllerForInternal) DeleteMember(c *gin.Context)
 		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required", Members: []response.Member{}})
 		return
 	}
-	resDB := memberController.MemberRepository.DeleteMember(memberRequest.UUID)
+	resDB := rcvr.MemberRepository.DeleteMember(c, memberRequest.UUID)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -223,7 +223,7 @@ func (memberController memberControllerForInternal) DeleteMember(c *gin.Context)
 //
 // Route: GET /v1/internal/members/count
 // Security: Bearer token
-func (memberController memberControllerForInternal) CountMembers(c *gin.Context) {
+func (rcvr memberControllerForInternal) CountMembers(c *gin.Context) {
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -249,7 +249,7 @@ func (memberController memberControllerForInternal) CountMembers(c *gin.Context)
 	if v := c.Query("role_like"); v != "" {
 		filter.RoleLike = &v
 	}
-	cnt, err := memberController.MemberRepository.CountMembers(filter)
+	cnt, err := rcvr.MemberRepository.CountMembers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
 		return

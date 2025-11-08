@@ -26,27 +26,27 @@ type userRepository struct {
 }
 
 // Bootstrap
-func (ur userRepository) BootstrapUserForDB(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) BootstrapUserForDB(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
 	fmt.Println("BootstrapUserForDB")
 
-	if ur.BaseConfig.DBConnection == nil {
-		if err := ur.BaseConfig.ConnectDB(); err != nil {
+	if rcvr.BaseConfig.DBConnection == nil {
+		if err := rcvr.BaseConfig.ConnectDB(); err != nil {
 			resp.Code = "CLIENT_USER_BOOTSTRAP_000"
 			resp.Message = "Failed to connect database"
 			return resp
 		}
 	}
 
-	if ur.BaseConfig.DBConnection.Migrator().HasTable(&model.Users{}) {
-		if err := ur.BaseConfig.DBConnection.Migrator().DropTable(&model.Users{}); err != nil {
+	if rcvr.BaseConfig.DBConnection.Migrator().HasTable(&model.Users{}) {
+		if err := rcvr.BaseConfig.DBConnection.Migrator().DropTable(&model.Users{}); err != nil {
 			resp.Code = "CLIENT_USER_BOOTSTRAP_001"
 			resp.Message = fmt.Sprintf("Failed to drop existing table: %v", err)
 			return resp
 		}
 	}
 
-	if err := ur.BaseConfig.DBConnection.AutoMigrate(&model.Users{}); err != nil {
+	if err := rcvr.BaseConfig.DBConnection.AutoMigrate(&model.Users{}); err != nil {
 		resp.Code = "CLIENT_USER_BOOTSTRAP_002"
 		resp.Message = fmt.Sprintf("Failed to create Users table: %v", err)
 		return resp
@@ -58,9 +58,9 @@ func (ur userRepository) BootstrapUserForDB(request request.UserRequest) respons
 }
 
 // GET
-func (ur userRepository) GetUserForInternal(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) GetUserForInternal(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/users"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/users"
 	err := sendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_GET_INTERNAL_001"
@@ -69,9 +69,9 @@ func (ur userRepository) GetUserForInternal(request request.UserRequest) respons
 	return resp
 }
 
-func (ur userRepository) GetUserForPrivate(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) GetUserForPrivate(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/users"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/users"
 	err := sendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_GET_PRIVATE_001"
@@ -81,9 +81,9 @@ func (ur userRepository) GetUserForPrivate(request request.UserRequest) response
 }
 
 // CREATE
-func (ur userRepository) CreateUserForPublic(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) CreateUserForPublic(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/public/user"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/public/user"
 	err := sendRequest("POST", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_CREATE_PUBLIC_001"
@@ -92,9 +92,9 @@ func (ur userRepository) CreateUserForPublic(request request.UserRequest) respon
 	return resp
 }
 
-func (ur userRepository) CreateUserForPrivate(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) CreateUserForPrivate(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/user"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/user"
 	err := sendRequest("POST", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_CREATE_PRIVATE_001"
@@ -104,9 +104,9 @@ func (ur userRepository) CreateUserForPrivate(request request.UserRequest) respo
 }
 
 // UPDATE
-func (ur userRepository) UpdateUserForInternal(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) UpdateUserForInternal(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_UPDATE_INTERNAL_001"
@@ -115,9 +115,9 @@ func (ur userRepository) UpdateUserForInternal(request request.UserRequest) resp
 	return resp
 }
 
-func (ur userRepository) UpdateUserForPrivate(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) UpdateUserForPrivate(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := fmt.Sprintf("%s/v1/private/user/%d", ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/private/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_UPDATE_PRIVATE_001"
@@ -127,9 +127,9 @@ func (ur userRepository) UpdateUserForPrivate(request request.UserRequest) respo
 }
 
 // DELETE
-func (ur userRepository) DeleteUserForInternal(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) DeleteUserForInternal(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_DELETE_INTERNAL_001"
@@ -138,9 +138,9 @@ func (ur userRepository) DeleteUserForInternal(request request.UserRequest) resp
 	return resp
 }
 
-func (ur userRepository) DeleteUserForPrivate(request request.UserRequest) response.UserResponse {
+func (rcvr userRepository) DeleteUserForPrivate(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
-	endpoint := fmt.Sprintf("%s/v1/private/user/%d", ur.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/private/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_DELETE_PRIVATE_001"

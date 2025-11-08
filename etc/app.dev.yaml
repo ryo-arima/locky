@@ -28,7 +28,7 @@ MySQL:
   host: "localhost"
   user: "user"
   pass: "password"
-  port: 3306
+  port: "3306"
   db: "locky"
 
 Redis:
@@ -36,4 +36,12 @@ Redis:
   port: 6379
   user: "default"
   pass: "mysecretpassword"
-  db: "locky"
+  db: 0
+
+Logger:
+  component: "locky"
+  service: "locky-server"
+  level: "DEBUG"
+  structured: false
+  enable_caller: true
+  output: "stdout"

@@ -49,8 +49,35 @@ services:
     volumes:
       - .:/go/src/github.com/ryo-arima/locky:ro
     working_dir: /go/src/github.com/ryo-arima/locky
-    command: sh -c "cd /tmp && go install golang.org/x/tools/cmd/godoc@latest && godoc -index -http=:6060"
+    command: ["sh", "-c", "go install golang.org/x/tools/cmd/godoc@latest && godoc -http=:6060"]
+  
+  # LocalStack for AWS services emulation
+  localstack:
+    image: localstack/localstack:latest
+    container_name: locky-localstack
+    ports:
+      - "4566:4566"  # LocalStack edge port
+      - "4510-4559:4510-4559"  # External services port range
     environment:
-      - GOPATH=/go
-      - GOTOOLCHAIN=auto
-      - GOFLAGS=-mod=mod
+      - SERVICES=secretsmanager
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "./scripts:/etc/localstack/init/ready.d"
+      - "./etc:/etc/localstack/init/etc:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "localstack-data:/var/lib/localstack"
+  
+  # LocalStack Web UI for managing AWS services
+  localstack-ui:
+    image: localstack/localstack-ui:latest
+    container_name: locky-localstack-ui
+    ports:
+      - "3004:8080"
+    environment:
+      - LOCALSTACK_URL=http://localstack:4566
+    depends_on:
+      - localstack
+
+volumes:
+  localstack-data:

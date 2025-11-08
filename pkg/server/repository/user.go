@@ -2,92 +2,79 @@ package repository
 
 import (
 	"strings"
-	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/ryo-arima/locky/pkg/code"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
-	"github.com/ryo-arima/locky/pkg/entity/request"
+	"github.com/ryo-arima/locky/pkg/logger"
 )
 
 type UserRepository interface {
-	GetUsers() []model.Users
-	CreateUser(user request.UserRequest) model.Users
-	UpdateUser(user request.UserRequest) model.Users
-	DeleteUser(user request.UserRequest) model.Users
-	ListUsers(filter UserQueryFilter) ([]model.Users, error)
-	CountUsers(filter UserQueryFilter) (int64, error)
+	GetUsers(c *gin.Context) []model.Users
+	CreateUser(c *gin.Context, user model.Users) model.Users
+	UpdateUser(c *gin.Context, user model.Users) model.Users
+	DeleteUser(c *gin.Context, user model.Users) model.Users
+	ListUsers(c *gin.Context, filter UserQueryFilter) ([]model.Users, error)
+	CountUsers(c *gin.Context, filter UserQueryFilter) (int64, error)
 }
 
 type userRepository struct {
 	BaseConfig config.BaseConfig
 }
 
-func (userRepository userRepository) GetUsers() []model.Users {
+func (rcvr userRepository) GetUsers(c *gin.Context) []model.Users {
+	requestID, _ := c.Get("requestID")
+	reqID := requestID.(string)
+	logger.Info(code.RURP1, reqID, "Getting all users from database")
+
 	var users []model.Users
-	userRepository.BaseConfig.DBConnection.Find(&users)
+	rcvr.BaseConfig.DBConnection.Find(&users)
+
+	logger.Info(code.RURP1, reqID, "Retrieved users from database")
 	return users
 }
 
-func (userRepository userRepository) CreateUser(user request.UserRequest) model.Users {
-	now := time.Now()
-	newUser := model.Users{
-		UUID:      user.UUID,
-		Email:     user.Email,
-		Password:  user.Password,
-		Name:      user.Name,
-		CreatedAt: &now,
-		UpdatedAt: &now,
-		DeletedAt: nil,
-	}
+func (rcvr userRepository) CreateUser(c *gin.Context, user model.Users) model.Users {
+	requestID, _ := c.Get("requestID")
+	reqID := requestID.(string)
+	logger.Info(code.RUCR1, reqID, "Creating user in database: "+user.Email)
 
-	if err := userRepository.BaseConfig.DBConnection.Create(&newUser).Error; err != nil {
+	if err := rcvr.BaseConfig.DBConnection.Create(&user).Error; err != nil {
+		logger.Error(code.RUCR1, reqID, "Failed to create user: "+err.Error())
 		return model.Users{}
 	}
-	return newUser
+
+	logger.Info(code.RUCR1, reqID, "User created in database: "+user.UUID)
+	return user
 }
 
-func (userRepository userRepository) UpdateUser(user request.UserRequest) model.Users {
-	var existingUser model.Users
-	if err := userRepository.BaseConfig.DBConnection.Where("email = ?", user.Email).First(&existingUser).Error; err != nil {
+func (rcvr userRepository) UpdateUser(c *gin.Context, user model.Users) model.Users {
+	requestID, _ := c.Get("requestID")
+	reqID := requestID.(string)
+	logger.Info(code.RUUP1, reqID, "Updating user in database: "+user.UUID)
+
+	if err := rcvr.BaseConfig.DBConnection.Save(&user).Error; err != nil {
+		logger.Error(code.RUUP1, reqID, "Failed to update user: "+err.Error())
 		return model.Users{}
 	}
 
-	now := time.Now()
-	existingUser.Password = user.Password
-	existingUser.UpdatedAt = &now
-
-	if err := userRepository.BaseConfig.DBConnection.Save(&existingUser).Error; err != nil {
-		return model.Users{}
-	}
-	return existingUser
+	logger.Info(code.RUUP1, reqID, "User updated in database: "+user.UUID)
+	return user
 }
 
-func (userRepository userRepository) DeleteUser(user request.UserRequest) model.Users {
-	var existingUser model.Users
-	if err := userRepository.BaseConfig.DBConnection.Where("email = ?", user.Email).First(&existingUser).Error; err != nil {
+func (rcvr userRepository) DeleteUser(c *gin.Context, user model.Users) model.Users {
+	requestID, _ := c.Get("requestID")
+	reqID := requestID.(string)
+	logger.Info(code.RUDL1, reqID, "Deleting user from database: "+user.UUID)
+
+	if err := rcvr.BaseConfig.DBConnection.Delete(&user).Error; err != nil {
+		logger.Error(code.RUDL1, reqID, "Failed to delete user: "+err.Error())
 		return model.Users{}
 	}
 
-	if err := userRepository.BaseConfig.DBConnection.Delete(&existingUser).Error; err != nil {
-		return model.Users{}
-	}
-	return existingUser
-}
-
-// ConvertModelToRequest converts a model.Users object to a request.UserRequest object.
-func ConvertModelToRequest(user model.Users) request.UserRequest {
-	return request.UserRequest{
-		Email:    user.Email,
-		Password: user.Password,
-		Name:     user.Name,
-	}
-}
-
-// ConvertUUIDToRequest creates a request.UserRequest object from a UUID.
-func ConvertUUIDToRequest(uuid string) request.UserRequest {
-	return request.UserRequest{
-		Email: uuid, // Assuming Email is used as a unique identifier.
-	}
+	logger.Info(code.RUDL1, reqID, "User deleted from database: "+user.UUID)
+	return user
 }
 
 // UserQueryFilter: search conditions for GET /users
@@ -113,11 +100,16 @@ func (f *UserQueryFilter) normalize() {
 	}
 }
 
-// ListUsers filter + pagination retrieval
-func (userRepository userRepository) ListUsers(filter UserQueryFilter) ([]model.Users, error) {
+// ListUsers retrieves users with filter and pagination
+func (rcvr userRepository) ListUsers(c *gin.Context, filter UserQueryFilter) ([]model.Users, error) {
+	requestID, _ := c.Get("requestID")
+	reqID := requestID.(string)
+	logger.Info(code.RULS1, reqID, "Listing users from database with filter")
+
 	filter.normalize()
-	db := userRepository.BaseConfig.DBConnection
+	db := rcvr.BaseConfig.DBConnection
 	if db == nil {
+		logger.Warn(code.RULS1, reqID, "Database connection is nil")
 		return []model.Users{}, nil
 	}
 	q := db.Model(&model.Users{})
@@ -148,14 +140,21 @@ func (userRepository userRepository) ListUsers(filter UserQueryFilter) ([]model.
 	q = q.Limit(filter.Limit).Offset(filter.Offset)
 	var users []model.Users
 	if err := q.Find(&users).Error; err != nil {
+		logger.Error(code.RULS1, reqID, "Failed to list users: "+err.Error())
 		return []model.Users{}, err
 	}
+
+	logger.Info(code.RULS1, reqID, "Users listed from database successfully")
 	return users, nil
 }
 
-// CountUsers count with filter conditions
-func (userRepository userRepository) CountUsers(filter UserQueryFilter) (int64, error) {
-	db := userRepository.BaseConfig.DBConnection
+// CountUsers counts users with filter conditions
+func (rcvr userRepository) CountUsers(c *gin.Context, filter UserQueryFilter) (int64, error) {
+	requestID, _ := c.Get("requestID")
+	reqID := requestID.(string)
+	logger.Info(code.RUCT1, reqID, "Counting users in database with filter")
+
+	db := rcvr.BaseConfig.DBConnection
 	if db == nil {
 		return 0, nil
 	}
@@ -186,8 +185,11 @@ func (userRepository userRepository) CountUsers(filter UserQueryFilter) (int64, 
 	}
 	var cnt int64
 	if err := q.Count(&cnt).Error; err != nil {
+		logger.Error(code.RUCT1, reqID, "Failed to count users: "+err.Error())
 		return 0, err
 	}
+
+	logger.Info(code.RUCT1, reqID, "Users counted in database successfully")
 	return cnt, nil
 }
 

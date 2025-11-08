@@ -1,15 +1,21 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/ryo-arima/locky/pkg/code"
+	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
+	"github.com/ryo-arima/locky/pkg/logger"
+	"github.com/ryo-arima/locky/pkg/server/middleware"
 	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
 // UserControllerForPublic provides public user management endpoints.
@@ -26,8 +32,9 @@ type UserControllerForPublic interface {
 }
 
 type userControllerForPublic struct {
-	UserRepository   repository.UserRepository
+	UserUsecase      usecase.UserUsecase
 	CommonRepository repository.CommonRepository
+	conf             config.BaseConfig
 }
 
 // CreateUser handles new user registration.
@@ -50,7 +57,7 @@ type userControllerForPublic struct {
 //	200: userResponse
 //	400: errorResponse
 //	500: errorResponse
-func (userController userControllerForPublic) CreateUser(c *gin.Context) {
+func (rcvr userControllerForPublic) CreateUser(c *gin.Context) {
 	// - name: user
 	//   in: body
 	//   description: The user to create.
@@ -71,22 +78,38 @@ func (userController userControllerForPublic) CreateUser(c *gin.Context) {
 	//     schema:
 	//       $ref: "#/definitions/UserResponse"
 	var userRequest request.UserRequest
+	requestID := middleware.GetRequestID(c)
+	method := c.Request.Method
+	path := c.Request.URL.Path
+
+	// Log request received
+	logger.Info(code.UCPCU0, requestID, method+" "+path)
+
 	if err := c.Bind(&userRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__001", Message: err.Error(), Users: []response.User{}})
+		logger.Warn(code.UCPCU1, requestID, "Bind request failed")
+		res := &response.UserResponse{Code: code.UCPCU001.Code, Message: err.Error(), Users: []response.User{}}
+		logger.Warn(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+		c.JSON(http.StatusBadRequest, res)
 		return
 	}
 
 	// Validate required fields
 	if userRequest.Email == "" || userRequest.Name == "" || userRequest.Password == "" {
-		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: "email, name, and password are required", Users: []response.User{}})
+		logger.Warn(code.UCPCU2, requestID, "Required fields missing")
+		res := &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: "email, name, and password are required", Users: []response.User{}}
+		logger.Warn(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+		c.JSON(http.StatusBadRequest, res)
 		return
 	}
 
 	// Check for duplicate email
-	users := userController.UserRepository.GetUsers()
+	users, _ := rcvr.UserUsecase.GetUsers(c)
 	for _, user := range users {
 		if user.Email == userRequest.Email {
-			c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: "email already exists", Users: []response.User{}})
+			logger.Warn(code.UCPCU3, requestID, "Email already exists")
+			res := &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: "email already exists", Users: []response.User{}}
+			logger.Warn(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+			c.JSON(http.StatusBadRequest, res)
 			return
 		}
 	}
@@ -97,12 +120,15 @@ func (userController userControllerForPublic) CreateUser(c *gin.Context) {
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userRequest.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__004", Message: "failed to hash password", Users: []response.User{}})
+		logger.Error(code.UCPCU4, requestID, "Password hash failed")
+		res := &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__004", Message: "failed to hash password", Users: []response.User{}}
+		logger.Error(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusInternalServerError))
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 	userRequest.Password = string(hashedPassword)
 
-	createdUser := userController.UserRepository.CreateUser(userRequest)
+	createdUserPtr, _ := rcvr.UserUsecase.CreateUser(c, userRequest)
 
 	// Convert to response format
 	userResponse := response.UserResponse{
@@ -110,14 +136,17 @@ func (userController userControllerForPublic) CreateUser(c *gin.Context) {
 		Message: "User created successfully",
 		Users: []response.User{
 			{
-				ID:    createdUser.ID,
-				UUID:  createdUser.UUID,
-				Email: createdUser.Email,
-				Name:  createdUser.Name,
+				ID:    createdUserPtr.ID,
+				UUID:  createdUserPtr.UUID,
+				Email: createdUserPtr.Email,
+				Name:  createdUserPtr.Name,
 			},
 		},
 	}
 
+	logger.Info(code.UCPCU5, requestID, "User created")
+
+	logger.Info(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusOK))
 	c.JSON(http.StatusOK, userResponse)
 }
 
@@ -139,7 +168,7 @@ func (userController userControllerForPublic) CreateUser(c *gin.Context) {
 //
 //	200: userResponse
 //	400: errorResponse
-func (userController userControllerForPublic) GetUsers(c *gin.Context) {
+func (rcvr userControllerForPublic) GetUsers(c *gin.Context) {
 	//     schema:
 	//       $ref: "#/definitions/UserResponse"
 	//   "400":
@@ -147,36 +176,39 @@ func (userController userControllerForPublic) GetUsers(c *gin.Context) {
 	//     schema:
 	//       $ref: "#/definitions/UserResponse"
 	var userRequest request.UserRequest
+	requestID := middleware.GetRequestID(c)
+	method := c.Request.Method
+	path := c.Request.URL.Path
+
+	// Log request received
+	logger.Info(code.UCPGU0, requestID, method+" "+path)
+
 	if err := c.Bind(&userRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_GET__FOR__001", Message: err.Error(), Users: []response.User{}})
+		logger.Warn(code.UCPGU1, requestID, "Bind request failed")
+		res := &response.UserResponse{Code: "SERVER_CONTROLLER_GET__FOR__001", Message: err.Error(), Users: []response.User{}}
+		logger.Warn(code.UCPGU3, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+		c.JSON(http.StatusBadRequest, res)
 		return
 	}
 
-	users := userController.UserRepository.GetUsers()
-
-	// Convert to response format
-	var responseUsers []response.User
-	for _, user := range users {
-		responseUsers = append(responseUsers, response.User{
-			ID:    user.ID,
-			UUID:  user.UUID,
-			Email: user.Email,
-			Name:  user.Name,
-		})
-	}
+	users, _ := rcvr.UserUsecase.GetUsers(c)
 
 	userResponse := response.UserResponse{
 		Code:    "SUCCESS",
 		Message: "Users retrieved successfully",
-		Users:   responseUsers,
+		Users:   users,
 	}
 
+	logger.Info(code.UCPGU2, requestID, "Users retrieved")
+
+	logger.Info(code.UCPGU3, requestID, fmt.Sprintf("%d", http.StatusOK))
 	c.JSON(http.StatusOK, userResponse)
 }
 
-func NewUserControllerForPublic(userRepository repository.UserRepository, commonRepository repository.CommonRepository) UserControllerForPublic {
+func NewUserControllerForPublic(userUsecase usecase.UserUsecase, commonRepository repository.CommonRepository, conf config.BaseConfig) UserControllerForPublic {
 	return &userControllerForPublic{
-		UserRepository:   userRepository,
+		UserUsecase:      userUsecase,
 		CommonRepository: commonRepository,
+		conf:             conf,
 	}
 }

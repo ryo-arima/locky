@@ -27,7 +27,7 @@ type groupControllerForPrivate struct {
 	CommonRepository repository.CommonRepository
 }
 
-func (groupController groupControllerForPrivate) GetGroups(c *gin.Context) {
+func (rcvr groupControllerForPrivate) GetGroups(c *gin.Context) {
 	// swagger:operation GET /private/groups groups getGroupsPrivate
 	// ---
 	// summary: Get a list of groups.
@@ -70,7 +70,7 @@ func (groupController groupControllerForPrivate) GetGroups(c *gin.Context) {
 			filter.Offset = n
 		}
 	}
-	groups, err := groupController.GroupRepository.ListGroups(filter)
+	groups, err := rcvr.GroupRepository.ListGroups(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Groups: []response.Group{}})
 		return
@@ -82,7 +82,7 @@ func (groupController groupControllerForPrivate) GetGroups(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Groups retrieved successfully", Groups: resp})
 }
 
-func (groupController groupControllerForPrivate) CountGroups(c *gin.Context) {
+func (rcvr groupControllerForPrivate) CountGroups(c *gin.Context) {
 	filter := repository.GroupQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -102,7 +102,7 @@ func (groupController groupControllerForPrivate) CountGroups(c *gin.Context) {
 	if v := c.Query("name_like"); v != "" {
 		filter.NameLike = &v
 	}
-	cnt, err := groupController.GroupRepository.CountGroups(filter)
+	cnt, err := rcvr.GroupRepository.CountGroups(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
 		return
@@ -110,7 +110,7 @@ func (groupController groupControllerForPrivate) CountGroups(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
 }
 
-func (groupController groupControllerForPrivate) CreateGroup(c *gin.Context) {
+func (rcvr groupControllerForPrivate) CreateGroup(c *gin.Context) {
 	// swagger:operation POST /private/groups groups createGroupPrivate
 	// ---
 	// summary: Create a new group.
@@ -142,21 +142,21 @@ func (groupController groupControllerForPrivate) CreateGroup(c *gin.Context) {
 	}
 	now := time.Now()
 	g := model.Groups{UUID: uuid.New().String(), Name: groupRequest.Name, CreatedAt: &now, UpdatedAt: &now}
-	resDB := groupController.GroupRepository.CreateGroup(&g)
+	resDB := rcvr.GroupRepository.CreateGroup(c, &g)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Groups: []response.Group{}})
 		return
 	}
 	claims, ok := middleware.GetUserClaims(c)
 	if ok && claims != nil {
-		memberRepo := repository.NewMemberRepository(groupController.CommonRepository.GetBaseConfig())
+		memberRepo := repository.NewMemberRepository(rcvr.CommonRepository.GetBaseConfig())
 		mem := model.Members{UUID: uuid.New().String(), GroupUUID: g.UUID, UserUUID: claims.UUID, Role: "owner", CreatedAt: &now, UpdatedAt: &now}
-		_ = memberRepo.CreateMember(&mem)
+		_ = memberRepo.CreateMember(c, &mem)
 	}
 	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Group created successfully", Groups: []response.Group{{ID: g.ID, UUID: g.UUID, Name: g.Name}}})
 }
 
-func (groupController groupControllerForPrivate) UpdateGroup(c *gin.Context) {
+func (rcvr groupControllerForPrivate) UpdateGroup(c *gin.Context) {
 	// swagger:operation PUT /private/groups/{id} groups updateGroupPrivate
 	// ---
 	// summary: Update a group.
@@ -191,7 +191,7 @@ func (groupController groupControllerForPrivate) UpdateGroup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.GroupResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: "id is required", Groups: []response.Group{}})
 		return
 	}
-	g, err := groupController.GroupRepository.GetGroupByID(groupRequest.ID)
+	g, err := rcvr.GroupRepository.GetGroupByID(c, groupRequest.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &response.GroupResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: "group not found", Groups: []response.Group{}})
 		return
@@ -201,7 +201,7 @@ func (groupController groupControllerForPrivate) UpdateGroup(c *gin.Context) {
 	}
 	now := time.Now()
 	g.UpdatedAt = &now
-	resDB := groupController.GroupRepository.UpdateGroup(&g)
+	resDB := rcvr.GroupRepository.UpdateGroup(c, &g)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__004", Message: resDB.Error.Error(), Groups: []response.Group{}})
 		return
@@ -209,7 +209,7 @@ func (groupController groupControllerForPrivate) UpdateGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Group updated successfully", Groups: []response.Group{{ID: g.ID, UUID: g.UUID, Name: g.Name}}})
 }
 
-func (groupController groupControllerForPrivate) DeleteGroup(c *gin.Context) {
+func (rcvr groupControllerForPrivate) DeleteGroup(c *gin.Context) {
 	// swagger:operation DELETE /private/groups/{id} groups deleteGroupPrivate
 	// ---
 	// summary: Delete a group.
@@ -238,7 +238,7 @@ func (groupController groupControllerForPrivate) DeleteGroup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.GroupResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required", Groups: []response.Group{}})
 		return
 	}
-	resDB := groupController.GroupRepository.DeleteGroup(groupRequest.UUID)
+	resDB := rcvr.GroupRepository.DeleteGroup(c, groupRequest.UUID)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Groups: []response.Group{}})
 		return

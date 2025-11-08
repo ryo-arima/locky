@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	conf := config.NewBaseConfig()
-	client.ClientForAppUser(conf)
+	conf := config.NewClientConfig()
+	client.ClientForAppUser(*conf)
 }

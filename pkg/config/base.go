@@ -1,26 +1,75 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
+	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
-	yaml "gopkg.in/yaml.v3"
 )
+
+// MCode represents a message code with predefined messages
+type MCode struct {
+	Code    string
+	Message string
+}
+
+// PaddedCode returns the code padded for aligned log output
+// This will be set by middleware package's MaxCodeLength
+func (rcvr MCode) PaddedCode(maxLen int) string {
+	if len(rcvr.Code) >= maxLen {
+		return rcvr.Code
+	}
+	return rcvr.Code + strings.Repeat(" ", maxLen-len(rcvr.Code))
+}
+
+// LoggerConfig represents logger configuration
+type LoggerConfig struct {
+	Component    string `json:"component" yaml:"component"`
+	Service      string `json:"service" yaml:"service"`
+	Level        string `json:"level" yaml:"level"`
+	Structured   bool   `json:"structured" yaml:"structured"`
+	EnableCaller bool   `json:"enable_caller" yaml:"enable_caller"`
+	Output       string `json:"output" yaml:"output"`
+}
+
+// LoggerInterface defines the logging interface
+type LoggerInterface interface {
+	DEBUG(mcode MCode, optionalMessage string, fields ...map[string]interface{})
+	INFO(mcode MCode, optionalMessage string, fields ...map[string]interface{})
+	WARN(mcode MCode, optionalMessage string, fields ...map[string]interface{})
+	ERROR(mcode MCode, optionalMessage string, fields ...map[string]interface{})
+	FATAL(mcode MCode, optionalMessage string, fields ...map[string]interface{})
+}
+
+// LoggerFactory is a function type that creates a LoggerInterface
+type LoggerFactory func(LoggerConfig, *BaseConfig) LoggerInterface
+
+// defaultLoggerFactory will be set by middleware package
+var defaultLoggerFactory LoggerFactory
+
+// SetLoggerFactory sets the logger factory function
+func SetLoggerFactory(factory LoggerFactory) {
+	defaultLoggerFactory = factory
+}
 
 type BaseConfig struct {
 	DBConnection *gorm.DB
 	YamlConfig   YamlConfig
+	Logger       LoggerInterface
 }
 
 type YamlConfig struct {
-	Application Application `yaml:"Application"`
-	MySQL       MySQL       `yaml:"MySQL"`
-	Redis       Redis       `yaml:"Redis"`
+	Application Application  `yaml:"Application"`
+	MySQL       MySQL        `yaml:"MySQL"`
+	Redis       Redis        `yaml:"Redis"`
+	Logger      LoggerConfig `yaml:"Logger"`
 }
 
 type IntOrString int
@@ -81,21 +130,132 @@ type MySQL struct {
 	Db   string `yaml:"db"`
 }
 
-func NewBaseConfig() BaseConfig {
-	buf1, err := os.ReadFile("etc/app.yaml")
-	if err != nil {
-		panic(err)
+// NewBaseConfig: creates a new BaseConfig instance with configuration loaded from app.yaml or Secrets Manager
+func NewBaseConfig() *BaseConfig {
+	return NewBaseConfigWithContext(context.Background())
+}
+
+// NewClientConfig: creates a new BaseConfig instance for client with custom default config file path
+// If CONFIG_FILE is not set, it defaults to etc/app.yaml (same as server)
+// Usage: CONFIG_FILE=etc/client.yaml go run cmd/client/*/main.go
+func NewClientConfig() *BaseConfig {
+	return NewBaseConfigWithContext(context.Background())
+}
+
+// NewBaseConfigWithContext: creates a new BaseConfig instance with configuration loaded from app.yaml or Secrets Manager
+func NewBaseConfigWithContext(ctx context.Context) *BaseConfig {
+	var config YamlConfig
+	var configSource string
+
+	// Determine configuration source
+	useSecretsManager := os.Getenv("USE_SECRETSMANAGER") == "true"
+	if useSecretsManager {
+		configSource = "secretsmanager"
+	} else {
+		configSource = "localfile"
 	}
 
-	var d1 YamlConfig
-	err = yaml.Unmarshal(buf1, &d1)
-	if err != nil {
-		panic(err)
+	// Load configuration based on source
+	switch configSource {
+	case "secretsmanager":
+		secretID, useLocal := GetConfigFromEnv()
+		if secretID == "" {
+			log.Println("USE_SECRETSMANAGER is true but SECRET_ID is not set, falling back to file-based config")
+			// Fall through to localfile case
+			configSource = "localfile"
+		} else {
+			configPtr, err := LoadConfigFromSecretsManager(ctx, secretID, useLocal)
+			if err != nil {
+				log.Printf("Failed to load config from Secrets Manager: %v, falling back to file-based config", err)
+				// Fall through to localfile case
+				configSource = "localfile"
+			} else {
+				log.Println("Successfully loaded configuration from Secrets Manager")
+				config = *configPtr
+				// Skip to initialization
+				goto initializeLogger
+			}
+		}
+		fallthrough
+
+	case "localfile":
+		configFilePath := os.Getenv("CONFIG_FILE")
+		if configFilePath == "" {
+			configFilePath = "etc/app.yaml"
+		}
+
+		yamlFile, err := os.Open(configFilePath)
+		if err != nil {
+			log.Fatalf("Failed to open config file %s: %v", configFilePath, err)
+		}
+		defer yamlFile.Close()
+
+		byteData, err := io.ReadAll(yamlFile)
+		if err != nil {
+			log.Fatalf("Failed to read config file %s: %v", configFilePath, err)
+		}
+
+		err = yaml.Unmarshal(byteData, &config)
+		if err != nil {
+			log.Fatalf("Failed to unmarshal YAML from %s: %v", configFilePath, err)
+		}
+		log.Printf("Successfully loaded configuration from file (%s)", configFilePath)
+
+	default:
+		log.Fatalf("Invalid configuration source: %s", configSource)
 	}
 
-	// Do not connect to DB here, use lazy connection
-	baseConfig := &BaseConfig{YamlConfig: d1}
-	return *baseConfig
+initializeLogger:
+	// Initialize logger with default values if not configured
+	if config.Logger.Component == "" {
+		config.Logger.Component = "locky"
+	}
+	if config.Logger.Service == "" {
+		config.Logger.Service = "locky-server"
+	}
+	if config.Logger.Level == "" {
+		config.Logger.Level = "INFO"
+	}
+	if config.Logger.Output == "" {
+		config.Logger.Output = "stdout"
+	}
+
+	baseConfig := &BaseConfig{
+		YamlConfig:   config,
+		DBConnection: nil,
+	}
+
+	// Initialize logger
+	if defaultLoggerFactory != nil {
+		logger := defaultLoggerFactory(config.Logger, baseConfig)
+		baseConfig.Logger = logger
+	}
+
+	return baseConfig
+}
+
+// NewBaseConfigFromSource: creates a new BaseConfig instance based on CONFIG_SOURCE environment variable
+// Valid CONFIG_SOURCE values: "secretsmanager", "localfile" (default)
+func NewBaseConfigFromSource(ctx context.Context) *BaseConfig {
+	configSource := os.Getenv("CONFIG_SOURCE")
+
+	switch configSource {
+	case "secretsmanager":
+		log.Println("CONFIG_SOURCE=secretsmanager: Using AWS Secrets Manager for configuration")
+		os.Setenv("USE_SECRETSMANAGER", "true")
+		return NewBaseConfigWithContext(ctx)
+	case "localfile", "":
+		if configSource == "" {
+			log.Println("CONFIG_SOURCE not set, using local file for configuration (default)")
+		} else {
+			log.Println("CONFIG_SOURCE=localfile: Using local file for configuration")
+		}
+		os.Setenv("USE_SECRETSMANAGER", "false")
+		return NewBaseConfigWithContext(ctx)
+	default:
+		log.Fatalf("Invalid CONFIG_SOURCE: %s. Valid values are 'secretsmanager' or 'localfile'", configSource)
+		return nil
+	}
 }
 
 // ConnectDB: connect to MySQL only when needed (safe to call multiple times)
@@ -103,7 +263,7 @@ func (bc *BaseConfig) ConnectDB() error {
 	if bc.DBConnection != nil {
 		return nil
 	}
-	db := NewDBConnection(bc.YamlConfig)
+	db := NewDBConnection(bc.YamlConfig, bc.Logger)
 	if db == nil {
 		return fmt.Errorf("failed to connect database")
 	}
@@ -111,15 +271,29 @@ func (bc *BaseConfig) ConnectDB() error {
 	return nil
 }
 
-func NewDBConnection(conf YamlConfig) *gorm.DB {
+func NewDBConnection(conf YamlConfig, logger LoggerInterface) *gorm.DB {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify", conf.MySQL.User, conf.MySQL.Pass, conf.MySQL.Host, conf.MySQL.Port, conf.MySQL.Db)
+
+	logger.DEBUG(MCode{Code: "C-NDBC-1", Message: "Attempting database connection"}, "", map[string]interface{}{
+		"host": conf.MySQL.Host,
+		"port": conf.MySQL.Port,
+		"db":   conf.MySQL.Db,
+	})
+
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Printf("Failed to connect to database: %v", err)
-		log.Printf("DSN (without password): %s:***@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
-			conf.MySQL.User, conf.MySQL.Host, conf.MySQL.Port, conf.MySQL.Db)
+		logger.ERROR(MCode{Code: "C-NDBC-3", Message: "Failed to connect"}, fmt.Sprintf("%v", err), map[string]interface{}{
+			"host": conf.MySQL.Host,
+			"port": conf.MySQL.Port,
+			"db":   conf.MySQL.Db,
+		})
 		return nil
 	}
-	log.Println("Successfully connected to database")
+
+	logger.INFO(MCode{Code: "C-NDBC-2", Message: "Database connection established"}, "", map[string]interface{}{
+		"host": conf.MySQL.Host,
+		"port": conf.MySQL.Port,
+		"db":   conf.MySQL.Db,
+	})
 	return db
 }

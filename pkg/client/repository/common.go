@@ -66,9 +66,9 @@ func saveTokenPair(access, refresh string) {
 }
 
 // Login performs user authentication and returns JWT tokens
-func (cr commonRepository) Login(loginRequest request.LoginRequest) (response response.LoginResponse) {
+func (rcvr commonRepository) Login(loginRequest request.LoginRequest) (response response.LoginResponse) {
 	// Updated to match server router: POST /v1/share/common/auth/tokens
-	endpoint := cr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
 
 	// Prepare the HTTP request
 	jsonData, err := json.Marshal(loginRequest)
@@ -125,9 +125,9 @@ func (cr commonRepository) Login(loginRequest request.LoginRequest) (response re
 }
 
 // RefreshToken refreshes the access token using refresh token
-func (cr commonRepository) RefreshToken(refreshToken string) (response response.RefreshTokenResponse) {
+func (rcvr commonRepository) RefreshToken(refreshToken string) (response response.RefreshTokenResponse) {
 	// Updated to match server router: POST /v1/share/common/auth/tokens/refresh
-	endpoint := cr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/refresh"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/refresh"
 
 	requestData := map[string]string{
 		"refresh_token": refreshToken,
@@ -183,9 +183,9 @@ func (cr commonRepository) RefreshToken(refreshToken string) (response response.
 }
 
 // Logout performs user logout
-func (cr commonRepository) Logout(accessToken string) (response response.CommonResponse) {
+func (rcvr commonRepository) Logout(accessToken string) (response response.CommonResponse) {
 	// Updated to match server router: DELETE /v1/share/common/auth/tokens
-	endpoint := cr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
 
 	req, err := http.NewRequest("DELETE", endpoint, nil)
 	if err != nil {
@@ -227,9 +227,9 @@ func (cr commonRepository) Logout(accessToken string) (response response.CommonR
 }
 
 // ValidateToken validates an access token
-func (cr commonRepository) ValidateToken(accessToken string) (response response.CommonResponse) {
+func (rcvr commonRepository) ValidateToken(accessToken string) (response response.CommonResponse) {
 	// Updated to match server router: GET /v1/share/common/auth/tokens/validate
-	endpoint := cr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/validate"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/validate"
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -271,9 +271,9 @@ func (cr commonRepository) ValidateToken(accessToken string) (response response.
 }
 
 // GetUserInfo retrieves user information using access token
-func (cr commonRepository) GetUserInfo(accessToken string) (response response.CommonResponse) {
+func (rcvr commonRepository) GetUserInfo(accessToken string) (response response.CommonResponse) {
 	// Updated to match server router: GET /v1/share/common/auth/tokens/user
-	endpoint := cr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/user"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/user"
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {

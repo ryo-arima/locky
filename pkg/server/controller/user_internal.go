@@ -5,10 +5,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
 // UserControllerForInternal provides authenticated (non-admin) user operations.
@@ -27,7 +27,7 @@ type UserControllerForInternal interface {
 }
 
 type userControllerForInternal struct {
-	UserRepository   repository.UserRepository
+	UserUsecase      usecase.UserUsecase
 	CommonRepository repository.CommonRepository
 }
 
@@ -35,7 +35,7 @@ type userControllerForInternal struct {
 //
 // Route: GET /v1/internal/users
 // Security: Bearer token
-func (userController userControllerForInternal) GetUsers(c *gin.Context) {
+func (rcvr userControllerForInternal) GetUsers(c *gin.Context) {
 	// swagger:operation GET /internal/users users getUsersInternal
 	// ---
 	// summary: Get a list of users.
@@ -93,23 +93,19 @@ func (userController userControllerForInternal) GetUsers(c *gin.Context) {
 			filter.Offset = n
 		}
 	}
-	users, err := userController.UserRepository.ListUsers(filter)
+	users, err := rcvr.UserUsecase.ListUsers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	respUsers := make([]response.User, 0, len(users))
-	for _, u := range users {
-		respUsers = append(respUsers, response.User{ID: u.ID, UUID: u.UUID, Email: u.Email, Name: u.Name, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt, DeletedAt: u.DeletedAt})
-	}
-	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "Users retrieved successfully", Users: respUsers})
+	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "Users retrieved successfully", Users: users})
 }
 
 // UpdateUser updates a user (authenticated).
 //
 // Route: PUT /v1/internal/users/{id}
 // Security: Bearer token
-func (userController userControllerForInternal) UpdateUser(c *gin.Context) {
+func (rcvr userControllerForInternal) UpdateUser(c *gin.Context) {
 	// swagger:operation PUT /internal/users/{id} users updateUserInternal
 	// ---
 	// summary: Update a user.
@@ -140,18 +136,20 @@ func (userController userControllerForInternal) UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__001", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	var userModel model.Users
-	// Convert model.Users to request.UserRequest
-	userRequest = repository.ConvertModelToRequest(userModel)
-	res := userController.UserRepository.UpdateUser(userRequest)
-	c.JSON(http.StatusOK, res)
+
+	updatedUser, err := rcvr.UserUsecase.UpdateUser(c, userRequest)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: err.Error(), Users: []response.User{}})
+		return
+	}
+	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "User updated successfully", Users: []response.User{*updatedUser}})
 }
 
 // DeleteUser deletes a user (authenticated).
 //
 // Route: DELETE /v1/internal/users/{id}
 // Security: Bearer token
-func (userController userControllerForInternal) DeleteUser(c *gin.Context) {
+func (rcvr userControllerForInternal) DeleteUser(c *gin.Context) {
 	// swagger:operation DELETE /internal/users/{id} users deleteUserInternal
 	// ---
 	// summary: Delete a user.
@@ -176,17 +174,20 @@ func (userController userControllerForInternal) DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__001", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	var uuid string
-	uuidRequest := repository.ConvertUUIDToRequest(uuid)
-	res := userController.UserRepository.DeleteUser(uuidRequest)
-	c.JSON(http.StatusOK, res)
+
+	err := rcvr.UserUsecase.DeleteUser(c, userRequest)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: err.Error(), Users: []response.User{}})
+		return
+	}
+	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "User deleted successfully", Users: []response.User{}})
 }
 
 // CreateUser creates a user (authenticated).
 //
 // Route: POST /v1/internal/users
 // Security: Bearer token
-func (userController userControllerForInternal) CreateUser(c *gin.Context) {
+func (rcvr userControllerForInternal) CreateUser(c *gin.Context) {
 	// swagger:operation POST /internal/users users createUserInternal
 	// ---
 	// summary: Create a new user.
@@ -212,17 +213,20 @@ func (userController userControllerForInternal) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__001", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	var userModel model.Users
-	userRequest = repository.ConvertModelToRequest(userModel)
-	res := userController.UserRepository.CreateUser(userRequest)
-	c.JSON(http.StatusOK, res)
+
+	createdUser, err := rcvr.UserUsecase.CreateUser(c, userRequest)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: err.Error(), Users: []response.User{}})
+		return
+	}
+	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "User created successfully", Users: []response.User{*createdUser}})
 }
 
 // CountUsers counts users (authenticated).
 //
 // Route: GET /v1/internal/users/count
 // Security: Bearer token
-func (userController userControllerForInternal) CountUsers(c *gin.Context) {
+func (rcvr userControllerForInternal) CountUsers(c *gin.Context) {
 	// swagger:operation GET /internal/users/count users countUsersInternal
 	// ---
 	// summary: Get the count of users.
@@ -267,7 +271,7 @@ func (userController userControllerForInternal) CountUsers(c *gin.Context) {
 	if v := c.Query("email_like"); v != "" {
 		filter.EmailLike = &v
 	}
-	cnt, err := userController.UserRepository.CountUsers(filter)
+	cnt, err := rcvr.UserUsecase.CountUsers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
 		return
@@ -283,6 +287,6 @@ func (userController userControllerForInternal) CountUsers(c *gin.Context) {
 //
 // Returns:
 //   - UserControllerForInternal: Configured internal controller instance
-func NewUserControllerForInternal(userRepository repository.UserRepository, commonRepository repository.CommonRepository) UserControllerForInternal {
-	return &userControllerForInternal{UserRepository: userRepository, CommonRepository: commonRepository}
+func NewUserControllerForInternal(userUsecase usecase.UserUsecase, commonRepository repository.CommonRepository) UserControllerForInternal {
+	return &userControllerForInternal{UserUsecase: userUsecase, CommonRepository: commonRepository}
 }

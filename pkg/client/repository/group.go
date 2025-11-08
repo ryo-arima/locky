@@ -26,27 +26,27 @@ type groupRepository struct {
 }
 
 // Bootstrap
-func (gr groupRepository) BootstrapGroupForDB(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) BootstrapGroupForDB(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
 	fmt.Println("BootstrapGroupForDB")
 
-	if gr.BaseConfig.DBConnection == nil {
-		if err := gr.BaseConfig.ConnectDB(); err != nil {
+	if rcvr.BaseConfig.DBConnection == nil {
+		if err := rcvr.BaseConfig.ConnectDB(); err != nil {
 			resp.Code = "CLIENT_GROUP_BOOTSTRAP_000"
 			resp.Message = "Failed to connect database"
 			return resp
 		}
 	}
 
-	if gr.BaseConfig.DBConnection.Migrator().HasTable(&model.Groups{}) {
-		if err := gr.BaseConfig.DBConnection.Migrator().DropTable(&model.Groups{}); err != nil {
+	if rcvr.BaseConfig.DBConnection.Migrator().HasTable(&model.Groups{}) {
+		if err := rcvr.BaseConfig.DBConnection.Migrator().DropTable(&model.Groups{}); err != nil {
 			resp.Code = "CLIENT_GROUP_BOOTSTRAP_001"
 			resp.Message = fmt.Sprintf("Failed to drop existing table: %v", err)
 			return resp
 		}
 	}
 
-	if err := gr.BaseConfig.DBConnection.AutoMigrate(&model.Groups{}); err != nil {
+	if err := rcvr.BaseConfig.DBConnection.AutoMigrate(&model.Groups{}); err != nil {
 		resp.Code = "CLIENT_GROUP_BOOTSTRAP_002"
 		resp.Message = fmt.Sprintf("Failed to create Groups table: %v", err)
 		return resp
@@ -58,9 +58,9 @@ func (gr groupRepository) BootstrapGroupForDB(request request.GroupRequest) resp
 }
 
 // GET
-func (gr groupRepository) GetGroupForInternal(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) GetGroupForInternal(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/groups"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/groups"
 	err := sendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_GET_INTERNAL_001"
@@ -69,9 +69,9 @@ func (gr groupRepository) GetGroupForInternal(request request.GroupRequest) resp
 	return resp
 }
 
-func (gr groupRepository) GetGroupForPrivate(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) GetGroupForPrivate(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/groups"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/groups"
 	err := sendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_GET_PRIVATE_001"
@@ -81,9 +81,9 @@ func (gr groupRepository) GetGroupForPrivate(request request.GroupRequest) respo
 }
 
 // CREATE
-func (gr groupRepository) CreateGroupForInternal(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) CreateGroupForInternal(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/group"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/group"
 	err := sendRequest("POST", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_CREATE_INTERNAL_001"
@@ -92,9 +92,9 @@ func (gr groupRepository) CreateGroupForInternal(request request.GroupRequest) r
 	return resp
 }
 
-func (gr groupRepository) CreateGroupForPrivate(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) CreateGroupForPrivate(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/group"
+	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/group"
 	err := sendRequest("POST", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_CREATE_PRIVATE_001"
@@ -104,9 +104,9 @@ func (gr groupRepository) CreateGroupForPrivate(request request.GroupRequest) re
 }
 
 // UPDATE
-func (gr groupRepository) UpdateGroupForInternal(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) UpdateGroupForInternal(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_UPDATE_INTERNAL_001"
@@ -115,9 +115,9 @@ func (gr groupRepository) UpdateGroupForInternal(request request.GroupRequest) r
 	return resp
 }
 
-func (gr groupRepository) UpdateGroupForPrivate(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) UpdateGroupForPrivate(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := fmt.Sprintf("%s/v1/private/group/%d", gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/private/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_UPDATE_PRIVATE_001"
@@ -127,9 +127,9 @@ func (gr groupRepository) UpdateGroupForPrivate(request request.GroupRequest) re
 }
 
 // DELETE
-func (gr groupRepository) DeleteGroupForInternal(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) DeleteGroupForInternal(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_DELETE_INTERNAL_001"
@@ -138,9 +138,9 @@ func (gr groupRepository) DeleteGroupForInternal(request request.GroupRequest) r
 	return resp
 }
 
-func (gr groupRepository) DeleteGroupForPrivate(request request.GroupRequest) response.GroupResponse {
+func (rcvr groupRepository) DeleteGroupForPrivate(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
-	endpoint := fmt.Sprintf("%s/v1/private/group/%d", gr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
+	endpoint := fmt.Sprintf("%s/v1/private/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := sendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_DELETE_PRIVATE_001"

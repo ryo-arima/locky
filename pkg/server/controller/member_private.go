@@ -26,7 +26,7 @@ type memberControllerForPrivate struct {
 	CommonRepository repository.CommonRepository
 }
 
-func (memberController memberControllerForPrivate) GetMembers(c *gin.Context) {
+func (rcvr memberControllerForPrivate) GetMembers(c *gin.Context) {
 	// swagger:operation GET /private/members members getMembersPrivate
 	// ---
 	// summary: Get a list of members.
@@ -75,7 +75,7 @@ func (memberController memberControllerForPrivate) GetMembers(c *gin.Context) {
 			filter.Offset = n
 		}
 	}
-	members, err := memberController.MemberRepository.ListMembers(filter)
+	members, err := rcvr.MemberRepository.ListMembers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Members: []response.Member{}})
 		return
@@ -87,7 +87,7 @@ func (memberController memberControllerForPrivate) GetMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Members retrieved successfully", Members: resp})
 }
 
-func (memberController memberControllerForPrivate) CountMembers(c *gin.Context) {
+func (rcvr memberControllerForPrivate) CountMembers(c *gin.Context) {
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -113,7 +113,7 @@ func (memberController memberControllerForPrivate) CountMembers(c *gin.Context) 
 	if v := c.Query("role_like"); v != "" {
 		filter.RoleLike = &v
 	}
-	cnt, err := memberController.MemberRepository.CountMembers(filter)
+	cnt, err := rcvr.MemberRepository.CountMembers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
 		return
@@ -121,7 +121,7 @@ func (memberController memberControllerForPrivate) CountMembers(c *gin.Context) 
 	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
 }
 
-func (memberController memberControllerForPrivate) CreateMember(c *gin.Context) {
+func (rcvr memberControllerForPrivate) CreateMember(c *gin.Context) {
 	// swagger:operation POST /private/members members createMemberPrivate
 	// ---
 	// summary: Create a new member.
@@ -153,7 +153,7 @@ func (memberController memberControllerForPrivate) CreateMember(c *gin.Context) 
 	}
 	now := time.Now()
 	m := model.Members{UUID: uuid.New().String(), GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, CreatedAt: &now, UpdatedAt: &now}
-	resDB := memberController.MemberRepository.CreateMember(&m)
+	resDB := rcvr.MemberRepository.CreateMember(c, &m)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -161,7 +161,7 @@ func (memberController memberControllerForPrivate) CreateMember(c *gin.Context) 
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member created successfully", Members: []response.Member{{ID: m.ID, UUID: m.UUID, GroupUUID: m.GroupUUID, UserUUID: m.UserUUID, Role: m.Role}}})
 }
 
-func (memberController memberControllerForPrivate) UpdateMember(c *gin.Context) {
+func (rcvr memberControllerForPrivate) UpdateMember(c *gin.Context) {
 	// swagger:operation PUT /private/members/{id} members updateMemberPrivate
 	// ---
 	// summary: Update a member.
@@ -208,7 +208,7 @@ func (memberController memberControllerForPrivate) UpdateMember(c *gin.Context) 
 	}
 	now := time.Now()
 	upd := model.Members{ID: idUint, GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, UpdatedAt: &now}
-	resDB := memberController.MemberRepository.UpdateMember(&upd)
+	resDB := rcvr.MemberRepository.UpdateMember(c, &upd)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -216,7 +216,7 @@ func (memberController memberControllerForPrivate) UpdateMember(c *gin.Context) 
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member updated successfully", Members: []response.Member{{ID: upd.ID, UUID: upd.UUID, GroupUUID: upd.GroupUUID, UserUUID: upd.UserUUID, Role: upd.Role}}})
 }
 
-func (memberController memberControllerForPrivate) DeleteMember(c *gin.Context) {
+func (rcvr memberControllerForPrivate) DeleteMember(c *gin.Context) {
 	// swagger:operation DELETE /private/members/{id} members deleteMemberPrivate
 	// ---
 	// summary: Delete a member.
@@ -250,7 +250,7 @@ func (memberController memberControllerForPrivate) DeleteMember(c *gin.Context) 
 	if uuidParam == "" {
 		uuidParam = memberRequest.UUID
 	}
-	resDB := memberController.MemberRepository.DeleteMember(uuidParam)
+	resDB := rcvr.MemberRepository.DeleteMember(c, uuidParam)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return

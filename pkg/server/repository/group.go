@@ -5,66 +5,67 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"gorm.io/gorm"
 )
 
 type GroupRepository interface {
-	GetGroups() []model.Groups
-	GetGroupByUUID(uuid string) (model.Groups, error)
-	GetGroupByID(id uint) (model.Groups, error)
-	CreateGroup(group *model.Groups) *gorm.DB
-	UpdateGroup(group *model.Groups) *gorm.DB
-	DeleteGroup(uuid string) *gorm.DB
-	ListGroups(filter GroupQueryFilter) ([]model.Groups, error)
-	CountGroups(filter GroupQueryFilter) (int64, error)
+	GetGroups(c *gin.Context) []model.Groups
+	GetGroupByUUID(c *gin.Context, uuid string) (model.Groups, error)
+	GetGroupByID(c *gin.Context, id uint) (model.Groups, error)
+	CreateGroup(c *gin.Context, group *model.Groups) *gorm.DB
+	UpdateGroup(c *gin.Context, group *model.Groups) *gorm.DB
+	DeleteGroup(c *gin.Context, uuid string) *gorm.DB
+	ListGroups(c *gin.Context, filter GroupQueryFilter) ([]model.Groups, error)
+	CountGroups(c *gin.Context, filter GroupQueryFilter) (int64, error)
 }
 
 type groupRepository struct {
 	BaseConfig config.BaseConfig
 }
 
-func (r groupRepository) GetGroups() []model.Groups {
+func (rcvr groupRepository) GetGroups(c *gin.Context) []model.Groups {
 	var groups []model.Groups
-	r.BaseConfig.DBConnection.Find(&groups)
+	rcvr.BaseConfig.DBConnection.Find(&groups)
 	return groups
 }
 
-func (r groupRepository) GetGroupByUUID(uuid string) (model.Groups, error) {
+func (rcvr groupRepository) GetGroupByUUID(c *gin.Context, uuid string) (model.Groups, error) {
 	var g model.Groups
-	res := r.BaseConfig.DBConnection.Where("uuid = ?", uuid).First(&g)
+	res := rcvr.BaseConfig.DBConnection.Where("uuid = ?", uuid).First(&g)
 	if res.Error != nil {
 		return model.Groups{}, res.Error
 	}
 	return g, nil
 }
 
-func (r groupRepository) GetGroupByID(id uint) (model.Groups, error) {
+func (rcvr groupRepository) GetGroupByID(c *gin.Context, id uint) (model.Groups, error) {
 	var g model.Groups
-	res := r.BaseConfig.DBConnection.First(&g, id)
+	res := rcvr.BaseConfig.DBConnection.First(&g, id)
 	if res.Error != nil {
 		return model.Groups{}, res.Error
 	}
 	return g, nil
 }
 
-func (r groupRepository) CreateGroup(group *model.Groups) *gorm.DB {
+func (rcvr groupRepository) CreateGroup(c *gin.Context, group *model.Groups) *gorm.DB {
 	if group == nil {
 		return &gorm.DB{Error: errors.New("group is nil")}
 	}
-	return r.BaseConfig.DBConnection.Create(group)
+	return rcvr.BaseConfig.DBConnection.Create(group)
 }
 
-func (r groupRepository) UpdateGroup(group *model.Groups) *gorm.DB {
+func (rcvr groupRepository) UpdateGroup(c *gin.Context, group *model.Groups) *gorm.DB {
 	if group == nil {
 		return &gorm.DB{Error: errors.New("group is nil")}
 	}
-	return r.BaseConfig.DBConnection.Model(&model.Groups{}).Where("id = ?", group.ID).Updates(group)
+	return rcvr.BaseConfig.DBConnection.Model(&model.Groups{}).Where("id = ?", group.ID).Updates(group)
 }
 
-func (r groupRepository) DeleteGroup(uuid string) *gorm.DB {
-	return r.BaseConfig.DBConnection.Model(&model.Groups{}).Where("uuid = ?", uuid).Update("deleted_at", time.Now())
+func (rcvr groupRepository) DeleteGroup(c *gin.Context, uuid string) *gorm.DB {
+	return rcvr.BaseConfig.DBConnection.Model(&model.Groups{}).Where("uuid = ?", uuid).Update("deleted_at", time.Now())
 }
 
 // GroupQueryFilter: group search/pagination conditions
@@ -87,9 +88,9 @@ func (f *GroupQueryFilter) normalize() {
 	}
 }
 
-func (r groupRepository) ListGroups(filter GroupQueryFilter) ([]model.Groups, error) {
+func (rcvr groupRepository) ListGroups(c *gin.Context, filter GroupQueryFilter) ([]model.Groups, error) {
 	filter.normalize()
-	q := r.BaseConfig.DBConnection.Model(&model.Groups{})
+	q := rcvr.BaseConfig.DBConnection.Model(&model.Groups{})
 	if filter.ID != nil {
 		q = q.Where("id = ?", *filter.ID)
 	}
@@ -113,8 +114,8 @@ func (r groupRepository) ListGroups(filter GroupQueryFilter) ([]model.Groups, er
 	return list, nil
 }
 
-func (r groupRepository) CountGroups(filter GroupQueryFilter) (int64, error) {
-	q := r.BaseConfig.DBConnection.Model(&model.Groups{})
+func (rcvr groupRepository) CountGroups(c *gin.Context, filter GroupQueryFilter) (int64, error) {
+	q := rcvr.BaseConfig.DBConnection.Model(&model.Groups{})
 	if filter.ID != nil {
 		q = q.Where("id = ?", *filter.ID)
 	}

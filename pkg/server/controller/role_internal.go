@@ -28,7 +28,7 @@ func NewRoleControllerForInternal(repo repository.RoleRepository, enf *casbin.En
 // ListRoles (internal) - read-only
 func (rc *roleControllerForInternal) ListRoles(c *gin.Context) {
 	if id := c.Query("id"); id != "" {
-		perms, err := rc.repo.GetRolePermissions(id)
+		perms, err := rc.repo.GetRolePermissions(c, id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_GET_ERROR", Message: err.Error(), Roles: []string{}})
 			return
@@ -36,7 +36,7 @@ func (rc *roleControllerForInternal) ListRoles(c *gin.Context) {
 		c.JSON(http.StatusOK, response.RoleResponse{Code: "SUCCESS", Message: "Role permissions retrieved", Roles: []string{id}, Detail: perms})
 		return
 	}
-	roles, err := rc.repo.ListRoles()
+	roles, err := rc.repo.ListRoles(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.RoleResponse{Code: "ROLE_LIST_ERROR", Message: err.Error(), Roles: []string{}})
 		return
