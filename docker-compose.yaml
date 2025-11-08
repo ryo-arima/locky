@@ -1,18 +1,53 @@
+version: "3.9"
+
 services:
-  mysql:
-    platform: linux/x86_64
-    image: mysql:8.0.27
+  dns:
+    image: jpillora/dnsmasq
+    container_name: locky-dns
+    platform: linux/amd64
     ports:
-      - "3306:3306"
+      - "8053:8080"  # dnsmasq Web UI
+    environment:
+      - HTTP_USER=admin
+      - HTTP_PASS=admin
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    command: >
+      --address=/locky.local/10.88.0.10 \
+      --address=/mail.locky.local/10.88.0.10 \
+      --address=/roundcube.locky.local/10.88.0.11 \
+      --mx-host=locky.local,mail.locky.local,10 \
+      --txt-record=locky.local,"v=spf1 mx a ip4:10.88.0.10 ~all" \
+      --txt-record=_dmarc.locky.local,"v=DMARC1; p=none; rua=mailto:dmarc@locky.local" \
+      --host-record=10.88.0.10.in-addr.arpa,mail.locky.local \
+      --log-queries \
+      --no-resolv
+    networks:
+      locky-network:
+        ipv4_address: 10.88.0.53
+
+  mysql:
+    image: mysql:8.0.27
+    platform: linux/x86_64
     environment:
       MYSQL_ROOT_PASSWORD: mysql
       MYSQL_DATABASE: locky
       MYSQL_USER: user
       MYSQL_PASSWORD: password
-      TZ: 'Asia/Tokyo'
+      TZ: Asia/Tokyo
+    volumes:
+      - ./scripts/data/mysql:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /var/lib/mysql
+    networks:
+      - locky-network
+    dns:
+      - 10.88.0.53
+
   phpmyadmin:
-    platform: linux/x86_64
     image: phpmyadmin
+    platform: linux/x86_64
     depends_on:
       - mysql
     environment:
@@ -22,14 +57,22 @@ services:
       - PMA_PASSWORD=mysql
     ports:
       - "3001:80"
+    networks:
+      - locky-network
+    dns:
+      - 10.88.0.53
+
   redis:
     image: redis:latest
     container_name: redis
-    ports:
-      - "6379:6379"
     command: ["redis-server", "--port", "6379", "--requirepass", "mysecretpassword", "--user", "default", "on", ">mysecretpassword", "+@all", "~*"]
-  
-  # Swagger UI for API documentation
+    tmpfs:
+      - /data
+    networks:
+      - locky-network
+    dns:
+      - 10.88.0.53
+
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
     container_name: locky-swagger-ui
@@ -39,8 +82,11 @@ services:
       - SWAGGER_JSON=/swagger/swagger.yaml
     volumes:
       - ./docs/swagger:/swagger:ro
-  
-  # Go documentation server
+    networks:
+      - locky-network
+    dns:
+      - 10.88.0.53
+
   godoc:
     image: golang:1.24
     container_name: locky-godoc
@@ -50,34 +96,106 @@ services:
       - .:/go/src/github.com/ryo-arima/locky:ro
     working_dir: /go/src/github.com/ryo-arima/locky
     command: ["sh", "-c", "go install golang.org/x/tools/cmd/godoc@latest && godoc -http=:6060"]
-  
-  # LocalStack for AWS services emulation
+    networks:
+      - locky-network
+    dns:
+      - 10.88.0.53
+
   localstack:
     image: localstack/localstack:latest
     container_name: locky-localstack
     ports:
-      - "4566:4566"  # LocalStack edge port
-      - "4510-4559:4510-4559"  # External services port range
+      - "4566:4566"
     environment:
       - SERVICES=secretsmanager
       - DEBUG=1
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
-      - "./scripts:/etc/localstack/init/ready.d"
-      - "./etc:/etc/localstack/init/etc:ro"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "localstack-data:/var/lib/localstack"
-  
-  # LocalStack Web UI for managing AWS services
-  localstack-ui:
-    image: localstack/localstack-ui:latest
-    container_name: locky-localstack-ui
-    ports:
-      - "3004:8080"
-    environment:
-      - LOCALSTACK_URL=http://localstack:4566
-    depends_on:
-      - localstack
+      - ./scripts:/etc/localstack/init/ready.d
+      - ./etc:/etc/localstack/init/etc:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - locky-network
+    dns:
+      - 10.88.0.53
 
-volumes:
-  localstack-data:
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    container_name: locky-mailserver
+    hostname: mail.locky.local
+    domainname: locky.local
+    environment:
+      - OVERRIDE_HOSTNAME=mail.locky.local
+      - DOMAINNAME=locky.local
+      - ONE_DIR=0
+      - SSL_TYPE=
+      - TLS_LEVEL=
+      - ENABLE_SPAMASSASSIN=0
+      - ENABLE_CLAMAV=0
+      - ENABLE_FAIL2BAN=0
+      - ENABLE_POSTGREY=0
+      - DMS_DEBUG=1
+      - PERMIT_DOCKER=network
+      - NETWORK_INTERFACE=eth0
+      - SMTP_ONLY=0
+      - ENABLE_POP3=0
+      - ENABLE_SASLAUTHD=0
+      - DOVECOT_INET_PROTOCOLS=ipv4
+      - POSTFIX_MESSAGE_SIZE_LIMIT=10485760
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    stop_grace_period: 1m
+    depends_on:
+      - dns
+    networks:
+      locky-network:
+        ipv4_address: 10.88.0.10
+    dns:
+      - 10.88.0.53
+    volumes:
+      - ./scripts/data/mailserver:/tmp/docker-mailserver
+    tmpfs:
+      - /var/mail
+      - /var/mail-state
+      - /var/log/mail
+
+  roundcube:
+    image: roundcube/roundcubemail:latest
+    container_name: locky-roundcube
+    ports:
+      - "3005:80"
+    environment:
+      - ROUNDCUBEMAIL_DEFAULT_HOST=mailserver
+      - ROUNDCUBEMAIL_DEFAULT_PORT=143
+      - ROUNDCUBEMAIL_SMTP_SERVER=mailserver
+      - ROUNDCUBEMAIL_SMTP_PORT=587
+      - ROUNDCUBEMAIL_SMTP_USER=%u
+      - ROUNDCUBEMAIL_SMTP_PASS=%p
+      - ROUNDCUBEMAIL_SMTP_AUTH_TYPE=LOGIN
+      - ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE=10M
+      - ROUNDCUBEMAIL_DB_TYPE=mysql
+      - ROUNDCUBEMAIL_DB_HOST=mysql
+      - ROUNDCUBEMAIL_DB_USER=user
+      - ROUNDCUBEMAIL_DB_PASSWORD=password
+      - ROUNDCUBEMAIL_DB_NAME=roundcube
+    extra_hosts:
+      - "mail.locky.local:10.88.0.10"
+    depends_on:
+      - mailserver
+      - mysql
+      - dns
+    restart: unless-stopped
+    networks:
+      locky-network:
+        ipv4_address: 10.88.0.11
+    dns:
+      - 10.88.0.53
+
+networks:
+  locky-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.88.0.0/24
+          gateway: 10.88.0.1

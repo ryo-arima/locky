@@ -36,7 +36,7 @@ git clone https://github.com/ryo-arima/locky.git
 cd locky
 
 # Start dependencies with Docker Compose
-docker-compose up -d
+docker compose up -d
 
 # Copy configuration
 cp etc/app.dev.yaml etc/app.yaml
@@ -194,11 +194,42 @@ make test
 go test -v -cover ./...
 ```
 
+## Ephemeral Mail/Test Environment (Experimental)
+
+An internal mail sandbox (Postfix/Dovecot via docker-mailserver + dnsmasq + Roundcube) can be fully recreated for browser‑based tests. All data is ephemeral.
+
+```bash
+# Full teardown & rebuild (containers, network, volumes) + account provisioning
+./scripts/main.sh env recreate
+
+# Access Roundcube (webmail)
+open http://localhost:3005  # or manually open in browser
+
+# Example login
+#   user: test1@locky.local
+#   pass: TestPassword123!
+```
+
+Send a test message from test1 to test2 and verify it appears in test2's inbox after switching accounts. Logs:
+
+```bash
+# Postfix / Dovecot logs (mailserver container)
+docker compose logs -f mailserver
+```
+
+To iterate after config changes always use force recreate:
+
+```bash
+docker compose up -d --force-recreate mailserver roundcube
+```
+
+If authentication fails, rerun the full recreate script to ensure accounts are re-applied cleanly.
+
 ### Documentation
 
 ```bash
 # Build documentation
-./scripts/build-docs.sh
+./scripts/main.sh docs build
 
 # Serve documentation locally
 cd docs/dist && python3 -m http.server 8000

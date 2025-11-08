@@ -44,7 +44,7 @@ See `.env.example` for a complete example of environment variable configuration.
    ```
 
 2. **Initialize Secrets Manager** (automatically runs on container start):
-   The `scripts/init-secrets.sh` script is automatically executed when LocalStack starts, creating the `locky/config/app` secret with the configuration from `etc/app.dev.yaml`.
+   The secrets initialization is handled by `./scripts/main.sh secrets init`, which creates the `locky/config/app` secret with the configuration from `etc/app.dev.yaml`.
 
 3. **Verify secret creation** (optional):
    ```bash

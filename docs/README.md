@@ -80,7 +80,7 @@ open http://localhost:8080/swagger/index.html
 
 ```bash
 # Generate architecture diagram
-./scripts/generate-architecture.sh
+./scripts/main.sh docs architecture
 
 # Build mdBook
 cd docs/books && mdbook build

@@ -1,0 +1,11 @@
+admin@locky.local|{SHA512-CRYPT}$6$kgkcVFs5VyA14mxE$LjYFSGT.4Tqxt4evFGKB0bvmKqOQrTMj6izoydnGubhe0IeXcYtcsvTEi.z.MgwgRDgZ7/zQMJFJ3U226rSY/0
+developer@locky.local|{SHA512-CRYPT}$6$3qcCLP87f.aJ/TwL$B5haM8ap6GqzuGddMtVdnN/WPcjbMgsT023j3UEegyIwVg4gQprjwtzXQyTYlgjhYPm6KZAYWxJf9mmJsl8So/
+noreply@locky.local|{SHA512-CRYPT}$6$zdCu5LythUN0yXdG$QHotmkZ9ybk7qMKgmUfsA5i7XRb1VeuLf0HfT7RsPlwZLFzLiYq7IlPGrifgU3ZcEmPClFG9E4mRXar.vJ1.p0
+support@locky.local|{SHA512-CRYPT}$6$6vHO.7LDKmcFhB.F$g02L3QN9i6RTMqDA7hNAfaVgbQX4E6A4y6GrZCevM8fG1PEOd05oJK5gSK0q8y1eqjmRmwQyVDOagGpHD1WJI.
+test1@locky.local|{SHA512-CRYPT}$6$1gSrelikwn5Tw6Jq$4VBwYvx6MZZr0itRgSWRk31nJ3.rWvOaOYg6RFmnDoSZCIQPS8H4ZkdbK9XzRdlG9crU0a7YFMYyvVK0vSMvg/
+test2@locky.local|{SHA512-CRYPT}$6$PKA9/2nkWq4Qmr1c$LFogvB.PTWUyT553u5ZB90fVoRDUeMlcHKinZKbNgpyY3rxQZ8A74oWJSqOFo9pGhU74oM7UV0qa7vAl9p6aH1
+test3@locky.local|{SHA512-CRYPT}$6$nasK83d0OSPQSkYF$38zkn55ycaFWMJB8w/4b8XrZPZJOpG7LT.pGYThb6fb/6o0rer39AdAVy4dvRXMX/ix.dM4HwlWnnGC6qCkm2/
+test4@locky.local|{SHA512-CRYPT}$6$PxH6.TJqiDa4i2h.$w/bJ47PSGlizW0KZcXVMPMeA18J6kr5YQAy7x1Kr.v6NgT1Y1WeLZe9yAIsqyDsb6nnRuEKfQrOnmGNQZlsuw1
+test5@locky.local|{SHA512-CRYPT}$6$KflrpWJ5PqkvIpim$obfr/kZdaJO6c8rUc/5xkxkyVQa6GMA44Jh9AyORavyGwhlaPgV5YZmRsFTWoq7L7FPpPd6cWyR157sbjb5Q6/
+user1@locky.local|{SHA512-CRYPT}$6$1bmkTBbLPunp4waa$HaMcDFuBHmWVxk/hBRFLpSkR3kUk3/2GjcZF07/Y53hJZ8oX1PKXrRVDSqe2VKfQi/rA/UhS6oJYm.Z/V3g5E1
+user2@locky.local|{SHA512-CRYPT}$6$jaG/4VGa8GGJyMiq$iFFjwj4vJTrPkBtpqLaj1L/7vSs0NBWYLblSnDF1o3NLolQlVdgrWBjdt7l5XT32nZRBMMslakDMwFTjorRTG/

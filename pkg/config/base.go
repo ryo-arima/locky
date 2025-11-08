@@ -103,6 +103,15 @@ type Server struct {
 	LogLevel  string `yaml:"log_level"` // Added: debug / info / warn / error
 }
 
+type Mail struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	From     string `yaml:"from"`
+	UseTLS   bool   `yaml:"use_tls"`
+}
+
 type Common struct {
 }
 
@@ -116,6 +125,7 @@ type Application struct {
 	Common Common `yaml:"Common"`
 	Server Server `yaml:"Server"`
 	Client Client `yaml:"Client"`
+	Mail   Mail   `yaml:"Mail"`
 }
 
 type Admin struct {
