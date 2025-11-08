@@ -22,6 +22,9 @@ type CommonUsecase interface {
 	VerifyPassword(hashedPassword, password string) error
 	ValidatePasswordStrength(password string) error
 	DeleteTokenCache(token string)
+	SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error
+	SendWelcomeEmail(ctx context.Context, to, name string) error
+	SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error
 }
 
 type commonUsecase struct {
@@ -84,4 +87,16 @@ func (uc *commonUsecase) ValidatePasswordStrength(password string) error {
 
 func (uc *commonUsecase) DeleteTokenCache(token string) {
 	uc.commonRepo.DeleteTokenCache(token)
+}
+
+func (uc *commonUsecase) SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error {
+	return uc.commonRepo.SendEmail(ctx, to, subject, body, isHTML)
+}
+
+func (uc *commonUsecase) SendWelcomeEmail(ctx context.Context, to, name string) error {
+	return uc.commonRepo.SendWelcomeEmail(ctx, to, name)
+}
+
+func (uc *commonUsecase) SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error {
+	return uc.commonRepo.SendPasswordResetEmail(ctx, to, name, resetURL)
 }

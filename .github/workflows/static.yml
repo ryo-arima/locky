@@ -20,7 +20,8 @@ on:
     branches: ["main"]
     paths:
       - 'docs/**'
-      - 'scripts/build-docs.sh'
+      - 'scripts/main.sh'
+      - 'scripts/lib/docs.sh'
       - '.github/workflows/static.yml'
 
   # Allows you to run this workflow manually from the Actions tab
@@ -76,8 +77,8 @@ jobs:
       - name: Generate architecture diagrams
         run: |
           echo "Generating architecture diagrams..."
-          chmod +x scripts/generate-architecture.sh
-          ./scripts/generate-architecture.sh || {
+          chmod +x scripts/main.sh
+          ./scripts/main.sh docs architecture || {
             echo "Warning: Architecture diagram generation failed, continuing..."
             exit 0
           }
@@ -85,8 +86,8 @@ jobs:
       - name: Build documentation
         run: |
           echo "Building documentation..."
-          chmod +x scripts/build-docs.sh
-          ./scripts/build-docs.sh
+          chmod +x scripts/main.sh
+          ./scripts/main.sh docs build
           echo "Documentation build complete!"
           ls -la docs/dist/
       

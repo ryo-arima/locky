@@ -33,6 +33,13 @@ dev-down:
 	@echo "Stopping development environment..."
 	@docker-compose down
 
+# Full ephemeral mail stack recreate (dns, mysql, mailserver, roundcube)
+.PHONY: mail-recreate
+mail-recreate:
+	@echo "Recreating full mail test environment (ephemeral) ..."
+	@bash ./scripts/main.sh env recreate
+	@echo "Done. Roundcube: http://localhost:3005"
+
 # Show logs for development services
 dev-logs:
 	@docker-compose logs -f swagger-ui godoc
