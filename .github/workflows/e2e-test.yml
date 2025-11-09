@@ -3,8 +3,6 @@ name: E2E Tests
 on:
   pull_request:
     branches: [ main, dev ]
-  push:
-    branches: [ dev ]
   workflow_dispatch:
 
 jobs:
@@ -35,6 +33,36 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
+      - name: Check Go formatting
+        run: |
+          echo "Checking Go code formatting..."
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "The following files are not formatted:"
+            gofmt -l .
+            echo "Please run 'gofmt -w .' to format your code"
+            exit 1
+          fi
+          echo "All Go files are properly formatted"
+
+      - name: Run Go vet
+        run: |
+          echo "Running go vet..."
+          go vet ./...
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+
+      - name: Run golangci-lint
+        run: |
+          echo "Running golangci-lint..."
+          $(go env GOPATH)/bin/golangci-lint run --timeout=5m ./...
+
+      - name: Build server
+        run: |
+          echo "Building server..."
+          go build -v -o .bin/locky-server ./cmd/server/main.go
 
       - name: Verify test configuration files
         run: |
