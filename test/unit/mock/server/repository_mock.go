@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/server/repository"
@@ -13,125 +14,126 @@ import (
 // MockUserRepository implements repository.UserRepository for testing
 type MockUserRepository struct {
 	Users           []model.Users
-	GetListFunc     func(ctx context.Context, filter repository.UserQueryFilter) ([]model.Users, error)
-	GetByIDFunc     func(ctx context.Context, id uint) (*model.Users, error)
-	CreateFunc      func(ctx context.Context, user *model.Users) error
-	UpdateFunc      func(ctx context.Context, user *model.Users) error
-	DeleteFunc      func(ctx context.Context, id uint) error
-	CountFunc       func(ctx context.Context, filter repository.UserQueryFilter) (int64, error)
+	GetUsersFunc    func(c *gin.Context) []model.Users
+	CreateUserFunc  func(c *gin.Context, user model.Users) model.Users
+	UpdateUserFunc  func(c *gin.Context, user model.Users) model.Users
+	DeleteUserFunc  func(c *gin.Context, user model.Users) model.Users
+	ListUsersFunc   func(c *gin.Context, filter repository.UserQueryFilter) ([]model.Users, error)
+	CountUsersFunc  func(c *gin.Context, filter repository.UserQueryFilter) (int64, error)
 }
 
-func (m *MockUserRepository) GetUserList(ctx context.Context, filter repository.UserQueryFilter) ([]model.Users, error) {
-	if m.GetListFunc != nil {
-		return m.GetListFunc(ctx, filter)
+func (m *MockUserRepository) GetUsers(c *gin.Context) []model.Users {
+	if m.GetUsersFunc != nil {
+		return m.GetUsersFunc(c)
 	}
-	result := []model.Users{}
-	for _, u := range m.Users {
-		if filter.Email != nil && u.Email != *filter.Email {
-			continue
-		}
-		if filter.Name != nil && u.Name != *filter.Name {
-			continue
-		}
-		if filter.UUID != nil && u.UUID != *filter.UUID {
-			continue
-		}
-		result = append(result, u)
-	}
-	return result, nil
+	return m.Users
 }
 
-func (m *MockUserRepository) GetUserByID(ctx context.Context, id uint) (*model.Users, error) {
-	if m.GetByIDFunc != nil {
-		return m.GetByIDFunc(ctx, id)
-	}
-	for _, u := range m.Users {
-		if u.ID == id {
-			return &u, nil
-		}
-	}
-	return nil, nil
-}
-
-func (m *MockUserRepository) CreateUser(ctx context.Context, user *model.Users) error {
-	if m.CreateFunc != nil {
-		return m.CreateFunc(ctx, user)
+func (m *MockUserRepository) CreateUser(c *gin.Context, user model.Users) model.Users {
+	if m.CreateUserFunc != nil {
+		return m.CreateUserFunc(c, user)
 	}
 	user.ID = uint(len(m.Users) + 1)
-	m.Users = append(m.Users, *user)
-	return nil
+	m.Users = append(m.Users, user)
+	return user
 }
 
-func (m *MockUserRepository) UpdateUser(ctx context.Context, user *model.Users) error {
-	if m.UpdateFunc != nil {
-		return m.UpdateFunc(ctx, user)
+func (m *MockUserRepository) UpdateUser(c *gin.Context, user model.Users) model.Users {
+	if m.UpdateUserFunc != nil {
+		return m.UpdateUserFunc(c, user)
 	}
 	for i, u := range m.Users {
 		if u.ID == user.ID {
-			m.Users[i] = *user
-			return nil
+			m.Users[i] = user
+			return user
 		}
 	}
-	return nil
+	return model.Users{}
 }
 
-func (m *MockUserRepository) DeleteUser(ctx context.Context, id uint) error {
-	if m.DeleteFunc != nil {
-		return m.DeleteFunc(ctx, id)
+func (m *MockUserRepository) DeleteUser(c *gin.Context, user model.Users) model.Users {
+	if m.DeleteUserFunc != nil {
+		return m.DeleteUserFunc(c, user)
 	}
 	for i, u := range m.Users {
-		if u.ID == id {
+		if u.ID == user.ID {
 			m.Users = append(m.Users[:i], m.Users[i+1:]...)
-			return nil
+			return user
 		}
 	}
-	return nil
+	return model.Users{}
 }
 
-func (m *MockUserRepository) CountUsers(ctx context.Context, filter repository.UserQueryFilter) (int64, error) {
-	if m.CountFunc != nil {
-		return m.CountFunc(ctx, filter)
+func (m *MockUserRepository) ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]model.Users, error) {
+	if m.ListUsersFunc != nil {
+		return m.ListUsersFunc(c, filter)
+	}
+	return m.Users, nil
+}
+
+func (m *MockUserRepository) CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error) {
+	if m.CountUsersFunc != nil {
+		return m.CountUsersFunc(c, filter)
 	}
 	return int64(len(m.Users)), nil
 }
 
 // MockGroupRepository implements repository.GroupRepository for testing
 type MockGroupRepository struct {
-	Groups      []model.Groups
-	GetListFunc func(ctx context.Context, filter repository.GroupQueryFilter) ([]model.Groups, error)
-	CreateFunc  func(ctx context.Context, group *model.Groups) error
-	UpdateFunc  func(ctx context.Context, group *model.Groups) error
-	DeleteFunc  func(ctx context.Context, id uint) error
+	Groups           []model.Groups
+	GetGroupsFunc    func(c *gin.Context) []model.Groups
+	GetGroupByUUIDFunc func(c *gin.Context, uuid string) (model.Groups, error)
+	GetGroupByIDFunc func(c *gin.Context, id uint) (model.Groups, error)
+	CreateGroupFunc  func(c *gin.Context, group *model.Groups) error
+	UpdateGroupFunc  func(c *gin.Context, group *model.Groups) error
+	DeleteGroupFunc  func(c *gin.Context, uuid string) error
+	ListGroupsFunc   func(c *gin.Context, filter repository.GroupQueryFilter) ([]model.Groups, error)
+	CountGroupsFunc  func(c *gin.Context, filter repository.GroupQueryFilter) (int64, error)
 }
 
-func (m *MockGroupRepository) GetGroupList(ctx context.Context, filter repository.GroupQueryFilter) ([]model.Groups, error) {
-	if m.GetListFunc != nil {
-		return m.GetListFunc(ctx, filter)
+func (m *MockGroupRepository) GetGroups(c *gin.Context) []model.Groups {
+	if m.GetGroupsFunc != nil {
+		return m.GetGroupsFunc(c)
 	}
-	return m.Groups, nil
+	return m.Groups
 }
 
-func (m *MockGroupRepository) GetGroupByID(ctx context.Context, id uint) (*model.Groups, error) {
+func (m *MockGroupRepository) GetGroupByUUID(c *gin.Context, uuid string) (model.Groups, error) {
+	if m.GetGroupByUUIDFunc != nil {
+		return m.GetGroupByUUIDFunc(c, uuid)
+	}
 	for _, g := range m.Groups {
-		if g.ID == id {
-			return &g, nil
+		if g.UUID == uuid {
+			return g, nil
 		}
 	}
-	return nil, nil
+	return model.Groups{}, fmt.Errorf("group not found")
 }
 
-func (m *MockGroupRepository) CreateGroup(ctx context.Context, group *model.Groups) error {
-	if m.CreateFunc != nil {
-		return m.CreateFunc(ctx, group)
+func (m *MockGroupRepository) GetGroupByID(c *gin.Context, id uint) (model.Groups, error) {
+	if m.GetGroupByIDFunc != nil {
+		return m.GetGroupByIDFunc(c, id)
+	}
+	for _, g := range m.Groups {
+		if g.ID == id {
+			return g, nil
+		}
+	}
+	return model.Groups{}, fmt.Errorf("group not found")
+}
+
+func (m *MockGroupRepository) CreateGroup(c *gin.Context, group *model.Groups) interface{} {
+	if m.CreateGroupFunc != nil {
+		return m.CreateGroupFunc(c, group)
 	}
 	group.ID = uint(len(m.Groups) + 1)
 	m.Groups = append(m.Groups, *group)
 	return nil
 }
 
-func (m *MockGroupRepository) UpdateGroup(ctx context.Context, group *model.Groups) error {
-	if m.UpdateFunc != nil {
-		return m.UpdateFunc(ctx, group)
+func (m *MockGroupRepository) UpdateGroup(c *gin.Context, group *model.Groups) interface{} {
+	if m.UpdateGroupFunc != nil {
+		return m.UpdateGroupFunc(c, group)
 	}
 	for i, g := range m.Groups {
 		if g.ID == group.ID {
@@ -142,12 +144,12 @@ func (m *MockGroupRepository) UpdateGroup(ctx context.Context, group *model.Grou
 	return nil
 }
 
-func (m *MockGroupRepository) DeleteGroup(ctx context.Context, id uint) error {
-	if m.DeleteFunc != nil {
-		return m.DeleteFunc(ctx, id)
+func (m *MockGroupRepository) DeleteGroup(c *gin.Context, uuid string) interface{} {
+	if m.DeleteGroupFunc != nil {
+		return m.DeleteGroupFunc(c, uuid)
 	}
 	for i, g := range m.Groups {
-		if g.ID == id {
+		if g.UUID == uuid {
 			m.Groups = append(m.Groups[:i], m.Groups[i+1:]...)
 			return nil
 		}
@@ -155,49 +157,79 @@ func (m *MockGroupRepository) DeleteGroup(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (m *MockGroupRepository) CountGroups(ctx context.Context, filter repository.GroupQueryFilter) (int64, error) {
+func (m *MockGroupRepository) ListGroups(c *gin.Context, filter repository.GroupQueryFilter) ([]model.Groups, error) {
+	if m.ListGroupsFunc != nil {
+		return m.ListGroupsFunc(c, filter)
+	}
+	return m.Groups, nil
+}
+
+func (m *MockGroupRepository) CountGroups(c *gin.Context, filter repository.GroupQueryFilter) (int64, error) {
+	if m.CountGroupsFunc != nil {
+		return m.CountGroupsFunc(c, filter)
+	}
 	return int64(len(m.Groups)), nil
 }
 
 // MockMemberRepository implements repository.MemberRepository for testing
 type MockMemberRepository struct {
-	Members     []model.Members
-	GetListFunc func(ctx context.Context, filter repository.MemberQueryFilter) ([]model.Members, error)
-	CreateFunc  func(ctx context.Context, member *model.Members) error
-	DeleteFunc  func(ctx context.Context, id uint) error
+	Members           []model.Members
+	GetMembersFunc    func(c *gin.Context) []model.Members
+	CreateMemberFunc  func(c *gin.Context, member *model.Members) error
+	UpdateMemberFunc  func(c *gin.Context, member *model.Members) error
+	DeleteMemberFunc  func(c *gin.Context, uuid string) error
+	GetMemberByUUIDFunc func(c *gin.Context, uuid string) (model.Members, error)
+	ListMembersFunc   func(c *gin.Context, filter repository.MemberQueryFilter) ([]model.Members, error)
+	CountMembersFunc  func(c *gin.Context, filter repository.MemberQueryFilter) (int64, error)
 }
 
-func (m *MockMemberRepository) GetMemberList(ctx context.Context, filter repository.MemberQueryFilter) ([]model.Members, error) {
-	if m.GetListFunc != nil {
-		return m.GetListFunc(ctx, filter)
+func (m *MockMemberRepository) GetMembers(c *gin.Context) []model.Members {
+	if m.GetMembersFunc != nil {
+		return m.GetMembersFunc(c)
 	}
-	return m.Members, nil
+	return m.Members
 }
 
-func (m *MockMemberRepository) GetMemberByID(ctx context.Context, id uint) (*model.Members, error) {
+func (m *MockMemberRepository) GetMemberByUUID(c *gin.Context, uuid string) (model.Members, error) {
+	if m.GetMemberByUUIDFunc != nil {
+		return m.GetMemberByUUIDFunc(c, uuid)
+	}
 	for _, mem := range m.Members {
-		if mem.ID == id {
-			return &mem, nil
+		if mem.UUID == uuid {
+			return mem, nil
 		}
 	}
-	return nil, nil
+	return model.Members{}, fmt.Errorf("member not found")
 }
 
-func (m *MockMemberRepository) CreateMember(ctx context.Context, member *model.Members) error {
-	if m.CreateFunc != nil {
-		return m.CreateFunc(ctx, member)
+func (m *MockMemberRepository) CreateMember(c *gin.Context, member *model.Members) interface{} {
+	if m.CreateMemberFunc != nil {
+		return m.CreateMemberFunc(c, member)
 	}
 	member.ID = uint(len(m.Members) + 1)
 	m.Members = append(m.Members, *member)
 	return nil
 }
 
-func (m *MockMemberRepository) DeleteMember(ctx context.Context, id uint) error {
-	if m.DeleteFunc != nil {
-		return m.DeleteFunc(ctx, id)
+func (m *MockMemberRepository) UpdateMember(c *gin.Context, member *model.Members) interface{} {
+	if m.UpdateMemberFunc != nil {
+		return m.UpdateMemberFunc(c, member)
 	}
 	for i, mem := range m.Members {
-		if mem.ID == id {
+		if mem.ID == member.ID {
+			m.Members[i] = *member
+			return nil
+		}
+	}
+	return nil
+}
+
+func (m *MockMemberRepository) DeleteMember(c *gin.Context, uuid string) interface{} {
+	if m.DeleteMemberFunc != nil {
+		return m.DeleteMemberFunc(c, uuid)
+	}
+	for i, mem := range m.Members {
+		if mem.UUID == uuid {
 			m.Members = append(m.Members[:i], m.Members[i+1:]...)
 			return nil
 		}
@@ -205,7 +237,17 @@ func (m *MockMemberRepository) DeleteMember(ctx context.Context, id uint) error 
 	return nil
 }
 
-func (m *MockMemberRepository) CountMembers(ctx context.Context, filter repository.MemberQueryFilter) (int64, error) {
+func (m *MockMemberRepository) ListMembers(c *gin.Context, filter repository.MemberQueryFilter) ([]model.Members, error) {
+	if m.ListMembersFunc != nil {
+		return m.ListMembersFunc(c, filter)
+	}
+	return m.Members, nil
+}
+
+func (m *MockMemberRepository) CountMembers(c *gin.Context, filter repository.MemberQueryFilter) (int64, error) {
+	if m.CountMembersFunc != nil {
+		return m.CountMembersFunc(c, filter)
+	}
 	return int64(len(m.Members)), nil
 }
 
