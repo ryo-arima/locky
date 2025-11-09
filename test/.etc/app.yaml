@@ -1,0 +1,50 @@
+Application:
+  Common: {}
+  Server:
+    port: 8000
+    admin:
+      emails:
+        - "admin@locky.local"
+    jwt_secret: "CHANGE_THIS_JWT_SECRET_IN_PRODUCTION"
+    log_level: "debug"
+    jwt:
+      key: "secret"
+    tmp:
+      letters: ""
+      length: 6
+  Client:
+    HomePath: "test/.locky"
+    ServerEndpoint: "http://localhost:8000"
+    UserEmail: "test1@locky.local"
+    UserPassword: "TestPassword123!"
+    HomeDir: "test/.locky"
+    TemplatesDir: "pkg/client/repository/templates/"
+  Mail:
+    host: "localhost"
+    port: 587
+    username: "noreply@locky.local"
+    password: "NoReplyPassword123!"
+    from: "noreply@locky.local"
+    use_tls: true
+
+MySQL:
+  host: "localhost"
+  user: "user"
+  pass: "password"
+  port: 3306
+  db: "locky"
+
+Redis:
+  host: "localhost"
+  port: 6379
+  user: "default"
+  pass: "mysecretpassword"
+  db: 0
+
+Logger:
+  component: "locky"
+  service: "locky-server"
+  level: "DEBUG"
+  structured: false
+  enable_caller: true
+  output: "stdout"

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/smtp"
 	"os"
 	"strings"
 	"time"
@@ -18,7 +19,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
-	"github.com/ryo-arima/locky/pkg/mail"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -44,7 +44,7 @@ type CommonRepository interface {
 type commonRepository struct {
 	BaseConfig  config.BaseConfig
 	RedisClient *redis.Client
-	MailSender  *mail.Sender
+	MailConfig  *config.Mail
 }
 
 func (commonRepository *commonRepository) GetBaseConfig() config.BaseConfig {
@@ -412,56 +412,65 @@ func (cr *commonRepository) DeleteTokenCache(token string) {
 	_ = cr.RedisClient.Del(context.Background(), cr.tokenCacheKey(token)).Err()
 }
 
-// SendEmail sends an email using the configured mail sender
+// SendEmail sends an email using the configured mail settings
 func (cr *commonRepository) SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error {
-	if cr.MailSender == nil {
+	if cr.MailConfig == nil || cr.MailConfig.Host == "" {
 		return errors.New("mail sender not configured")
 	}
 
-	msg := mail.Message{
-		To:      []string{to},
-		Subject: subject,
-		Body:    body,
-		IsHTML:  isHTML,
+	auth := smtp.PlainAuth("", cr.MailConfig.Username, cr.MailConfig.Password, cr.MailConfig.Host)
+
+	contentType := "text/plain"
+	if isHTML {
+		contentType = "text/html"
 	}
 
-	return cr.MailSender.Send(msg)
+	message := fmt.Sprintf("From: %s\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"Content-Type: %s; charset=UTF-8\r\n"+
+		"\r\n"+
+		"%s",
+		cr.MailConfig.From, to, subject, contentType, body)
+
+	addr := fmt.Sprintf("%s:%d", cr.MailConfig.Host, cr.MailConfig.Port)
+	return smtp.SendMail(addr, auth, cr.MailConfig.From, []string{to}, []byte(message))
 }
 
 // SendWelcomeEmail sends a welcome email to a new user
 func (cr *commonRepository) SendWelcomeEmail(ctx context.Context, to, name string) error {
-	if cr.MailSender == nil {
+	if cr.MailConfig == nil || cr.MailConfig.Host == "" {
 		return errors.New("mail sender not configured")
 	}
-	return cr.MailSender.SendWelcomeEmail(to, name)
+
+	subject := "Welcome to Locky!"
+	body := fmt.Sprintf("Hello %s,\n\nWelcome to Locky! Your account has been created successfully.\n\nBest regards,\nThe Locky Team", name)
+
+	return cr.SendEmail(ctx, to, subject, body, false)
 }
 
 // SendPasswordResetEmail sends a password reset email to a user
 func (cr *commonRepository) SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error {
-	if cr.MailSender == nil {
+	if cr.MailConfig == nil || cr.MailConfig.Host == "" {
 		return errors.New("mail sender not configured")
 	}
-	return cr.MailSender.SendPasswordResetEmail(to, name, resetURL)
+
+	subject := "Password Reset Request"
+	body := fmt.Sprintf("Hello %s,\n\nYou have requested to reset your password. Please click the link below to reset your password:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nThe Locky Team", name, resetURL)
+
+	return cr.SendEmail(ctx, to, subject, body, false)
 }
 
 func NewCommonRepository(baseConfig config.BaseConfig, redisClient *redis.Client) CommonRepository {
-	// Initialize mail sender from config
-	var mailSender *mail.Sender
+	// Initialize mail config reference from base config
+	var mailConfig *config.Mail
 	if baseConfig.YamlConfig.Application.Mail.Host != "" {
-		mailConfig := mail.Config{
-			Host:     baseConfig.YamlConfig.Application.Mail.Host,
-			Port:     baseConfig.YamlConfig.Application.Mail.Port,
-			Username: baseConfig.YamlConfig.Application.Mail.Username,
-			Password: baseConfig.YamlConfig.Application.Mail.Password,
-			From:     baseConfig.YamlConfig.Application.Mail.From,
-			UseTLS:   baseConfig.YamlConfig.Application.Mail.UseTLS,
-		}
-		mailSender = mail.NewSender(mailConfig)
+		mailConfig = &baseConfig.YamlConfig.Application.Mail
 	}
 
 	return &commonRepository{
 		BaseConfig:  baseConfig,
 		RedisClient: redisClient,
-		MailSender:  mailSender,
+		MailConfig:  mailConfig,
 	}
 }

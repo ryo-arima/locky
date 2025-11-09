@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const RequestIDKey = "request_id"
+const RequestIDKey = "requestID"
 
 // RequestID middleware generates a unique request ID for each request
 func RequestID() gin.HandlerFunc {

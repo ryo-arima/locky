@@ -1,0 +1,126 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+  workflow_dispatch:
+
+jobs:
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    env:
+      DOCKER_PLATFORM: linux/amd64
+      GO_VERSION: '1.22'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Check Go formatting
+        run: |
+          echo "Checking Go code formatting..."
+          unformatted=$(gofmt -l . | grep -v '^vendor/' || true)
+          if [ -n "$unformatted" ]; then
+            echo "The following files are not formatted:"
+            echo "$unformatted"
+            echo "Please run 'gofmt -w .' to format your code"
+            exit 1
+          fi
+          echo "All Go files are properly formatted"
+
+      - name: Run Go vet
+        run: |
+          echo "Running go vet..."
+          go vet $(go list ./... | grep -v /vendor/ | grep -v /test/unit/)
+
+      - name: Build server
+        run: |
+          echo "Building server..."
+          go build -v -o .bin/locky-server ./cmd/server/main.go
+
+      - name: Verify test configuration files
+        run: |
+          echo "Checking test configuration files..."
+          ls -la test/.etc/
+          ls -la etc/casbin/locky/
+          echo "Test configuration verified"
+
+      - name: Start Docker services
+        run: |
+          echo "Starting MySQL and Redis for E2E tests..."
+          docker compose up -d mysql redis
+          echo "Waiting for services to be ready..."
+          sleep 10
+          
+          # Wait for MySQL to be ready
+          for i in {1..30}; do
+            if docker compose exec -T mysql mysqladmin ping -h localhost -u root -proot &> /dev/null; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
+          
+          # Grant privileges for user from all hosts
+          echo "Granting MySQL privileges for test user..."
+          docker compose exec -T mysql mysql -u root -proot -e "CREATE USER IF NOT EXISTS 'user'@'%' IDENTIFIED BY 'password';"
+          docker compose exec -T mysql mysql -u root -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'user'@'%';"
+          docker compose exec -T mysql mysql -u root -proot -e "FLUSH PRIVILEGES;"
+          
+          # Wait for Redis to be ready
+          for i in {1..30}; do
+            if docker compose exec -T redis redis-cli -a mysecretpassword ping &> /dev/null; then
+              echo "Redis is ready!"
+              break
+            fi
+            echo "Waiting for Redis... ($i/30)"
+            sleep 2
+          done
+
+      - name: Build client binaries
+        run: |
+          echo "Building client binaries..."
+          mkdir -p bin
+          go build -o bin/locky-admin ./cmd/client/admin
+          go build -o bin/locky-app ./cmd/client/app
+          go build -o bin/locky-anonymous ./cmd/client/anonymous
+          chmod +x bin/*
+          ls -la bin/
+
+      - name: Run E2E tests
+        run: |
+          echo "Running E2E tests..."
+          go test -v -timeout 15m ./test/e2e/testcase/
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: |
+          echo "=== MySQL logs ==="
+          docker compose logs mysql
+          echo "=== Redis logs ==="
+          docker compose logs redis
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Stopping Docker services..."
+          docker compose down -v || true

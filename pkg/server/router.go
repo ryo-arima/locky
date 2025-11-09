@@ -66,6 +66,11 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 
 	router := gin.Default()
 
+	// Health check endpoint (no authentication required)
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+
 	loggerMW := middleware.LoggerWithConfig(conf)
 	requestIDMW := middleware.RequestID()
 
@@ -82,7 +87,11 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 		auth.DELETE("/tokens", commonControllerForPublic.Logout)              // Revoke token (logout)
 		auth.GET("/tokens/validate", commonControllerForPublic.ValidateToken) // Validate token
 		auth.POST("/tokens/refresh", commonControllerForPublic.RefreshToken)  // Refresh token
-		auth.GET("/tokens/user", commonControllerForPublic.GetUserInfo)       // Get user info from token
+
+		// GetUserInfo requires authentication middleware
+		authWithMW := auth.Group("")
+		authWithMW.Use(middleware.ForInternal(commonRepository, appEnforcer))
+		authWithMW.GET("/tokens/user", commonControllerForPublic.GetUserInfo) // Get user info from token
 	}
 
 	// Public API - No authentication required (read-only discovery)

@@ -2,9 +2,8 @@
 etc/app.yaml
 etc/app.prod.yaml
 etc/app.local.yaml
-*.env
-*.env.local
-*.env.production
+.env.local
+.env.production
 
 # Generated files
 generated/

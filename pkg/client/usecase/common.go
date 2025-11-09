@@ -19,7 +19,7 @@ type CommonUsecase interface {
 	Login(request request.LoginRequest) response.LoginResponse
 	RefreshToken(refreshToken string) response.RefreshTokenResponse
 	Logout(accessToken string) response.CommonResponse
-	ValidateToken(accessToken string) response.CommonResponse
+	ValidateToken(accessToken string) response.ValidateTokenResponse
 	GetUserInfo(accessToken string) response.CommonResponse
 }
 
@@ -40,7 +40,7 @@ func (u *commonUsecase) RefreshToken(refreshToken string) response.RefreshTokenR
 func (u *commonUsecase) Logout(accessToken string) response.CommonResponse {
 	return u.repo.Logout(accessToken)
 }
-func (u *commonUsecase) ValidateToken(accessToken string) response.CommonResponse {
+func (u *commonUsecase) ValidateToken(accessToken string) response.ValidateTokenResponse {
 	return u.repo.ValidateToken(accessToken)
 }
 func (u *commonUsecase) GetUserInfo(accessToken string) response.CommonResponse {

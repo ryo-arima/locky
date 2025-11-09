@@ -4,6 +4,7 @@ A robust Role-Based Access Control (RBAC) service built with Go, providing compr
 
 [![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![E2E Tests](https://github.com/ryo-arima/locky/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/ryo-arima/locky/actions/workflows/e2e-test.yml)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-success)](https://ryo-arima.github.io/locky/)
 
 ## Features
@@ -186,6 +187,8 @@ go build -o .bin/locky-client-anonymous ./cmd/client/anonymous/main.go
 
 ### Testing
 
+#### Unit Tests
+
 ```bash
 # Run tests
 make test
@@ -193,6 +196,60 @@ make test
 # Run with coverage
 go test -v -cover ./...
 ```
+
+#### E2E Tests
+
+E2E tests verify the entire system including server, database, Redis, and CLI clients.
+
+**Prerequisites:**
+- Docker & Docker Compose
+- Go 1.24+
+
+**Platform Configuration:**
+
+For Apple Silicon (M1/M2/M3) Macs:
+```bash
+# Create .env.local (ignored by git)
+echo "DOCKER_PLATFORM=linux/arm64" > .env.local
+```
+
+For Intel Macs and Linux x86_64:
+```bash
+# Create .env.local (ignored by git)
+echo "DOCKER_PLATFORM=linux/amd64" > .env.local
+```
+
+**Run E2E Tests:**
+
+```bash
+# 1. Start dependencies (MySQL and Redis)
+docker compose up -d mysql redis
+
+# 2. Wait for services to be ready (about 10 seconds)
+sleep 10
+
+# 3. Build CLI binaries
+mkdir -p bin
+go build -o bin/locky-admin ./cmd/client/admin
+go build -o bin/locky-app ./cmd/client/app
+go build -o bin/locky-anonymous ./cmd/client/anonymous
+
+# 4. Run E2E tests
+go test -v -timeout 15m ./test/e2e/testcase/
+
+# 5. Cleanup
+docker compose down -v
+```
+
+**Test Coverage:**
+- ✅ Authentication Flow (Login, Token validation, Refresh, Logout)
+- ✅ App User Group CRUD
+- ✅ User/Role Read Operations
+- ✅ Anonymous User Registration
+- ⏭️ Admin User/Group/Role CRUD (requires admin role assignment)
+
+**GitHub Actions:**
+E2E tests run automatically on pull requests and pushes to `dev` branch using `linux/amd64` platform.
 
 ## Ephemeral Mail/Test Environment (Experimental)
 
@@ -348,6 +405,58 @@ Contributions are welcome! Please read our [Contributing Guide](https://ryo-arim
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Testing
+
+### E2E Tests
+
+End-to-end tests are located in `test/e2e/testcase/` and test the complete application stack.
+
+#### Running E2E Tests
+
+**1. Start required services (MySQL and Redis only):**
+```bash
+# For ARM64 (Mac M1/M2/M3, etc.)
+docker compose up -d mysql redis
+
+# For AMD64 (GitHub Actions, x86_64 Linux, etc.)
+DOCKER_PLATFORM=linux/amd64 docker compose up -d mysql redis
+```
+
+**2. Build CLI binaries:**
+```bash
+make build
+```
+
+**3. Run E2E tests:**
+```bash
+# Run all E2E tests
+go test -v ./test/e2e/testcase/
+
+# Run specific test
+go test -v ./test/e2e/testcase/ -run TestAuthenticationFlow
+```
+
+**4. Stop services:**
+```bash
+docker compose down
+```
+
+#### Test Coverage
+
+Currently implemented E2E tests:
+- ✅ **TestAuthenticationFlow** - User registration, login, token validation, logout
+- ✅ **TestAppGroupCRUD** - Group creation, update, list, delete operations
+- ✅ **TestAppUserOperations** - User listing operations
+- ✅ **TestAppRoleReadOnly** - Role listing operations  
+- ✅ **TestAnonymousUserRegistration** - Anonymous user registration
+- ⏭️ **TestAdminUserCRUD** - Admin user operations (requires role assignment setup)
+- ⏭️ **TestAdminGroupCRUD** - Admin group operations (requires role assignment setup)
+- ⏭️ **TestAdminRoleCRUD** - Admin role operations (requires role assignment setup)
+
+#### CI/CD
+
+E2E tests run automatically on GitHub Actions for every pull request and push to main branch. See [`.github/workflows/e2e-test.yml`](.github/workflows/e2e-test.yml) for details.
 
 ## Links
 

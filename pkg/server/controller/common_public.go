@@ -94,6 +94,24 @@ func (rcvr commonControllerForPublic) ValidateToken(c *gin.Context) {
 		return
 	}
 
+	// Check if token is in denylist (logged out) - use JTI not the full token
+	isInvalidated, err := rcvr.CommonRepository.IsTokenInvalidated(c.Request.Context(), claims.Jti)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    "COMMON_VALIDATE_004",
+			"message": "Failed to check token status",
+			"error":   err.Error(),
+		})
+		return
+	}
+	if isInvalidated {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    "COMMON_VALIDATE_003",
+			"message": "Token has been revoked",
+		})
+		return
+	}
+
 	// Return user information from token
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "SUCCESS",
@@ -195,7 +213,7 @@ func (rcvr commonControllerForPublic) Login(c *gin.Context) {
 	}
 
 	// Get all users to find matching email
-	users := rcvr.UserRepository.GetUsers(c, )
+	users := rcvr.UserRepository.GetUsers(c)
 	var foundUser *model.Users
 
 	for _, user := range users {
