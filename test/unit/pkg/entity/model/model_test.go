@@ -55,8 +55,9 @@ func TestMembers_Structure(t *testing.T) {
 	member := model.Members{
 		ID:        1,
 		UUID:      "member-uuid-123",
-		UserID:    10,
-		GroupID:   20,
+		UserUUID:  "user-uuid-456",
+		GroupUUID: "group-uuid-789",
+		Role:      "member",
 		CreatedAt: &now,
 		UpdatedAt: &now,
 		DeletedAt: nil,
@@ -64,28 +65,11 @@ func TestMembers_Structure(t *testing.T) {
 
 	assert.Equal(t, uint(1), member.ID)
 	assert.Equal(t, "member-uuid-123", member.UUID)
-	assert.Equal(t, uint(10), member.UserID)
-	assert.Equal(t, uint(20), member.GroupID)
+	assert.Equal(t, "user-uuid-456", member.UserUUID)
+	assert.Equal(t, "group-uuid-789", member.GroupUUID)
+	assert.Equal(t, "member", member.Role)
 	assert.NotNil(t, member.CreatedAt)
 	assert.NotNil(t, member.UpdatedAt)
 	assert.Nil(t, member.DeletedAt)
 }
 
-func TestRoles_Structure(t *testing.T) {
-	now := time.Now()
-	role := model.Roles{
-		ID:        1,
-		UUID:      "role-uuid-123",
-		Name:      "Admin",
-		CreatedAt: &now,
-		UpdatedAt: &now,
-		DeletedAt: nil,
-	}
-
-	assert.Equal(t, uint(1), role.ID)
-	assert.Equal(t, "role-uuid-123", role.UUID)
-	assert.Equal(t, "Admin", role.Name)
-	assert.NotNil(t, role.CreatedAt)
-	assert.NotNil(t, role.UpdatedAt)
-	assert.Nil(t, role.DeletedAt)
-}

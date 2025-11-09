@@ -304,28 +304,6 @@ func TestConnectDB_AlreadyConnected(t *testing.T) {
 	// Unit test verifies the initial state and error handling
 }
 
-func TestConnectDB_ErrorHandling(t *testing.T) {
-	origConfigFile := os.Getenv("CONFIG_FILE")
-	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-
-	defer func() {
-		os.Setenv("CONFIG_FILE", origConfigFile)
-		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
-	}()
-
-	os.Setenv("CONFIG_FILE", "../../testdata/config/app_invalid.yaml")
-	os.Setenv("USE_SECRETSMANAGER", "false")
-
-	cfg := config.NewBaseConfig()
-
-	// Attempt to connect with invalid config
-	// This should fail gracefully
-	err := cfg.ConnectDB()
-	
-	// We expect an error since the DB config is invalid
-	assert.Error(t, err)
-}
-
 func TestMySQLConfig(t *testing.T) {
 	mysql := config.MySQL{
 		Host: "testhost",

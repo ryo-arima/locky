@@ -42,6 +42,7 @@ temp/
 
 # GitHub workflows
 .github/instructions
+.copilotignore
 
 # Build artifacts
 .bin

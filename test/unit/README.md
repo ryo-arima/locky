@@ -6,8 +6,16 @@ This directory contains unit tests for the locky project with 100% code coverage
 
 - Go 1.22 or later
 - No external dependencies (database, Redis, AWS) required for unit tests
+- **All test data must be placed in `test/unit/testdata/`**
 - Unit tests use mocks and test data in `testdata/`
 - Integration tests requiring external services are in `test/e2e/`
+
+## Principles
+
+1. **Test Data Centralization**: All test data (JSON, YAML, text files) must be in `test/unit/testdata/`
+2. **No External Dependencies**: Unit tests do not connect to real databases, Redis, or AWS
+3. **Use Mocks**: Use mock implementations from `test/unit/mock/` for external dependencies
+4. **Use Test Utilities**: Use helper functions from `test/unit/internal/testutil/` for loading test data
 
 ## Directory Structure
 
