@@ -9,12 +9,29 @@ echo "Running Unit Tests with Coverage"
 echo "========================================="
 echo ""
 
-# Array of packages to test
-packages=(
-    "code"
-    "logger"
-    "config"
-)
+# Get all pkg subdirectories that have tests in test/unit/pkg
+packages=()
+for dir in test/unit/pkg/*/; do
+    if [ -d "$dir" ]; then
+        pkg_name=$(basename "$dir")
+        # Check if there are test files
+        if ls "$dir"*_test.go >/dev/null 2>&1; then
+            packages+=("$pkg_name")
+        fi
+    fi
+done
+
+# Also check subdirectories (e.g., entity/model, entity/request, etc.)
+for dir in test/unit/pkg/*/*/; do
+    if [ -d "$dir" ]; then
+        parent=$(basename $(dirname "$dir"))
+        pkg_name="$parent/$(basename "$dir")"
+        # Check if there are test files
+        if ls "$dir"*_test.go >/dev/null 2>&1; then
+            packages+=("$pkg_name")
+        fi
+    fi
+done
 
 total_coverage=0
 package_count=0
