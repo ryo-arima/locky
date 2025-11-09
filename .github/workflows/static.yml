@@ -1,31 +1,7 @@
-# Workflow for building and deploying documentation to GitHub Pages
-#
-# Prerequisites:
-# 1. Go to repository Settings → Pages
-# 2. Under "Build and deployment", set Source to "GitHub Actions"
-# 3. Go to Settings → Actions → General → Workflow permissions
-# 4. Select "Read and write permissions"
-# 5. Check "Allow GitHub Actions to create and approve pull requests"
-#
-# The documentation will be available at:
-# - Main: https://ryo-arima.github.io/locky/
-# - Swagger: https://ryo-arima.github.io/locky/swagger/index.html
-# - GoDoc: https://ryo-arima.github.io/locky/godoc/index.html
-#
-name: Deploy documentation to Pages
+name: Deploy Documentation
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
-    paths:
-      - 'docs/**'
-      - 'scripts/main.sh'
-      - 'scripts/lib/docs.sh'
-      - '.github/workflows/static.yml'
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  workflow_call:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:

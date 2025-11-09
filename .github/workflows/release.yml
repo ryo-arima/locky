@@ -1,29 +1,17 @@
-# Workflow for creating version tags and publishing to pkg.go.dev
-#
-# This workflow can be triggered manually with a version number,
-# or automatically when VERSION file is updated.
-#
-name: Create Release Tag
+name: Create Release
 
 on:
-  # Manual trigger with version input
-  workflow_dispatch:
+  workflow_call:
     inputs:
       version:
         description: 'Version to release (e.g., v0.1.0, v1.0.0)'
-        required: true
+        required: false
         type: string
       release_notes:
         description: 'Release notes (optional)'
         required: false
         type: string
         default: 'Release version'
-  
-  # Automatic trigger when VERSION file changes
-  push:
-    branches: ["main"]
-    paths:
-      - 'VERSION'
 
 permissions:
   contents: write
@@ -40,8 +28,8 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
           else
             # Read from VERSION file
             VERSION=$(cat VERSION)
@@ -77,8 +65,8 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.release_notes }}" ]; then
-            NOTES="${{ github.event.inputs.release_notes }}"
+          if [ -n "${{ inputs.release_notes }}" ]; then
+            NOTES="${{ inputs.release_notes }}"
           else
             # Generate default release notes
             cat > /tmp/release_notes.txt << 'NOTES_EOF'

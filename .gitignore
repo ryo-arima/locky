@@ -4,6 +4,7 @@ etc/app.prod.yaml
 etc/app.local.yaml
 .env.local
 .env.production
+.env
 
 # Generated files
 generated/
@@ -44,3 +45,4 @@ temp/
 
 # Build artifacts
 .bin
+bin

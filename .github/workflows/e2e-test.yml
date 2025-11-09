@@ -1,19 +1,22 @@
 name: E2E Tests
 
 on:
-  pull_request:
-    branches: [ main, dev ]
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      go-version:
+        required: false
+        type: string
+        default: '1.22'
+
+env:
+  GO_VERSION: ${{ inputs.go-version || '1.22' }}
+  DOCKER_PLATFORM: linux/amd64
 
 jobs:
   e2e-test:
-    name: E2E Tests
+    name: Run E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    
-    env:
-      DOCKER_PLATFORM: linux/amd64
-      GO_VERSION: '1.22'
     
     steps:
       - name: Checkout
@@ -34,27 +37,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Check Go formatting
-        run: |
-          echo "Checking Go code formatting..."
-          unformatted=$(gofmt -l . | grep -v '^vendor/' || true)
-          if [ -n "$unformatted" ]; then
-            echo "The following files are not formatted:"
-            echo "$unformatted"
-            echo "Please run 'gofmt -w .' to format your code"
-            exit 1
-          fi
-          echo "All Go files are properly formatted"
-
-      - name: Run Go vet
-        run: |
-          echo "Running go vet..."
-          go vet $(go list ./... | grep -v /vendor/ | grep -v /test/unit/)
-
       - name: Build server
         run: |
           echo "Building server..."
           go build -v -o .bin/locky-server ./cmd/server/main.go
+
+      - name: Build client binaries
+        run: |
+          echo "Building client binaries..."
+          mkdir -p bin
+          go build -v -o bin/locky-admin ./cmd/client/admin
+          go build -v -o bin/locky-app ./cmd/client/app
+          go build -v -o bin/locky-anonymous ./cmd/client/anonymous
+          chmod +x bin/*
 
       - name: Verify test configuration files
         run: |
@@ -95,16 +90,6 @@ jobs:
             echo "Waiting for Redis... ($i/30)"
             sleep 2
           done
-
-      - name: Build client binaries
-        run: |
-          echo "Building client binaries..."
-          mkdir -p bin
-          go build -o bin/locky-admin ./cmd/client/admin
-          go build -o bin/locky-app ./cmd/client/app
-          go build -o bin/locky-anonymous ./cmd/client/anonymous
-          chmod +x bin/*
-          ls -la bin/
 
       - name: Run E2E tests
         run: |
