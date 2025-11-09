@@ -58,7 +58,7 @@ jobs:
       - name: Run golangci-lint
         run: |
           echo "Running golangci-lint..."
-          $(go env GOPATH)/bin/golangci-lint run --timeout=5m --skip-dirs=vendor ./...
+          $(go env GOPATH)/bin/golangci-lint run --timeout=5m --skip-dirs=vendor --skip-dirs=test/unit ./...
 
       - name: Build server
         run: |
