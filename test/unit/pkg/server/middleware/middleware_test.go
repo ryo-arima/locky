@@ -4,51 +4,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/ryo-arima/locky/pkg/server/middleware"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-type mockCommonRepo struct {
-	jwtSecret string
-}
-
-func (m *mockCommonRepo) ValidateJWTToken(tokenString string) (*middleware.Claims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(m.jwtSecret), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	claims := token.Claims.(jwt.MapClaims)
-	return &middleware.Claims{
-		Email: claims["email"].(string),
-		Role:  claims["role"].(string),
-		UUID:  claims["uuid"].(string),
-		Jti:   claims["jti"].(string),
-	}, nil
-}
-
-func (m *mockCommonRepo) IsTokenInvalidated(tokenString string) (bool, error) {
-	return false, nil
-}
-
-func generateTestToken(secret, email, role, uuid string) (string, error) {
-	claims := jwt.MapClaims{
-		"email": email,
-		"role":  role,
-		"uuid":  uuid,
-		"jti":   "test-jti",
-		"exp":   time.Now().Add(24 * time.Hour).Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
-}
 
 func TestRequestIDMiddleware(t *testing.T) {
 	gin.SetMode(gin.TestMode)
