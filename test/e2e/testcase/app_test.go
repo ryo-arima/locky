@@ -17,7 +17,7 @@ func TestAppGroupCRUD(t *testing.T) {
 	t.Run("Setup App User Login", func(t *testing.T) {
 		// Create app user if not exists
 		_, _ = anonymous.CreateUser("appuser", "appuser@locky.local", "AppUser123!")
-		
+
 		output, err := anonymous.Login("appuser@locky.local", "AppUser123!")
 		require.NoError(t, err, "Login should succeed")
 

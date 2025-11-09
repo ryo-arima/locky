@@ -108,7 +108,7 @@ func StopTestServer() error {
 // InitializeDatabase creates all necessary tables for testing
 func InitializeDatabase() error {
 	conf := config.NewBaseConfig()
-	
+
 	if err := conf.ConnectDB(); err != nil {
 		return fmt.Errorf("failed to connect DB: %w", err)
 	}

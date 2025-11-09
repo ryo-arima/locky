@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 
 func TestAdminUserCRUD(t *testing.T) {
 	t.Skip("Skipping admin user CRUD tests - requires admin role assignment which is not yet implemented in test setup")
-	
+
 	// Bootstrap all schemas first (recreates tables, deleting all data)
 	t.Run("Bootstrap User Schema", func(t *testing.T) {
 		// Bootstrap in correct order: Members -> Groups -> Users -> Roles
@@ -48,7 +48,7 @@ func TestAdminUserCRUD(t *testing.T) {
 	t.Run("Setup Admin User", func(t *testing.T) {
 		output, err := anonymous.CreateUser("testadmin", "testadmin@locky.local", "TestAdmin123!")
 		t.Logf("Create test admin user output: %s, error: %v", output, err)
-		
+
 		var result map[string]interface{}
 		if err == nil && output != "" {
 			err = json.Unmarshal([]byte(output), &result)
@@ -56,7 +56,7 @@ func TestAdminUserCRUD(t *testing.T) {
 				t.Logf("Failed to parse response: %v", err)
 			}
 		}
-		
+
 		// If user already exists, that's ok - just continue
 		if err == nil && result != nil {
 			if code, ok := result["code"].(string); ok {
@@ -173,7 +173,7 @@ func TestAdminUserCRUD(t *testing.T) {
 
 func TestAdminGroupCRUD(t *testing.T) {
 	t.Skip("Skipping admin group CRUD tests - requires admin role assignment which is not yet implemented in test setup")
-	
+
 	// Login first to get access token
 	t.Run("Setup Admin Login for Group CRUD", func(t *testing.T) {
 		output, err := anonymous.Login("testadmin@locky.local", "TestAdmin123!")
@@ -255,7 +255,7 @@ func TestAdminGroupCRUD(t *testing.T) {
 
 func TestAdminRoleCRUD(t *testing.T) {
 	t.Skip("Skipping admin role CRUD tests - requires admin role assignment which is not yet implemented in test setup")
-	
+
 	// Login first to get access token
 	t.Run("Setup Admin Login for Role CRUD", func(t *testing.T) {
 		output, err := anonymous.Login("testadmin@locky.local", "TestAdmin123!")
