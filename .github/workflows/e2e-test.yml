@@ -37,7 +37,7 @@ jobs:
       - name: Check Go formatting
         run: |
           echo "Checking Go code formatting..."
-          unformatted=$(gofmt -l . | grep -v '^vendor/')
+          unformatted=$(gofmt -l . | grep -v '^vendor/' || true)
           if [ -n "$unformatted" ]; then
             echo "The following files are not formatted:"
             echo "$unformatted"
