@@ -41,7 +41,7 @@ func TestLoadJSONFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var data map[string]interface{}
 			err := testutil.LoadJSONFile(tt.filePath, &data)
-			
+
 			if tt.shouldError {
 				assert.Error(t, err)
 			} else {
@@ -78,7 +78,7 @@ func TestLoadYAMLFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			data, err := testutil.LoadYAMLFile(tt.filePath)
-			
+
 			if tt.shouldError {
 				assert.Error(t, err)
 			} else {
@@ -110,7 +110,7 @@ func TestLoadTextFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			data, err := testutil.LoadTextFile(tt.filePath)
-			
+
 			if tt.shouldError {
 				assert.Error(t, err)
 			} else {

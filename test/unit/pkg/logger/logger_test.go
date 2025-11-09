@@ -224,7 +224,7 @@ func TestLoggerWithNilConfig(t *testing.T) {
 	// We can't easily reset the global logger, but we can verify it doesn't panic
 	l := logger.GetLogger()
 	assert.NotNil(t, l)
-	
+
 	// Should not panic even with nil fields
 	assert.NotPanics(t, func() {
 		logger.Debug(code.SM1, "test", nil)
@@ -278,7 +278,7 @@ func TestLoggerJSONFieldsFormat(t *testing.T) {
 				"level2": "deep value",
 			},
 		},
-		"array": []string{"item1", "item2", "item3"},
+		"array":  []string{"item1", "item2", "item3"},
 		"number": 12345,
 		"bool":   true,
 	}

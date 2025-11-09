@@ -10,39 +10,39 @@ import (
 
 func TestGetConfigFromEnv(t *testing.T) {
 	tests := []struct {
-		name              string
-		secretID          string
-		useLocalStack     string
-		expectedSecretID  string
-		expectedUseLocal  bool
+		name             string
+		secretID         string
+		useLocalStack    string
+		expectedSecretID string
+		expectedUseLocal bool
 	}{
 		{
-			name:              "Both env vars set to use LocalStack",
-			secretID:          "test-secret-123",
-			useLocalStack:     "true",
-			expectedSecretID:  "test-secret-123",
-			expectedUseLocal:  true,
+			name:             "Both env vars set to use LocalStack",
+			secretID:         "test-secret-123",
+			useLocalStack:    "true",
+			expectedSecretID: "test-secret-123",
+			expectedUseLocal: true,
 		},
 		{
-			name:              "Use production AWS",
-			secretID:          "prod-secret-456",
-			useLocalStack:     "false",
-			expectedSecretID:  "prod-secret-456",
-			expectedUseLocal:  false,
+			name:             "Use production AWS",
+			secretID:         "prod-secret-456",
+			useLocalStack:    "false",
+			expectedSecretID: "prod-secret-456",
+			expectedUseLocal: false,
 		},
 		{
-			name:              "USE_LOCALSTACK not set",
-			secretID:          "secret-789",
-			useLocalStack:     "",
-			expectedSecretID:  "secret-789",
-			expectedUseLocal:  false,
+			name:             "USE_LOCALSTACK not set",
+			secretID:         "secret-789",
+			useLocalStack:    "",
+			expectedSecretID: "secret-789",
+			expectedUseLocal: false,
 		},
 		{
-			name:              "Empty SECRET_ID",
-			secretID:          "",
-			useLocalStack:     "true",
-			expectedSecretID:  "",
-			expectedUseLocal:  true,
+			name:             "Empty SECRET_ID",
+			secretID:         "",
+			useLocalStack:    "true",
+			expectedSecretID: "",
+			expectedUseLocal: true,
 		},
 	}
 
@@ -51,7 +51,7 @@ func TestGetConfigFromEnv(t *testing.T) {
 			// Save original env vars
 			origSecretID := os.Getenv("SECRET_ID")
 			origUseLocalStack := os.Getenv("USE_LOCALSTACK")
-			
+
 			defer func() {
 				// Restore original env vars
 				os.Setenv("SECRET_ID", origSecretID)
@@ -75,7 +75,7 @@ func TestGetConfigFromEnv_DefaultValues(t *testing.T) {
 	// Save original env vars
 	origSecretID := os.Getenv("SECRET_ID")
 	origUseLocalStack := os.Getenv("USE_LOCALSTACK")
-	
+
 	defer func() {
 		os.Setenv("SECRET_ID", origSecretID)
 		os.Setenv("USE_LOCALSTACK", origUseLocalStack)

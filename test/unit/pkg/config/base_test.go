@@ -50,7 +50,7 @@ func TestIntOrString_UnmarshalYAML(t *testing.T) {
 			var redisConfig struct {
 				DB config.IntOrString `yaml:"db"`
 			}
-			
+
 			err := yaml.Unmarshal([]byte(yamlContent), &redisConfig)
 			require.NoError(t, err)
 			assert.Equal(t, tt.expected, int(redisConfig.DB))
@@ -103,7 +103,7 @@ func TestNewBaseConfig(t *testing.T) {
 	// Save original env vars
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		// Restore original env vars
 		os.Setenv("CONFIG_FILE", origConfigFile)
@@ -116,7 +116,7 @@ func TestNewBaseConfig(t *testing.T) {
 
 	// Create config
 	cfg := config.NewBaseConfig()
-	
+
 	require.NotNil(t, cfg)
 	assert.NotNil(t, cfg.YamlConfig)
 	assert.Equal(t, "testuser", cfg.YamlConfig.MySQL.User)
@@ -127,7 +127,7 @@ func TestNewClientConfig(t *testing.T) {
 	// Save original env vars
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		os.Setenv("CONFIG_FILE", origConfigFile)
 		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
@@ -137,7 +137,7 @@ func TestNewClientConfig(t *testing.T) {
 	os.Setenv("USE_SECRETSMANAGER", "false")
 
 	cfg := config.NewClientConfig()
-	
+
 	require.NotNil(t, cfg)
 	assert.NotNil(t, cfg.YamlConfig)
 	assert.Equal(t, "http://localhost:8080", cfg.YamlConfig.Application.Client.ServerEndpoint)
@@ -151,11 +151,11 @@ func TestSetLoggerFactory(t *testing.T) {
 	}
 
 	config.SetLoggerFactory(factory)
-	
+
 	// Test that factory is set by creating a config
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		os.Setenv("CONFIG_FILE", origConfigFile)
 		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
@@ -165,7 +165,7 @@ func TestSetLoggerFactory(t *testing.T) {
 	os.Setenv("USE_SECRETSMANAGER", "false")
 
 	config.NewBaseConfig()
-	
+
 	assert.True(t, called, "Logger factory should have been called")
 }
 
@@ -190,7 +190,7 @@ func TestLoggerConfig(t *testing.T) {
 func TestYamlConfigStructure(t *testing.T) {
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		os.Setenv("CONFIG_FILE", origConfigFile)
 		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
@@ -200,24 +200,24 @@ func TestYamlConfigStructure(t *testing.T) {
 	os.Setenv("USE_SECRETSMANAGER", "false")
 
 	cfg := config.NewBaseConfig()
-	
+
 	require.NotNil(t, cfg)
-	
+
 	// Test MySQL config
 	assert.Equal(t, "localhost", cfg.YamlConfig.MySQL.Host)
 	assert.Equal(t, "3306", cfg.YamlConfig.MySQL.Port)
-	
+
 	// Test Redis config
 	assert.Equal(t, "localhost", cfg.YamlConfig.Redis.Host)
 	assert.Equal(t, 6379, cfg.YamlConfig.Redis.Port)
-	
+
 	// Test Logger config
 	assert.Equal(t, "test-component", cfg.YamlConfig.Logger.Component)
 	assert.Equal(t, "test-service", cfg.YamlConfig.Logger.Service)
-	
+
 	// Test Application config
 	assert.Contains(t, cfg.YamlConfig.Application.Server.Admin.Emails, "admin@test.local")
-	
+
 	// Test Mail config
 	assert.Equal(t, "localhost", cfg.YamlConfig.Application.Mail.Host)
 	assert.Equal(t, 587, cfg.YamlConfig.Application.Mail.Port)
@@ -226,7 +226,7 @@ func TestYamlConfigStructure(t *testing.T) {
 func TestRedisIntOrString(t *testing.T) {
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		os.Setenv("CONFIG_FILE", origConfigFile)
 		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
@@ -236,7 +236,7 @@ func TestRedisIntOrString(t *testing.T) {
 	os.Setenv("USE_SECRETSMANAGER", "false")
 
 	cfg := config.NewBaseConfig()
-	
+
 	require.NotNil(t, cfg)
 	assert.Equal(t, 0, int(cfg.YamlConfig.Redis.DB))
 }
@@ -245,7 +245,7 @@ func TestNewBaseConfigFromSource_LocalFile(t *testing.T) {
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origConfigSource := os.Getenv("CONFIG_SOURCE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		os.Setenv("CONFIG_FILE", origConfigFile)
 		os.Setenv("CONFIG_SOURCE", origConfigSource)
@@ -257,7 +257,7 @@ func TestNewBaseConfigFromSource_LocalFile(t *testing.T) {
 	os.Setenv("USE_SECRETSMANAGER", "false")
 
 	cfg := config.NewBaseConfigFromSource(context.Background())
-	
+
 	require.NotNil(t, cfg)
 	assert.Equal(t, "testuser", cfg.YamlConfig.MySQL.User)
 }
@@ -266,7 +266,7 @@ func TestNewBaseConfigFromSource_Default(t *testing.T) {
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origConfigSource := os.Getenv("CONFIG_SOURCE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		os.Setenv("CONFIG_FILE", origConfigFile)
 		os.Setenv("CONFIG_SOURCE", origConfigSource)
@@ -278,7 +278,7 @@ func TestNewBaseConfigFromSource_Default(t *testing.T) {
 	os.Setenv("USE_SECRETSMANAGER", "false")
 
 	cfg := config.NewBaseConfigFromSource(context.Background())
-	
+
 	require.NotNil(t, cfg)
 	assert.NotNil(t, cfg.YamlConfig)
 }
@@ -286,7 +286,7 @@ func TestNewBaseConfigFromSource_Default(t *testing.T) {
 func TestConnectDB_AlreadyConnected(t *testing.T) {
 	origConfigFile := os.Getenv("CONFIG_FILE")
 	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
-	
+
 	defer func() {
 		os.Setenv("CONFIG_FILE", origConfigFile)
 		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
@@ -296,10 +296,10 @@ func TestConnectDB_AlreadyConnected(t *testing.T) {
 	os.Setenv("USE_SECRETSMANAGER", "false")
 
 	cfg := config.NewBaseConfig()
-	
+
 	// Test that DBConnection starts as nil
 	assert.Nil(t, cfg.DBConnection)
-	
+
 	// Note: We can't actually test ConnectDB without a real database
 	// This test verifies the initial state only
 	// In integration tests, we would test the actual connection
@@ -368,4 +368,3 @@ func TestMailConfig(t *testing.T) {
 	assert.Equal(t, "noreply@mail.com", mail.From)
 	assert.True(t, mail.UseTLS)
 }
-
