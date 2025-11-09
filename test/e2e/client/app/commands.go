@@ -60,7 +60,7 @@ func GetUser(id string) (string, error) {
 }
 
 func GetUserList() (string, error) {
-	return RunCommand("get", "user", "--list", "-o", "json")
+	return RunCommand("get", "users", "-o", "json")
 }
 
 func GetGroup(id string) (string, error) {
@@ -68,7 +68,7 @@ func GetGroup(id string) (string, error) {
 }
 
 func GetGroupList() (string, error) {
-	return RunCommand("get", "group", "-o", "json")
+	return RunCommand("get", "groups", "-o", "json")
 }
 
 func GetMember(id string) (string, error) {
@@ -84,7 +84,7 @@ func GetRole(id string) (string, error) {
 }
 
 func GetRoleList() (string, error) {
-	return RunCommand("get", "role", "--list", "-o", "json")
+	return RunCommand("get", "roles", "-o", "json")
 }
 
 // Update commands

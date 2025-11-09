@@ -106,12 +106,14 @@ func TestAppUserOperations(t *testing.T) {
 		output, err := app.GetUserList()
 		require.NoError(t, err, "List users should succeed")
 
-		var result []map[string]interface{}
+		var result map[string]interface{}
 		err = json.Unmarshal([]byte(output), &result)
-		require.NoError(t, err, "Should parse JSON array")
+		require.NoError(t, err, "Should parse JSON output")
 
 		// May be empty or contain users depending on test state
-		t.Logf("Found %d users", len(result))
+		if users, ok := result["users"].([]interface{}); ok {
+			t.Logf("Found %d users", len(users))
+		}
 	})
 }
 
@@ -121,10 +123,12 @@ func TestAppRoleReadOnly(t *testing.T) {
 		output, err := app.GetRoleList()
 		require.NoError(t, err, "List roles should succeed")
 
-		var result []map[string]interface{}
+		var result map[string]interface{}
 		err = json.Unmarshal([]byte(output), &result)
-		require.NoError(t, err, "Should parse JSON array")
+		require.NoError(t, err, "Should parse JSON output")
 
-		t.Logf("Found %d roles", len(result))
+		if roles, ok := result["roles"].([]interface{}); ok {
+			t.Logf("Found %d roles", len(roles))
+		}
 	})
 }

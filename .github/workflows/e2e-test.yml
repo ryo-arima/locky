@@ -1,0 +1,93 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+  push:
+    branches: [ dev ]
+  workflow_dispatch:
+
+jobs:
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    env:
+      DOCKER_PLATFORM: linux/amd64
+      GO_VERSION: '1.24'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Start Docker services
+        run: |
+          echo "Starting MySQL and Redis for E2E tests..."
+          docker compose up -d mysql redis
+          echo "Waiting for services to be ready..."
+          sleep 10
+          
+          # Wait for MySQL to be ready
+          for i in {1..30}; do
+            if docker compose exec -T mysql mysqladmin ping -h localhost -u root -pmysql &> /dev/null; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
+          
+          # Wait for Redis to be ready
+          for i in {1..30}; do
+            if docker compose exec -T redis redis-cli -a mysecretpassword ping &> /dev/null; then
+              echo "Redis is ready!"
+              break
+            fi
+            echo "Waiting for Redis... ($i/30)"
+            sleep 2
+          done
+
+      - name: Build client binaries
+        run: |
+          echo "Building client binaries..."
+          mkdir -p bin
+          go build -o bin/locky-admin ./cmd/client/admin
+          go build -o bin/locky-app ./cmd/client/app
+          go build -o bin/locky-anonymous ./cmd/client/anonymous
+          chmod +x bin/*
+          ls -la bin/
+
+      - name: Run E2E tests
+        run: |
+          echo "Running E2E tests..."
+          go test -v -timeout 15m ./test/e2e/testcase/
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: |
+          echo "=== MySQL logs ==="
+          docker compose logs mysql
+          echo "=== Redis logs ==="
+          docker compose logs redis
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Stopping Docker services..."
+          docker compose down -v || true
