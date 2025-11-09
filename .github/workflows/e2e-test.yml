@@ -15,7 +15,7 @@ jobs:
     
     env:
       DOCKER_PLATFORM: linux/amd64
-      GO_VERSION: '1.24'
+      GO_VERSION: '1.22'
     
     steps:
       - name: Checkout
@@ -36,6 +36,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Verify test configuration files
+        run: |
+          echo "Checking test configuration files..."
+          ls -la test/.etc/
+          ls -la etc/casbin/locky/
+          echo "Test configuration verified"
+
       - name: Start Docker services
         run: |
           echo "Starting MySQL and Redis for E2E tests..."
@@ -45,7 +52,7 @@ jobs:
           
           # Wait for MySQL to be ready
           for i in {1..30}; do
-            if docker compose exec -T mysql mysqladmin ping -h localhost -u root -pmysql &> /dev/null; then
+            if docker compose exec -T mysql mysqladmin ping -h localhost -u root -proot &> /dev/null; then
               echo "MySQL is ready!"
               break
             fi
