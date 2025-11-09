@@ -82,7 +82,8 @@ jobs:
           
           # Grant privileges for user from all hosts
           echo "Granting MySQL privileges for test user..."
-          docker compose exec -T mysql mysql -u root -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'user'@'%' IDENTIFIED BY 'password';"
+          docker compose exec -T mysql mysql -u root -proot -e "CREATE USER IF NOT EXISTS 'user'@'%' IDENTIFIED BY 'password';"
+          docker compose exec -T mysql mysql -u root -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'user'@'%';"
           docker compose exec -T mysql mysql -u root -proot -e "FLUSH PRIVILEGES;"
           
           # Wait for Redis to be ready
