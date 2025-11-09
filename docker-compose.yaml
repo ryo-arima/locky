@@ -31,9 +31,9 @@ services:
     container_name: locker-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: locker
-      MYSQL_USER: locker
-      MYSQL_PASSWORD: locker
+      MYSQL_DATABASE: locky
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
       TZ: 'Asia/Tokyo'
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
