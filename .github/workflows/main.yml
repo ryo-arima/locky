@@ -1,0 +1,50 @@
+name: Main Branch
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'scripts/main.sh'
+      - 'scripts/lib/docs.sh'
+      - 'VERSION'
+      - '.github/workflows/**'
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.1.0, v1.0.0)'
+        required: false
+        type: string
+      release_notes:
+        description: 'Release notes (optional)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "main-branch"
+  cancel-in-progress: false
+
+jobs:
+  deploy-docs:
+    name: Deploy Documentation
+    uses: ./.github/workflows/deploy-docs.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+  create-release:
+    name: Create Release
+    if: contains(github.event.head_commit.modified, 'VERSION') || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/release.yml
+    with:
+      version: ${{ github.event.inputs.version || '' }}
+      release_notes: ${{ github.event.inputs.release_notes || '' }}
+    permissions:
+      contents: write
