@@ -300,9 +300,30 @@ func TestConnectDB_AlreadyConnected(t *testing.T) {
 	// Test that DBConnection starts as nil
 	assert.Nil(t, cfg.DBConnection)
 
-	// Note: We can't actually test ConnectDB without a real database
-	// This test verifies the initial state only
-	// In integration tests, we would test the actual connection
+	// Note: ConnectDB with real DB connection is tested in E2E tests
+	// Unit test verifies the initial state and error handling
+}
+
+func TestConnectDB_ErrorHandling(t *testing.T) {
+	origConfigFile := os.Getenv("CONFIG_FILE")
+	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
+
+	defer func() {
+		os.Setenv("CONFIG_FILE", origConfigFile)
+		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
+	}()
+
+	os.Setenv("CONFIG_FILE", "../../testdata/config/app_invalid.yaml")
+	os.Setenv("USE_SECRETSMANAGER", "false")
+
+	cfg := config.NewBaseConfig()
+
+	// Attempt to connect with invalid config
+	// This should fail gracefully
+	err := cfg.ConnectDB()
+	
+	// We expect an error since the DB config is invalid
+	assert.Error(t, err)
 }
 
 func TestMySQLConfig(t *testing.T) {
@@ -368,3 +389,50 @@ func TestMailConfig(t *testing.T) {
 	assert.Equal(t, "noreply@mail.com", mail.From)
 	assert.True(t, mail.UseTLS)
 }
+
+func TestNewBaseConfigWithContext_SecretsManagerFallback(t *testing.T) {
+	origConfigFile := os.Getenv("CONFIG_FILE")
+	origUseSecretsManager := os.Getenv("USE_SECRETSMANAGER")
+	origSecretID := os.Getenv("SECRET_ID")
+
+	defer func() {
+		os.Setenv("CONFIG_FILE", origConfigFile)
+		os.Setenv("USE_SECRETSMANAGER", origUseSecretsManager)
+		os.Setenv("SECRET_ID", origSecretID)
+	}()
+
+	// Test fallback when USE_SECRETSMANAGER is true but SECRET_ID is not set
+	os.Setenv("CONFIG_FILE", "../../testdata/config/app.yaml")
+	os.Setenv("USE_SECRETSMANAGER", "true")
+	os.Unsetenv("SECRET_ID")
+
+	cfg := config.NewBaseConfigWithContext(context.Background())
+
+	require.NotNil(t, cfg)
+	assert.NotNil(t, cfg.YamlConfig)
+	// Should fall back to file-based config
+	assert.Equal(t, "testuser", cfg.YamlConfig.MySQL.User)
+}
+
+func TestClientConfig(t *testing.T) {
+	client := config.Client{
+		ServerEndpoint: "http://localhost:8080",
+		UserEmail:      "user@test.com",
+		UserPassword:   "password123",
+	}
+
+	assert.Equal(t, "http://localhost:8080", client.ServerEndpoint)
+	assert.Equal(t, "user@test.com", client.UserEmail)
+	assert.Equal(t, "password123", client.UserPassword)
+}
+
+func TestAdminConfig(t *testing.T) {
+	admin := config.Admin{
+		Emails: []string{"admin1@test.com", "admin2@test.com"},
+	}
+
+	assert.Len(t, admin.Emails, 2)
+	assert.Contains(t, admin.Emails, "admin1@test.com")
+	assert.Contains(t, admin.Emails, "admin2@test.com")
+}
+
