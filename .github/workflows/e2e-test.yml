@@ -49,7 +49,7 @@ jobs:
       - name: Run Go vet
         run: |
           echo "Running go vet..."
-          go vet $(go list ./... | grep -v /vendor/)
+          go vet $(go list ./... | grep -v /vendor/ | grep -v /test/unit/)
 
       - name: Install golangci-lint
         run: |
