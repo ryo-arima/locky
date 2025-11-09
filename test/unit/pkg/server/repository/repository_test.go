@@ -208,8 +208,7 @@ func TestGenerateTokenPair(t *testing.T) {
 	assert.NotNil(t, tokens)
 	assert.NotEmpty(t, tokens.AccessToken)
 	assert.NotEmpty(t, tokens.RefreshToken)
-	assert.Greater(t, tokens.AccessTokenExpiresAt, int64(0))
-	assert.Greater(t, tokens.RefreshTokenExpiresAt, int64(0))
+	assert.Greater(t, tokens.ExpiresIn, int64(0))
 }
 
 func TestValidateJWTToken(t *testing.T) {
@@ -269,18 +268,18 @@ func TestIsTokenInvalidated(t *testing.T) {
 
 func TestJWTClaims_Structure(t *testing.T) {
 	claims := model.JWTClaims{
-		UserID:   1,
-		UserUUID: "user-uuid-123",
-		Email:    "test@example.com",
-		Name:     "Test User",
-		Role:     "admin",
-		JTI:      "jti-123",
+		UserID: 1,
+		UUID:   "user-uuid-123",
+		Email:  "test@example.com",
+		Name:   "Test User",
+		Role:   "admin",
+		Jti:    "jti-123",
 	}
 
 	assert.Equal(t, uint(1), claims.UserID)
-	assert.Equal(t, "user-uuid-123", claims.UserUUID)
+	assert.Equal(t, "user-uuid-123", claims.UUID)
 	assert.Equal(t, "test@example.com", claims.Email)
 	assert.Equal(t, "Test User", claims.Name)
 	assert.Equal(t, "admin", claims.Role)
-	assert.Equal(t, "jti-123", claims.JTI)
+	assert.Equal(t, "jti-123", claims.Jti)
 }
