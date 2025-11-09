@@ -37,9 +37,10 @@ jobs:
       - name: Check Go formatting
         run: |
           echo "Checking Go code formatting..."
-          if [ -n "$(gofmt -l .)" ]; then
+          unformatted=$(gofmt -l . | grep -v '^vendor/')
+          if [ -n "$unformatted" ]; then
             echo "The following files are not formatted:"
-            gofmt -l .
+            echo "$unformatted"
             echo "Please run 'gofmt -w .' to format your code"
             exit 1
           fi
@@ -48,7 +49,7 @@ jobs:
       - name: Run Go vet
         run: |
           echo "Running go vet..."
-          go vet ./...
+          go vet $(go list ./... | grep -v /vendor/)
 
       - name: Install golangci-lint
         run: |
@@ -57,7 +58,7 @@ jobs:
       - name: Run golangci-lint
         run: |
           echo "Running golangci-lint..."
-          $(go env GOPATH)/bin/golangci-lint run --timeout=5m ./...
+          $(go env GOPATH)/bin/golangci-lint run --timeout=5m --skip-dirs=vendor ./...
 
       - name: Build server
         run: |
