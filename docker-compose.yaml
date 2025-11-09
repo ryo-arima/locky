@@ -30,6 +30,8 @@ services:
   mysql:
     image: mysql:8.0.27
     platform: linux/x86_64
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: mysql
       MYSQL_DATABASE: locky
@@ -65,6 +67,8 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+    ports:
+      - "6379:6379"
     command: ["redis-server", "--port", "6379", "--requirepass", "mysecretpassword", "--user", "default", "on", ">mysecretpassword", "+@all", "~*"]
     tmpfs:
       - /data
