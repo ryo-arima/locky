@@ -9,28 +9,15 @@ echo "Running Unit Tests with Coverage"
 echo "========================================="
 echo ""
 
-# Get all pkg subdirectories that have tests in test/unit/pkg
-packages=()
-for dir in test/unit/pkg/*/; do
-    if [ -d "$dir" ]; then
-        pkg_name=$(basename "$dir")
-        # Check if there are test files
-        if ls "$dir"*_test.go >/dev/null 2>&1; then
-            packages+=("$pkg_name")
-        fi
-    fi
-done
+# Find all directories under test/unit/pkg that contain at least one _test.go file
+test_dirs=$(find test/unit/pkg -type f -name '*_test.go' -print0 | xargs -0 -n1 dirname | sort -u)
 
-# Also check subdirectories (e.g., entity/model, entity/request, etc.)
-for dir in test/unit/pkg/*/*/; do
-    if [ -d "$dir" ]; then
-        parent=$(basename $(dirname "$dir"))
-        pkg_name="$parent/$(basename "$dir")"
-        # Check if there are test files
-        if ls "$dir"*_test.go >/dev/null 2>&1; then
-            packages+=("$pkg_name")
-        fi
-    fi
+# Convert the list of test directories to package names relative to pkg/
+packages=()
+for dir in $test_dirs; do
+    # Remove the 'test/unit/pkg/' prefix
+    pkg_name=${dir#test/unit/pkg/}
+    packages+=("$pkg_name")
 done
 
 total_coverage=0
@@ -38,7 +25,12 @@ package_count=0
 
 for pkg in "${packages[@]}"; do
     echo "Testing pkg/$pkg..."
-    result=$(go test -cover -coverpkg=./pkg/$pkg/... ./test/unit/pkg/$pkg/... 2>&1 | grep "coverage:" || echo "coverage: 0.0%")
+    # Define test path and package path
+    test_path="./test/unit/pkg/$pkg/..."
+    cover_path="./pkg/$pkg/..."
+
+    # Run test and capture coverage
+    result=$(go test -cover -coverpkg=$cover_path $test_path 2>&1 | grep "coverage:" || echo "coverage: 0.0%")
     coverage=$(echo "$result" | grep -oE '[0-9]+\.[0-9]+%' | head -1)
     
     if [ -n "$coverage" ]; then
@@ -70,7 +62,7 @@ if [ $package_count -gt 0 ]; then
         echo "Status: ✗ Needs improvement (<80%)"
     fi
 else
-    echo "No packages tested"
+    echo "No packages with tests found"
 fi
 
 echo ""

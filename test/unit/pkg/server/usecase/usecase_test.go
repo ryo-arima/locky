@@ -271,3 +271,28 @@ func TestCommonUsecase_IsTokenInvalidated(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, invalidated)
 }
+
+func TestCommonUsecase_Authorize(t *testing.T) {
+	cfg := config.BaseConfig{
+		YamlConfig: config.YamlConfig{
+			Casbin: config.Casbin{
+				Model:  "../../../../etc/casbin/locky/model.conf",
+				Policy: "../../../../etc/casbin/locky/policy.csv",
+			},
+		},
+	}
+	repo := repository.NewCommonRepository(cfg, nil)
+	uc := usecase.NewCommonUsecase(repo)
+
+	ctx := context.Background()
+
+	// Test case: admin should be able to do anything
+	authorized, err := uc.Authorize(ctx, "admin@example.com", "/api/v1/users", "POST")
+	assert.NoError(t, err)
+	assert.True(t, authorized)
+
+	// Test case: a normal user should not be able to create a user
+	authorized, err = uc.Authorize(ctx, "user@example.com", "/api/v1/users", "POST")
+	assert.NoError(t, err)
+	assert.False(t, authorized)
+}

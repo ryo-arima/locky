@@ -1,4 +1,4 @@
-package repository_test
+package client
 
 import (
 	"testing"

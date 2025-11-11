@@ -9,6 +9,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/server/repository"
+	"gorm.io/gorm"
 )
 
 // MockUserRepository implements repository.UserRepository for testing
@@ -122,39 +123,42 @@ func (m *MockGroupRepository) GetGroupByID(c *gin.Context, id uint) (model.Group
 	return model.Groups{}, fmt.Errorf("group not found")
 }
 
-func (m *MockGroupRepository) CreateGroup(c *gin.Context, group *model.Groups) interface{} {
+func (m *MockGroupRepository) CreateGroup(c *gin.Context, group *model.Groups) *gorm.DB {
 	if m.CreateGroupFunc != nil {
-		return m.CreateGroupFunc(c, group)
+		m.CreateGroupFunc(c, group)
+	} else {
+		group.ID = uint(len(m.Groups) + 1)
+		m.Groups = append(m.Groups, *group)
 	}
-	group.ID = uint(len(m.Groups) + 1)
-	m.Groups = append(m.Groups, *group)
-	return nil
+	return &gorm.DB{}
 }
 
-func (m *MockGroupRepository) UpdateGroup(c *gin.Context, group *model.Groups) interface{} {
+func (m *MockGroupRepository) UpdateGroup(c *gin.Context, group *model.Groups) *gorm.DB {
 	if m.UpdateGroupFunc != nil {
-		return m.UpdateGroupFunc(c, group)
-	}
-	for i, g := range m.Groups {
-		if g.ID == group.ID {
-			m.Groups[i] = *group
-			return nil
+		m.UpdateGroupFunc(c, group)
+	} else {
+		for i, g := range m.Groups {
+			if g.ID == group.ID {
+				m.Groups[i] = *group
+				break
+			}
 		}
 	}
-	return nil
+	return &gorm.DB{}
 }
 
-func (m *MockGroupRepository) DeleteGroup(c *gin.Context, uuid string) interface{} {
+func (m *MockGroupRepository) DeleteGroup(c *gin.Context, uuid string) *gorm.DB {
 	if m.DeleteGroupFunc != nil {
-		return m.DeleteGroupFunc(c, uuid)
-	}
-	for i, g := range m.Groups {
-		if g.UUID == uuid {
-			m.Groups = append(m.Groups[:i], m.Groups[i+1:]...)
-			return nil
+		m.DeleteGroupFunc(c, uuid)
+	} else {
+		for i, g := range m.Groups {
+			if g.UUID == uuid {
+				m.Groups = append(m.Groups[:i], m.Groups[i+1:]...)
+				break
+			}
 		}
 	}
-	return nil
+	return &gorm.DB{}
 }
 
 func (m *MockGroupRepository) ListGroups(c *gin.Context, filter repository.GroupQueryFilter) ([]model.Groups, error) {

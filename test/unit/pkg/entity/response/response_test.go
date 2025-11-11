@@ -104,3 +104,14 @@ func TestErrorResponse_Structure(t *testing.T) {
 	assert.Equal(t, "An error occurred", resp.Message)
 	assert.Nil(t, resp.Data)
 }
+
+func TestNewCountResponse(t *testing.T) {
+	count := 5
+	resp := response.NewCountResponse(count)
+
+	assert.Equal(t, "S0001", resp.Code)
+	assert.Equal(t, "The request has been successfully processed.", resp.Message)
+	assert.NotNil(t, resp.Data)
+	assert.Len(t, resp.Data, 1)
+	assert.Equal(t, count, resp.Data[0].Count)
+}

@@ -23,9 +23,10 @@ func TestNewUserControllerForPublic(t *testing.T) {
 
 func TestNewUserControllerForInternal(t *testing.T) {
 	userRepo := &mock.MockUserRepository{}
+	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
 	userUsecase := usecase.NewUserUsecase(userRepo)
 
-	ctrl := controller.NewUserControllerForInternal(userUsecase)
+	ctrl := controller.NewUserControllerForInternal(userUsecase, commonRepo)
 
 	assert.NotNil(t, ctrl)
 }
