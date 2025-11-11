@@ -43,16 +43,6 @@ func TestMemberRequest_Structure(t *testing.T) {
 	assert.Equal(t, "group-uuid-789", req.GroupUUID)
 }
 
-func TestRoleRequest_Structure(t *testing.T) {
-	req := request.RoleRequest{
-		UUID: "role-uuid-123",
-		Name: "Admin",
-	}
-
-	assert.Equal(t, "role-uuid-123", req.UUID)
-	assert.Equal(t, "Admin", req.Name)
-}
-
 func TestLoginRequest_Structure(t *testing.T) {
 	req := request.LoginRequest{
 		Email:    "user@example.com",

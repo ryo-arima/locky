@@ -51,9 +51,7 @@ func TestLoggerMiddleware(t *testing.T) {
 	conf := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
-				Common: config.Common{
-					LogLevel: "info",
-				},
+				Common: config.Common{},
 			},
 		},
 	}

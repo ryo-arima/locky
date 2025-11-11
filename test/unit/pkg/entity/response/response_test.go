@@ -11,107 +11,76 @@ func TestUserResponse_Structure(t *testing.T) {
 	resp := response.UserResponse{
 		Code:    "SUCCESS",
 		Message: "Operation successful",
-		Data: []map[string]interface{}{
+		Users: []response.User{
 			{
-				"uuid":  "user-uuid-123",
-				"email": "test@example.com",
-				"name":  "Test User",
+				UUID:  "user-uuid-123",
+				Email: "test@example.com",
+				Name:  "Test User",
 			},
 		},
 	}
 
 	assert.Equal(t, "SUCCESS", resp.Code)
 	assert.Equal(t, "Operation successful", resp.Message)
-	assert.Len(t, resp.Data, 1)
-	assert.Equal(t, "user-uuid-123", resp.Data[0]["uuid"])
+	assert.Len(t, resp.Users, 1)
+	assert.Equal(t, "user-uuid-123", resp.Users[0].UUID)
 }
 
 func TestGroupResponse_Structure(t *testing.T) {
 	resp := response.GroupResponse{
 		Code:    "SUCCESS",
 		Message: "Group operation successful",
-		Data: []map[string]interface{}{
+		Groups: []response.Group{
 			{
-				"uuid": "group-uuid-123",
-				"name": "Test Group",
+				UUID: "group-uuid-123",
+				Name: "Test Group",
 			},
 		},
 	}
 
 	assert.Equal(t, "SUCCESS", resp.Code)
 	assert.Equal(t, "Group operation successful", resp.Message)
-	assert.Len(t, resp.Data, 1)
-	assert.Equal(t, "group-uuid-123", resp.Data[0]["uuid"])
+	assert.Len(t, resp.Groups, 1)
+	assert.Equal(t, "group-uuid-123", resp.Groups[0].UUID)
 }
 
 func TestMemberResponse_Structure(t *testing.T) {
 	resp := response.MemberResponse{
 		Code:    "SUCCESS",
 		Message: "Member operation successful",
-		Data: []map[string]interface{}{
+		Members: []response.Member{
 			{
-				"uuid":       "member-uuid-123",
-				"user_uuid":  "user-uuid-456",
-				"group_uuid": "group-uuid-789",
+				UUID:      "member-uuid-123",
+				UserUUID:  "user-uuid-456",
+				GroupUUID: "group-uuid-789",
 			},
 		},
 	}
 
 	assert.Equal(t, "SUCCESS", resp.Code)
 	assert.Equal(t, "Member operation successful", resp.Message)
-	assert.Len(t, resp.Data, 1)
-	assert.Equal(t, "member-uuid-123", resp.Data[0]["uuid"])
-}
-
-func TestRoleResponse_Structure(t *testing.T) {
-	resp := response.RoleResponse{
-		Code:    "SUCCESS",
-		Message: "Role operation successful",
-		Data: []map[string]interface{}{
-			{
-				"uuid": "role-uuid-123",
-				"name": "Admin",
-			},
-		},
-	}
-
-	assert.Equal(t, "SUCCESS", resp.Code)
-	assert.Equal(t, "Role operation successful", resp.Message)
-	assert.Len(t, resp.Data, 1)
-	assert.Equal(t, "role-uuid-123", resp.Data[0]["uuid"])
+	assert.Len(t, resp.Members, 1)
+	assert.Equal(t, "member-uuid-123", resp.Members[0].UUID)
 }
 
 func TestLoginResponse_Structure(t *testing.T) {
 	resp := response.LoginResponse{
 		Code:    "SUCCESS",
 		Message: "Login successful",
-		Token:   "jwt-token-abc123",
 	}
 
 	assert.Equal(t, "SUCCESS", resp.Code)
 	assert.Equal(t, "Login successful", resp.Message)
-	assert.Equal(t, "jwt-token-abc123", resp.Token)
 }
 
-func TestErrorResponse_Structure(t *testing.T) {
-	resp := response.UserResponse{
-		Code:    "ERROR",
-		Message: "An error occurred",
-		Data:    nil,
+func TestCountResponse_Structure(t *testing.T) {
+	resp := response.CountResponse{
+		Code:    "SUCCESS",
+		Message: "Count retrieved",
+		Count:   42,
 	}
 
-	assert.Equal(t, "ERROR", resp.Code)
-	assert.Equal(t, "An error occurred", resp.Message)
-	assert.Nil(t, resp.Data)
-}
-
-func TestNewCountResponse(t *testing.T) {
-	count := 5
-	resp := response.NewCountResponse(count)
-
-	assert.Equal(t, "S0001", resp.Code)
-	assert.Equal(t, "The request has been successfully processed.", resp.Message)
-	assert.NotNil(t, resp.Data)
-	assert.Len(t, resp.Data, 1)
-	assert.Equal(t, count, resp.Data[0].Count)
+	assert.Equal(t, "SUCCESS", resp.Code)
+	assert.Equal(t, "Count retrieved", resp.Message)
+	assert.Equal(t, int64(42), resp.Count)
 }
