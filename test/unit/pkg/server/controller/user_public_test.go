@@ -48,4 +48,3 @@ func TestUserUsecaseInitialization(t *testing.T) {
 
 	assert.NotNil(t, uc)
 }
-

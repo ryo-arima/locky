@@ -13,13 +13,13 @@ import (
 
 // MockUserRepository implements repository.UserRepository for testing
 type MockUserRepository struct {
-	Users           []model.Users
-	GetUsersFunc    func(c *gin.Context) []model.Users
-	CreateUserFunc  func(c *gin.Context, user model.Users) model.Users
-	UpdateUserFunc  func(c *gin.Context, user model.Users) model.Users
-	DeleteUserFunc  func(c *gin.Context, user model.Users) model.Users
-	ListUsersFunc   func(c *gin.Context, filter repository.UserQueryFilter) ([]model.Users, error)
-	CountUsersFunc  func(c *gin.Context, filter repository.UserQueryFilter) (int64, error)
+	Users          []model.Users
+	GetUsersFunc   func(c *gin.Context) []model.Users
+	CreateUserFunc func(c *gin.Context, user model.Users) model.Users
+	UpdateUserFunc func(c *gin.Context, user model.Users) model.Users
+	DeleteUserFunc func(c *gin.Context, user model.Users) model.Users
+	ListUsersFunc  func(c *gin.Context, filter repository.UserQueryFilter) ([]model.Users, error)
+	CountUsersFunc func(c *gin.Context, filter repository.UserQueryFilter) (int64, error)
 }
 
 func (m *MockUserRepository) GetUsers(c *gin.Context) []model.Users {
@@ -80,15 +80,15 @@ func (m *MockUserRepository) CountUsers(c *gin.Context, filter repository.UserQu
 
 // MockGroupRepository implements repository.GroupRepository for testing
 type MockGroupRepository struct {
-	Groups           []model.Groups
-	GetGroupsFunc    func(c *gin.Context) []model.Groups
+	Groups             []model.Groups
+	GetGroupsFunc      func(c *gin.Context) []model.Groups
 	GetGroupByUUIDFunc func(c *gin.Context, uuid string) (model.Groups, error)
-	GetGroupByIDFunc func(c *gin.Context, id uint) (model.Groups, error)
-	CreateGroupFunc  func(c *gin.Context, group *model.Groups) error
-	UpdateGroupFunc  func(c *gin.Context, group *model.Groups) error
-	DeleteGroupFunc  func(c *gin.Context, uuid string) error
-	ListGroupsFunc   func(c *gin.Context, filter repository.GroupQueryFilter) ([]model.Groups, error)
-	CountGroupsFunc  func(c *gin.Context, filter repository.GroupQueryFilter) (int64, error)
+	GetGroupByIDFunc   func(c *gin.Context, id uint) (model.Groups, error)
+	CreateGroupFunc    func(c *gin.Context, group *model.Groups) error
+	UpdateGroupFunc    func(c *gin.Context, group *model.Groups) error
+	DeleteGroupFunc    func(c *gin.Context, uuid string) error
+	ListGroupsFunc     func(c *gin.Context, filter repository.GroupQueryFilter) ([]model.Groups, error)
+	CountGroupsFunc    func(c *gin.Context, filter repository.GroupQueryFilter) (int64, error)
 }
 
 func (m *MockGroupRepository) GetGroups(c *gin.Context) []model.Groups {
@@ -173,14 +173,14 @@ func (m *MockGroupRepository) CountGroups(c *gin.Context, filter repository.Grou
 
 // MockMemberRepository implements repository.MemberRepository for testing
 type MockMemberRepository struct {
-	Members           []model.Members
-	GetMembersFunc    func(c *gin.Context) []model.Members
-	CreateMemberFunc  func(c *gin.Context, member *model.Members) error
-	UpdateMemberFunc  func(c *gin.Context, member *model.Members) error
-	DeleteMemberFunc  func(c *gin.Context, uuid string) error
+	Members             []model.Members
+	GetMembersFunc      func(c *gin.Context) []model.Members
+	CreateMemberFunc    func(c *gin.Context, member *model.Members) error
+	UpdateMemberFunc    func(c *gin.Context, member *model.Members) error
+	DeleteMemberFunc    func(c *gin.Context, uuid string) error
 	GetMemberByUUIDFunc func(c *gin.Context, uuid string) (model.Members, error)
-	ListMembersFunc   func(c *gin.Context, filter repository.MemberQueryFilter) ([]model.Members, error)
-	CountMembersFunc  func(c *gin.Context, filter repository.MemberQueryFilter) (int64, error)
+	ListMembersFunc     func(c *gin.Context, filter repository.MemberQueryFilter) ([]model.Members, error)
+	CountMembersFunc    func(c *gin.Context, filter repository.MemberQueryFilter) (int64, error)
 }
 
 func (m *MockMemberRepository) GetMembers(c *gin.Context) []model.Members {

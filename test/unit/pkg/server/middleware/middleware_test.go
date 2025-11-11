@@ -1,13 +1,13 @@
 package middleware_test
 
 import (
-"net/http"
-"net/http/httptest"
-"testing"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
-"github.com/gin-gonic/gin"
-"github.com/ryo-arima/locky/pkg/server/middleware"
-"github.com/stretchr/testify/assert"
+	"github.com/gin-gonic/gin"
+	"github.com/ryo-arima/locky/pkg/server/middleware"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRequestID(t *testing.T) {
@@ -30,10 +30,10 @@ func TestRequestIDMiddleware(t *testing.T) {
 	router.Use(middleware.RequestIDMiddleware())
 
 	router.GET("/test", func(c *gin.Context) {
-requestID := middleware.GetRequestID(c)
-assert.NotEmpty(t, requestID)
-c.JSON(http.StatusOK, gin.H{"request_id": requestID})
-})
+		requestID := middleware.GetRequestID(c)
+		assert.NotEmpty(t, requestID)
+		c.JSON(http.StatusOK, gin.H{"request_id": requestID})
+	})
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	w := httptest.NewRecorder()

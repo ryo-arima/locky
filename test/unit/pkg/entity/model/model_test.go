@@ -72,4 +72,3 @@ func TestMembers_Structure(t *testing.T) {
 	assert.NotNil(t, member.UpdatedAt)
 	assert.Nil(t, member.DeletedAt)
 }
-

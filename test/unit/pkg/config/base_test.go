@@ -413,4 +413,3 @@ func TestAdminConfig(t *testing.T) {
 	assert.Contains(t, admin.Emails, "admin1@test.com")
 	assert.Contains(t, admin.Emails, "admin2@test.com")
 }
-

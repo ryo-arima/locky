@@ -1,11 +1,11 @@
 package controller_test
 
 import (
-"testing"
+	"testing"
 
-"github.com/ryo-arima/locky/pkg/server/controller"
-mock "github.com/ryo-arima/locky/test/unit/mock/server"
-"github.com/stretchr/testify/assert"
+	"github.com/ryo-arima/locky/pkg/server/controller"
+	mock "github.com/ryo-arima/locky/test/unit/mock/server"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCommonControllerForPublic(t *testing.T) {
