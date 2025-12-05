@@ -26,9 +26,9 @@ func loadAccessTokenFromFilesRequestHelper() string { // renamed to avoid duplic
 	return ""
 }
 
-// sendRequest is a helper function to make HTTP requests and handle responses.
+// SendRequest is a helper function to make HTTP requests and handle responses.
 // It abstracts away the boilerplate code for making requests, handling JSON, and decoding responses.
-func sendRequest(method, endpoint string, requestBody interface{}, response interface{}) error {
+func SendRequest(method, endpoint string, requestBody interface{}, response interface{}) error {
 	var req *http.Request
 	var err error
 

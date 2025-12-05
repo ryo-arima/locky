@@ -79,12 +79,12 @@ import (
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/logger"
 	"github.com/ryo-arima/locky/pkg/server"
-	"github.com/ryo-arima/locky/pkg/server/middleware"
+	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
 func main() {
 	// Set logger factory
-	config.SetLoggerFactory(middleware.NewLogger)
+	config.SetLoggerFactory(share.NewLogger)
 
 	conf := config.NewBaseConfig()
 
