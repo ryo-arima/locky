@@ -1,4 +1,4 @@
-package private
+package controller
 
 import (
 	"net/http"
@@ -11,9 +11,17 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
-type MemberController interface {
+// MemberController provides authenticated member operations for internal scope.
+//
+// Exposes CRUD endpoints requiring a valid bearer token:
+//   - GetMembers: List members (GET /v1/internal/members)
+//   - CreateMember: Create member (POST /v1/internal/members)
+//   - UpdateMember: Update member (PUT /v1/internal/members/{id})
+//   - DeleteMember: Delete member (DELETE /v1/internal/members/{id})
+type MemberInternal interface {
 	GetMembers(c *gin.Context)
 	CreateMember(c *gin.Context)
 	UpdateMember(c *gin.Context)
@@ -21,25 +29,15 @@ type MemberController interface {
 	CountMembers(c *gin.Context)
 }
 
-type memberController struct {
-	MemberRepository repository.MemberRepository
-	CommonRepository repository.CommonRepository
+type memberInternal struct {
+	MemberUsecase usecase.Member
 }
 
-func (rcvr memberController) GetMembers(c *gin.Context) {
-	// swagger:operation GET /private/members members getMembersPrivate
-	// ---
-	// summary: Get a list of members.
-	// description: Get a list of all members in the system.
-	// responses:
-	//   "200":
-	//     description: A list of members.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
+// GetMembers lists members (authenticated).
+//
+// Route: GET /v1/internal/members
+// Security: Bearer token
+func (rcvr memberInternal) GetMembers(c *gin.Context) {
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -75,7 +73,7 @@ func (rcvr memberController) GetMembers(c *gin.Context) {
 			filter.Offset = n
 		}
 	}
-	members, err := rcvr.MemberRepository.ListMembers(c, filter)
+	members, err := rcvr.MemberUsecase.ListMembers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Members: []response.Member{}})
 		return
@@ -87,42 +85,12 @@ func (rcvr memberController) GetMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Members retrieved successfully", Members: resp})
 }
 
-func (rcvr memberController) CountMembers(c *gin.Context) {
-	filter := repository.MemberQueryFilter{}
-	if v := c.Query("id"); v != "" {
-		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
-			id := uint(id64)
-			filter.ID = &id
-		}
-	}
-	if v := c.Query("uuid"); v != "" {
-		filter.UUID = &v
-	}
-	if v := c.Query("group_uuid"); v != "" {
-		filter.GroupUUID = &v
-	}
-	if v := c.Query("user_uuid"); v != "" {
-		filter.UserUUID = &v
-	}
-	if v := c.Query("role"); v != "" {
-		filter.Role = &v
-	}
-	if v := c.Query("role_prefix"); v != "" {
-		filter.RolePrefix = &v
-	}
-	if v := c.Query("role_like"); v != "" {
-		filter.RoleLike = &v
-	}
-	cnt, err := rcvr.MemberRepository.CountMembers(c, filter)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
-}
-
-func (rcvr memberController) CreateMember(c *gin.Context) {
-	// swagger:operation POST /private/members members createMemberPrivate
+// CreateMember creates a member (authenticated).
+//
+// Route: POST /v1/internal/members
+// Security: Bearer token
+func (rcvr memberInternal) CreateMember(c *gin.Context) {
+	// swagger:operation POST /internal/members members createMemberInternal
 	// ---
 	// summary: Create a new member.
 	// description: Create a new member with the provided information.
@@ -153,7 +121,7 @@ func (rcvr memberController) CreateMember(c *gin.Context) {
 	}
 	now := time.Now()
 	m := model.Members{UUID: uuid.New().String(), GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, CreatedAt: &now, UpdatedAt: &now}
-	resDB := rcvr.MemberRepository.CreateMember(c, &m)
+	_, resDB := rcvr.MemberUsecase.CreateMember(c, &m)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -161,8 +129,12 @@ func (rcvr memberController) CreateMember(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member created successfully", Members: []response.Member{{ID: m.ID, UUID: m.UUID, GroupUUID: m.GroupUUID, UserUUID: m.UserUUID, Role: m.Role}}})
 }
 
-func (rcvr memberController) UpdateMember(c *gin.Context) {
-	// swagger:operation PUT /private/members/{id} members updateMemberPrivate
+// UpdateMember updates a member (authenticated).
+//
+// Route: PUT /v1/internal/members/{id}
+// Security: Bearer token
+func (rcvr memberInternal) UpdateMember(c *gin.Context) {
+	// swagger:operation PUT /internal/members/{id} members updateMemberInternal
 	// ---
 	// summary: Update a member.
 	// description: Update a member with the provided information.
@@ -187,28 +159,18 @@ func (rcvr memberController) UpdateMember(c *gin.Context) {
 	//     description: Bad request.
 	//     schema:
 	//       $ref: "#/definitions/MemberResponse"
-	idParam := c.Param("id")
-	idUint := uint(0)
-	if idParam != "" {
-		if parsed, err := strconv.ParseUint(idParam, 10, 64); err == nil {
-			idUint = uint(parsed)
-		}
-	}
 	var memberRequest request.MemberRequest
 	if err := c.Bind(&memberRequest); err != nil {
 		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__001", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
-	if idUint == 0 && memberRequest.ID == 0 {
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: "id is required (path or body)", Members: []response.Member{}})
+	if memberRequest.ID == 0 {
+		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: "id is required", Members: []response.Member{}})
 		return
 	}
-	if idUint == 0 {
-		idUint = memberRequest.ID
-	}
 	now := time.Now()
-	upd := model.Members{ID: idUint, GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, UpdatedAt: &now}
-	resDB := rcvr.MemberRepository.UpdateMember(c, &upd)
+	upd := model.Members{ID: memberRequest.ID, GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, UpdatedAt: &now}
+	_, resDB := rcvr.MemberUsecase.UpdateMember(c, &upd)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -216,8 +178,12 @@ func (rcvr memberController) UpdateMember(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member updated successfully", Members: []response.Member{{ID: upd.ID, UUID: upd.UUID, GroupUUID: upd.GroupUUID, UserUUID: upd.UserUUID, Role: upd.Role}}})
 }
 
-func (rcvr memberController) DeleteMember(c *gin.Context) {
-	// swagger:operation DELETE /private/members/{id} members deleteMemberPrivate
+// DeleteMember deletes a member (authenticated).
+//
+// Route: DELETE /v1/internal/members/{id}
+// Security: Bearer token
+func (rcvr memberInternal) DeleteMember(c *gin.Context) {
+	// swagger:operation DELETE /internal/members/{id} members deleteMemberInternal
 	// ---
 	// summary: Delete a member.
 	// description: Delete a member by ID.
@@ -236,21 +202,16 @@ func (rcvr memberController) DeleteMember(c *gin.Context) {
 	//     description: Bad request.
 	//     schema:
 	//       $ref: "#/definitions/MemberResponse"
-	uuidParam := c.Param("id") // route is :id but expects UUID
 	var memberRequest request.MemberRequest
 	if err := c.Bind(&memberRequest); err != nil {
-		// No body required so ignore Bind failure, but return BadRequest on error for type consistency
 		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__001", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
-	if uuidParam == "" && memberRequest.UUID == "" {
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required (path or body)", Members: []response.Member{}})
+	if memberRequest.UUID == "" {
+		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required", Members: []response.Member{}})
 		return
 	}
-	if uuidParam == "" {
-		uuidParam = memberRequest.UUID
-	}
-	resDB := rcvr.MemberRepository.DeleteMember(c, uuidParam)
+	resDB := rcvr.MemberUsecase.DeleteMember(c, memberRequest.UUID)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
@@ -258,6 +219,52 @@ func (rcvr memberController) DeleteMember(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member deleted successfully", Members: []response.Member{}})
 }
 
-func NewMemberController(memberRepository repository.MemberRepository, commonRepository repository.CommonRepository) MemberController {
-	return &memberController{MemberRepository: memberRepository, CommonRepository: commonRepository}
+// CountMembers counts members (authenticated).
+//
+// Route: GET /v1/internal/members/count
+// Security: Bearer token
+func (rcvr memberInternal) CountMembers(c *gin.Context) {
+	filter := repository.MemberQueryFilter{}
+	if v := c.Query("id"); v != "" {
+		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
+			id := uint(id64)
+			filter.ID = &id
+		}
+	}
+	if v := c.Query("uuid"); v != "" {
+		filter.UUID = &v
+	}
+	if v := c.Query("group_uuid"); v != "" {
+		filter.GroupUUID = &v
+	}
+	if v := c.Query("user_uuid"); v != "" {
+		filter.UserUUID = &v
+	}
+	if v := c.Query("role"); v != "" {
+		filter.Role = &v
+	}
+	if v := c.Query("role_prefix"); v != "" {
+		filter.RolePrefix = &v
+	}
+	if v := c.Query("role_like"); v != "" {
+		filter.RoleLike = &v
+	}
+	cnt, err := rcvr.MemberUsecase.CountMembers(c, filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
+}
+
+// NewMemberController creates a new internal member controller.
+//
+// Parameters:
+//   - memberUsecase: Member data repository
+//   - commonUsecase: Common services repository
+//
+// Returns:
+//   - MemberController: Configured internal controller instance
+func NewMemberInternal(memberUsecase usecase.Member) MemberInternal {
+	return &memberInternal{MemberUsecase: memberUsecase}
 }

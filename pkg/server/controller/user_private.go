@@ -1,4 +1,4 @@
-package private
+package controller
 
 import (
 	"net/http"
@@ -19,7 +19,7 @@ import (
 //   - CreateUser: Create a user
 //   - UpdateUser: Update a user
 //   - DeleteUser: Delete a user
-type UserController interface {
+type UserPrivate interface {
 	GetUsers(c *gin.Context)
 	CreateUser(c *gin.Context)
 	UpdateUser(c *gin.Context)
@@ -27,16 +27,15 @@ type UserController interface {
 	CountUsers(c *gin.Context)
 }
 
-type userController struct {
-	UserUsecase      usecase.UserUsecase
-	CommonRepository repository.CommonRepository
+type userPrivate struct {
+	UserUsecase usecase.User
 }
 
 // GetUsers lists all users (admin only).
 //
 // Route: GET /v1/private/users
 // Security: Bearer token (admin)
-func (rcvr userController) GetUsers(c *gin.Context) {
+func (rcvr userPrivate) GetUsers(c *gin.Context) {
 	filter := repository.UserQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -87,7 +86,7 @@ func (rcvr userController) GetUsers(c *gin.Context) {
 //
 // Route: POST /v1/private/users
 // Security: Bearer token (admin)
-func (rcvr userController) CreateUser(c *gin.Context) {
+func (rcvr userPrivate) CreateUser(c *gin.Context) {
 	// swagger:operation POST /private/users users createUserPrivate
 	// ---
 	// summary: Create a new user.
@@ -126,7 +125,7 @@ func (rcvr userController) CreateUser(c *gin.Context) {
 //
 // Route: PUT /v1/private/users/{id}
 // Security: Bearer token (admin)
-func (rcvr userController) UpdateUser(c *gin.Context) {
+func (rcvr userPrivate) UpdateUser(c *gin.Context) {
 	// swagger:operation PUT /private/users/{id} users updateUserPrivate
 	// ---
 	// summary: Update a user.
@@ -170,7 +169,7 @@ func (rcvr userController) UpdateUser(c *gin.Context) {
 //
 // Route: DELETE /v1/private/users/{id}
 // Security: Bearer token (admin)
-func (rcvr userController) DeleteUser(c *gin.Context) {
+func (rcvr userPrivate) DeleteUser(c *gin.Context) {
 	// swagger:operation DELETE /private/users/{id} users deleteUserPrivate
 	// ---
 	// summary: Delete a user.
@@ -208,7 +207,7 @@ func (rcvr userController) DeleteUser(c *gin.Context) {
 //
 // Route: GET /v1/private/users/count
 // Security: Bearer token (admin)
-func (rcvr userController) CountUsers(c *gin.Context) {
+func (rcvr userPrivate) CountUsers(c *gin.Context) {
 	filter := repository.UserQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -253,6 +252,6 @@ func (rcvr userController) CountUsers(c *gin.Context) {
 //
 // Returns:
 //   - UserController: Configured private controller instance
-func NewUserController(userUsecase usecase.UserUsecase, commonRepository repository.CommonRepository) UserController {
-	return &userController{UserUsecase: userUsecase, CommonRepository: commonRepository}
+func NewUserPrivate(userUsecase usecase.User) UserPrivate {
+	return &userPrivate{UserUsecase: userUsecase}
 }

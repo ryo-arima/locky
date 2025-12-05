@@ -10,7 +10,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type MemberRepository interface {
+type Member interface {
 	BootstrapMemberForDB(request request.MemberRequest) response.MemberResponse
 	GetMember(request request.MemberRequest) response.MemberResponse
 	CreateMember(request request.MemberRequest) response.MemberResponse
@@ -18,11 +18,11 @@ type MemberRepository interface {
 	DeleteMember(request request.MemberRequest) response.MemberResponse
 }
 
-type memberRepository struct {
+type member struct {
 	BaseConfig config.BaseConfig
 }
 
-func (rcvr memberRepository) BootstrapMemberForDB(request request.MemberRequest) response.MemberResponse {
+func (rcvr *member) BootstrapMemberForDB(request request.MemberRequest) response.MemberResponse {
 	var resp response.MemberResponse
 	fmt.Println("BootstrapMemberForDB")
 
@@ -53,7 +53,7 @@ func (rcvr memberRepository) BootstrapMemberForDB(request request.MemberRequest)
 	return resp
 }
 
-func (rcvr memberRepository) GetMember(request request.MemberRequest) response.MemberResponse {
+func (rcvr *member) GetMember(request request.MemberRequest) response.MemberResponse {
 	var resp response.MemberResponse
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/members"
 	err := repository.SendRequest("GET", endpoint, nil, &resp)
@@ -64,7 +64,7 @@ func (rcvr memberRepository) GetMember(request request.MemberRequest) response.M
 	return resp
 }
 
-func (rcvr memberRepository) CreateMember(request request.MemberRequest) response.MemberResponse {
+func (rcvr *member) CreateMember(request request.MemberRequest) response.MemberResponse {
 	var resp response.MemberResponse
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/member"
 	err := repository.SendRequest("POST", endpoint, request, &resp)
@@ -75,7 +75,7 @@ func (rcvr memberRepository) CreateMember(request request.MemberRequest) respons
 	return resp
 }
 
-func (rcvr memberRepository) UpdateMember(request request.MemberRequest) response.MemberResponse {
+func (rcvr *member) UpdateMember(request request.MemberRequest) response.MemberResponse {
 	var resp response.MemberResponse
 	endpoint := fmt.Sprintf("%s/v1/internal/member/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("PUT", endpoint, request, &resp)
@@ -86,7 +86,7 @@ func (rcvr memberRepository) UpdateMember(request request.MemberRequest) respons
 	return resp
 }
 
-func (rcvr memberRepository) DeleteMember(request request.MemberRequest) response.MemberResponse {
+func (rcvr *member) DeleteMember(request request.MemberRequest) response.MemberResponse {
 	var resp response.MemberResponse
 	endpoint := fmt.Sprintf("%s/v1/internal/member/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("DELETE", endpoint, nil, &resp)
@@ -97,6 +97,6 @@ func (rcvr memberRepository) DeleteMember(request request.MemberRequest) respons
 	return resp
 }
 
-func NewMemberRepository(conf config.BaseConfig) MemberRepository {
-	return &memberRepository{BaseConfig: conf}
+func NewMember(conf config.BaseConfig) Member {
+	return &member{BaseConfig: conf}
 }

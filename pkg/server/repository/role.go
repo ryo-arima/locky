@@ -26,7 +26,7 @@ type RolePermission struct {
 // - UpdateRole(): delete all existing policy role lines → recreate with new permissions
 // - DeleteRole(): delete all role lines
 // All call SavePolicy() for persistence to file (when adapter is file).
-type RoleRepository interface {
+type Role interface {
 	ListRoles(c *gin.Context) ([]string, error)
 	GetRolePermissions(c *gin.Context, role string) ([]RolePermission, error)
 	CreateRole(c *gin.Context, role string, perms []RolePermission) error
@@ -34,7 +34,7 @@ type RoleRepository interface {
 	DeleteRole(c *gin.Context, role string) error
 }
 
-type roleRepository struct {
+type role struct {
 	// App-wide (global) permissions: etc/casbin/locky/*. Read-only in this repository.
 	appEnforcer *casbin.Enforcer
 	// Group/resource roles (CRUD target): etc/casbin/resources/*. Focus role CRUD here.
@@ -45,16 +45,16 @@ type roleRepository struct {
 //
 //	appEnf      -> etc/casbin/locky/model.conf + policy.csv (app-wide RBAC)
 //	resourceEnf -> etc/casbin/resources/model.conf + policy.csv (group/internal resource RBAC / CRUD target)
-func NewRoleRepository(appEnf *casbin.Enforcer, resourceEnf *casbin.Enforcer) RoleRepository {
-	return &roleRepository{appEnforcer: appEnf, resourceEnforcer: resourceEnf}
+func NewRole(appEnf *casbin.Enforcer, resourceEnf *casbin.Enforcer) Role {
+	return &role{appEnforcer: appEnf, resourceEnforcer: resourceEnf}
 }
 
 // internal helper: returns the Enforcer that is currently the CRUD target.
-func (r *roleRepository) target() *casbin.Enforcer { return r.resourceEnforcer }
+func (rcvr *role) target() *casbin.Enforcer { return rcvr.resourceEnforcer }
 
 // ListRoles: enumerate subjects in group policy
-func (r *roleRepository) ListRoles(c *gin.Context) ([]string, error) {
-	subs, err := r.target().GetAllSubjects()
+func (rcvr *role) ListRoles(c *gin.Context) ([]string, error) {
+	subs, err := rcvr.target().GetAllSubjects()
 	if err != nil {
 		return nil, err
 	}
@@ -77,11 +77,11 @@ func (r *roleRepository) ListRoles(c *gin.Context) ([]string, error) {
 // GetRolePermissions: extract (resource,action) from all policy lines for specified role.
 // Policy storage format: p, <role>, <resource>, <action>
 // Error if role is unspecified/blank.
-func (r *roleRepository) GetRolePermissions(c *gin.Context, role string) ([]RolePermission, error) {
+func (rcvr *role) GetRolePermissions(c *gin.Context, role string) ([]RolePermission, error) {
 	if strings.TrimSpace(role) == "" {
 		return nil, errors.New("role required")
 	}
-	pols, err := r.target().GetPolicy()
+	pols, err := rcvr.target().GetPolicy()
 	if err != nil {
 		return nil, err
 	}
@@ -99,63 +99,63 @@ func (r *roleRepository) GetRolePermissions(c *gin.Context, role string) ([]Role
 
 // roleExists: simple check that role exists if 1 or more permissions exist.
 // (A role with empty permissions is considered conceptually non-existent)
-func (r *roleRepository) roleExists(c *gin.Context, role string) bool {
-	perms, _ := r.GetRolePermissions(c, role)
+func (rcvr *role) roleExists(c *gin.Context, role string) bool {
+	perms, _ := rcvr.GetRolePermissions(c, role)
 	return len(perms) > 0
 }
 
 // CreateRole: add new role. Error if duplicate exists.
 // If perms is empty, automatically grant roles:read as fallback,
 // providing minimum permission to view self (roles list).
-func (r *roleRepository) CreateRole(c *gin.Context, role string, perms []RolePermission) error {
+func (rcvr *role) CreateRole(c *gin.Context, role string, perms []RolePermission) error {
 	role = strings.TrimSpace(role)
 	if role == "" {
 		return errors.New("role name required")
 	}
-	if r.roleExists(c, role) {
+	if rcvr.roleExists(c, role) {
 		return errors.New("role already exists")
 	}
 	if len(perms) == 0 {
 		perms = []RolePermission{{Resource: "group_info", Action: "read"}}
 	}
 	for _, pm := range perms {
-		if _, err := r.target().AddPolicy(role, pm.Resource, pm.Action); err != nil {
+		if _, err := rcvr.target().AddPolicy(role, pm.Resource, pm.Action); err != nil {
 			return err
 		}
 	}
-	return r.target().SavePolicy()
+	return rcvr.target().SavePolicy()
 }
 
 // UpdateRole: delete all permissions for existing role with RemoveFilteredPolicy, then re-insert new permissions.
 // When perms is empty, grant roles:read as minimum permission like Create.
 // Note: Full replacement, not differential update.
-func (r *roleRepository) UpdateRole(c *gin.Context, role string, perms []RolePermission) error {
+func (rcvr *role) UpdateRole(c *gin.Context, role string, perms []RolePermission) error {
 	role = strings.TrimSpace(role)
 	if role == "" {
 		return errors.New("role name required")
 	}
-	if _, err := r.target().RemoveFilteredPolicy(0, role); err != nil {
+	if _, err := rcvr.target().RemoveFilteredPolicy(0, role); err != nil {
 		return err
 	}
 	if len(perms) == 0 {
 		perms = []RolePermission{{Resource: "group_info", Action: "read"}}
 	}
 	for _, pm := range perms {
-		if _, err := r.target().AddPolicy(role, pm.Resource, pm.Action); err != nil {
+		if _, err := rcvr.target().AddPolicy(role, pm.Resource, pm.Action); err != nil {
 			return err
 		}
 	}
-	return r.target().SavePolicy()
+	return rcvr.target().SavePolicy()
 }
 
 // DeleteRole: delete all policy lines for specified role. If non-existent, leave to RemoveFilteredPolicy result.
-func (r *roleRepository) DeleteRole(c *gin.Context, role string) error {
+func (rcvr *role) DeleteRole(c *gin.Context, role string) error {
 	role = strings.TrimSpace(role)
 	if role == "" {
 		return errors.New("role name required")
 	}
-	if _, err := r.target().RemoveFilteredPolicy(0, role); err != nil {
+	if _, err := rcvr.target().RemoveFilteredPolicy(0, role); err != nil {
 		return err
 	}
-	return r.target().SavePolicy()
+	return rcvr.target().SavePolicy()
 }

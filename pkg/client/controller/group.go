@@ -12,7 +12,7 @@ import (
 )
 
 func InitBootstrapGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	bootstrapGroupCmd := &cobra.Command{
 		Use:   "group",
 		Short: "Initialize the groups table in the database.",
@@ -26,7 +26,7 @@ func InitBootstrapGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	createGroupCmd := &cobra.Command{
 		Use:   "group",
 		Short: "Create a new group (internal).",
@@ -43,7 +43,7 @@ func InitCreateGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	createGroupCmd := &cobra.Command{
 		Use:   "group",
 		Short: "Create a new group (admin).",
@@ -60,7 +60,7 @@ func InitCreateGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	getGroupCmd := &cobra.Command{
 		Use:     "groups",
 		Aliases: []string{"group"},
@@ -75,7 +75,7 @@ func InitGetGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	getGroupCmd := &cobra.Command{
 		Use:     "groups",
 		Aliases: []string{"group"},
@@ -90,7 +90,7 @@ func InitGetGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	updateGroupCmd := &cobra.Command{
 		Use:   "group",
 		Short: "Update a group (internal).",
@@ -119,7 +119,7 @@ func InitUpdateGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	updateGroupCmd := &cobra.Command{
 		Use:   "group",
 		Short: "Update a group (admin).",
@@ -148,7 +148,7 @@ func InitUpdateGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	deleteGroupCmd := &cobra.Command{
 		Use:   "group",
 		Short: "Delete a group (internal).",
@@ -169,7 +169,7 @@ func InitDeleteGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewGroupUsecase(conf)
+	uc := usecase.NewGroup(conf)
 	deleteGroupCmd := &cobra.Command{
 		Use:   "group",
 		Short: "Delete a group (admin).",

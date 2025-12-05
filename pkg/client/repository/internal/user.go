@@ -10,19 +10,19 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type UserRepository interface {
+type User interface {
 	BootstrapUserForDB(request request.UserRequest) response.UserResponse
 	GetUser(request request.UserRequest) response.UserResponse
 	UpdateUser(request request.UserRequest) response.UserResponse
 	DeleteUser(request request.UserRequest) response.UserResponse
 }
 
-type userRepository struct {
+type user struct {
 	BaseConfig config.BaseConfig
 }
 
 // Bootstrap
-func (rcvr userRepository) BootstrapUserForDB(request request.UserRequest) response.UserResponse {
+func (rcvr *user) BootstrapUserForDB(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
 	fmt.Println("BootstrapUserForDB")
 
@@ -54,7 +54,7 @@ func (rcvr userRepository) BootstrapUserForDB(request request.UserRequest) respo
 }
 
 // GET
-func (rcvr userRepository) GetUser(request request.UserRequest) response.UserResponse {
+func (rcvr *user) GetUser(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/users"
 	err := repository.SendRequest("GET", endpoint, nil, &resp)
@@ -66,7 +66,7 @@ func (rcvr userRepository) GetUser(request request.UserRequest) response.UserRes
 }
 
 // UPDATE
-func (rcvr userRepository) UpdateUser(request request.UserRequest) response.UserResponse {
+func (rcvr *user) UpdateUser(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
 	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("PUT", endpoint, request, &resp)
@@ -78,7 +78,7 @@ func (rcvr userRepository) UpdateUser(request request.UserRequest) response.User
 }
 
 // DELETE
-func (rcvr userRepository) DeleteUser(request request.UserRequest) response.UserResponse {
+func (rcvr *user) DeleteUser(request request.UserRequest) response.UserResponse {
 	var resp response.UserResponse
 	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("DELETE", endpoint, nil, &resp)
@@ -89,6 +89,6 @@ func (rcvr userRepository) DeleteUser(request request.UserRequest) response.User
 	return resp
 }
 
-func NewUserRepository(conf config.BaseConfig) UserRepository {
-	return &userRepository{BaseConfig: conf}
+func NewUser(conf config.BaseConfig) User {
+	return &user{BaseConfig: conf}
 }

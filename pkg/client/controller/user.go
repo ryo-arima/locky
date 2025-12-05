@@ -12,7 +12,7 @@ import (
 )
 
 func InitBootstrapUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	bootstrapUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Initialize the users table in the database.",
@@ -26,7 +26,7 @@ func InitBootstrapUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateUserCmdForAnonymousUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	createUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Create a new user (public registration).",
@@ -54,7 +54,7 @@ func InitCreateUserCmdForAnonymousUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	createUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Create a new user (admin).",
@@ -82,7 +82,7 @@ func InitCreateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	getUserCmd := &cobra.Command{
 		Use:     "users",
 		Aliases: []string{"user"},
@@ -97,7 +97,7 @@ func InitGetUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	getUserCmd := &cobra.Command{
 		Use:     "users",
 		Aliases: []string{"user"},
@@ -112,7 +112,7 @@ func InitGetUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	updateUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Update a user (internal).",
@@ -141,7 +141,7 @@ func InitUpdateUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	updateUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Update a user (admin).",
@@ -170,7 +170,7 @@ func InitUpdateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	deleteUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Delete a user (internal).",
@@ -191,7 +191,7 @@ func InitDeleteUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	deleteUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Delete a user (admin).",

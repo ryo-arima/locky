@@ -14,7 +14,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type CommonRepository interface {
+type Common interface {
 	Login(request request.LoginRequest) (response response.LoginResponse)
 	RefreshToken(refreshToken string) (response response.RefreshTokenResponse)
 	Logout(accessToken string) (response response.CommonResponse)
@@ -22,7 +22,7 @@ type CommonRepository interface {
 	GetUserInfo(accessToken string) (response response.CommonResponse)
 }
 
-type commonRepository struct {
+type common struct {
 	BaseConfig config.BaseConfig
 }
 
@@ -65,7 +65,7 @@ func saveTokenPair(access, refresh string) {
 }
 
 // Login performs user authentication and returns JWT tokens
-func (rcvr commonRepository) Login(loginRequest request.LoginRequest) (response response.LoginResponse) {
+func (rcvr *common) Login(loginRequest request.LoginRequest) (response response.LoginResponse) {
 	// Updated to match server router: POST /v1/share/common/auth/tokens
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
 
@@ -116,7 +116,7 @@ func (rcvr commonRepository) Login(loginRequest request.LoginRequest) (response 
 }
 
 // RefreshToken refreshes the access token using refresh token
-func (rcvr commonRepository) RefreshToken(refreshToken string) (response response.RefreshTokenResponse) {
+func (rcvr *common) RefreshToken(refreshToken string) (response response.RefreshTokenResponse) {
 	// Updated to match server router: POST /v1/share/common/auth/tokens/refresh
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/refresh"
 
@@ -167,7 +167,7 @@ func (rcvr commonRepository) RefreshToken(refreshToken string) (response respons
 }
 
 // Logout performs user logout
-func (rcvr commonRepository) Logout(accessToken string) (response response.CommonResponse) {
+func (rcvr *common) Logout(accessToken string) (response response.CommonResponse) {
 	// Updated to match server router: DELETE /v1/share/common/auth/tokens
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
 
@@ -202,7 +202,7 @@ func (rcvr commonRepository) Logout(accessToken string) (response response.Commo
 }
 
 // ValidateToken validates an access token
-func (rcvr commonRepository) ValidateToken(accessToken string) (response response.ValidateTokenResponse) {
+func (rcvr *common) ValidateToken(accessToken string) (response response.ValidateTokenResponse) {
 	// Updated to match server router: GET /v1/share/common/auth/tokens/validate
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/validate"
 
@@ -237,7 +237,7 @@ func (rcvr commonRepository) ValidateToken(accessToken string) (response respons
 }
 
 // GetUserInfo retrieves user information using access token
-func (rcvr commonRepository) GetUserInfo(accessToken string) (response response.CommonResponse) {
+func (rcvr *common) GetUserInfo(accessToken string) (response response.CommonResponse) {
 	// Updated to match server router: GET /v1/share/common/auth/tokens/user
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/user"
 
@@ -270,6 +270,6 @@ func (rcvr commonRepository) GetUserInfo(accessToken string) (response response.
 	return response
 }
 
-func NewCommonRepository(baseConfig config.BaseConfig) CommonRepository {
-	return &commonRepository{BaseConfig: baseConfig}
+func NewCommon(baseConfig config.BaseConfig) Common {
+	return &common{BaseConfig: baseConfig}
 }

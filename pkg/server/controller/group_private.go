@@ -1,4 +1,4 @@
-package internal
+package controller
 
 import (
 	"net/http"
@@ -12,16 +12,10 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 	"github.com/ryo-arima/locky/pkg/server/repository"
 	share "github.com/ryo-arima/locky/pkg/server/share"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
-// GroupController provides authenticated group operations for internal scope.
-//
-// Exposes CRUD endpoints requiring a valid bearer token:
-//   - GetGroups: List groups (GET /v1/internal/groups)
-//   - CreateGroup: Create group (POST /v1/internal/groups)
-//   - UpdateGroup: Update group (PUT /v1/internal/groups/{id})
-//   - DeleteGroup: Delete group (DELETE /v1/internal/groups/{id})
-type GroupController interface {
+type GroupPrivate interface {
 	GetGroups(c *gin.Context)
 	CreateGroup(c *gin.Context)
 	UpdateGroup(c *gin.Context)
@@ -29,17 +23,13 @@ type GroupController interface {
 	CountGroups(c *gin.Context)
 }
 
-type groupController struct {
-	GroupRepository  repository.GroupRepository
-	CommonRepository repository.CommonRepository
+type groupPrivate struct {
+	GroupUsecase  usecase.Group
+	CommonUsecase usecase.Common
 }
 
-// GetGroups lists groups (authenticated).
-//
-// Route: GET /v1/internal/groups
-// Security: Bearer token
-func (rcvr groupController) GetGroups(c *gin.Context) {
-	// swagger:operation GET /internal/groups groups getGroupsInternal
+func (rcvr groupPrivate) GetGroups(c *gin.Context) {
+	// swagger:operation GET /private/groups groups getGroupsPrivate
 	// ---
 	// summary: Get a list of groups.
 	// description: Get a list of all groups in the system.
@@ -52,11 +42,6 @@ func (rcvr groupController) GetGroups(c *gin.Context) {
 	//     description: Bad request.
 	//     schema:
 	//       $ref: "#/definitions/GroupResponse"
-	var groupRequest request.GroupRequest
-	if err := c.Bind(&groupRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.GroupResponse{Code: "SERVER_CONTROLLER_GET__FOR__001", Message: err.Error(), Groups: []response.Group{}})
-		return
-	}
 	filter := repository.GroupQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -86,7 +71,7 @@ func (rcvr groupController) GetGroups(c *gin.Context) {
 			filter.Offset = n
 		}
 	}
-	groups, err := rcvr.GroupRepository.ListGroups(c, filter)
+	groups, err := rcvr.GroupUsecase.ListGroups(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Groups: []response.Group{}})
 		return
@@ -98,12 +83,36 @@ func (rcvr groupController) GetGroups(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Groups retrieved successfully", Groups: resp})
 }
 
-// CreateGroup creates a group (authenticated).
-//
-// Route: POST /v1/internal/groups
-// Security: Bearer token
-func (rcvr groupController) CreateGroup(c *gin.Context) {
-	// swagger:operation POST /internal/groups groups createGroupInternal
+func (rcvr groupPrivate) CountGroups(c *gin.Context) {
+	filter := repository.GroupQueryFilter{}
+	if v := c.Query("id"); v != "" {
+		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
+			id := uint(id64)
+			filter.ID = &id
+		}
+	}
+	if v := c.Query("uuid"); v != "" {
+		filter.UUID = &v
+	}
+	if v := c.Query("name"); v != "" {
+		filter.Name = &v
+	}
+	if v := c.Query("name_prefix"); v != "" {
+		filter.NamePrefix = &v
+	}
+	if v := c.Query("name_like"); v != "" {
+		filter.NameLike = &v
+	}
+	cnt, err := rcvr.GroupUsecase.CountGroups(c, filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
+}
+
+func (rcvr groupPrivate) CreateGroup(c *gin.Context) {
+	// swagger:operation POST /private/groups groups createGroupPrivate
 	// ---
 	// summary: Create a new group.
 	// description: Create a new group with the provided information.
@@ -134,28 +143,22 @@ func (rcvr groupController) CreateGroup(c *gin.Context) {
 	}
 	now := time.Now()
 	g := model.Groups{UUID: uuid.New().String(), Name: groupRequest.Name, CreatedAt: &now, UpdatedAt: &now}
-	resDB := rcvr.GroupRepository.CreateGroup(c, &g)
+	_, resDB := rcvr.GroupUsecase.CreateGroup(c, &g)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Groups: []response.Group{}})
 		return
 	}
-
-	// Added: Register creating user as member (Owner)
 	claims, ok := share.GetUserClaims(c)
 	if ok && claims != nil {
-		memberRepo := repository.NewMemberRepository(rcvr.CommonRepository.GetBaseConfig())
+		memberRepo := repository.NewMember(rcvr.CommonUsecase.GetBaseConfig())
 		mem := model.Members{UUID: uuid.New().String(), GroupUUID: g.UUID, UserUUID: claims.UUID, Role: "owner", CreatedAt: &now, UpdatedAt: &now}
 		_ = memberRepo.CreateMember(c, &mem)
 	}
 	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Group created successfully", Groups: []response.Group{{ID: g.ID, UUID: g.UUID, Name: g.Name}}})
 }
 
-// UpdateGroup updates a group (authenticated).
-//
-// Route: PUT /v1/internal/groups/{id}
-// Security: Bearer token
-func (rcvr groupController) UpdateGroup(c *gin.Context) {
-	// swagger:operation PUT /internal/groups/{id} groups updateGroupInternal
+func (rcvr groupPrivate) UpdateGroup(c *gin.Context) {
+	// swagger:operation PUT /private/groups/{id} groups updateGroupPrivate
 	// ---
 	// summary: Update a group.
 	// description: Update a group with the provided information.
@@ -189,30 +192,34 @@ func (rcvr groupController) UpdateGroup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.GroupResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: "id is required", Groups: []response.Group{}})
 		return
 	}
-	g, err := rcvr.GroupRepository.GetGroupByID(c, groupRequest.ID)
+	g, err := rcvr.GroupUsecase.GetGroupByID(c, groupRequest.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &response.GroupResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: "group not found", Groups: []response.Group{}})
 		return
 	}
-	if groupRequest.Name != "" {
-		g.Name = groupRequest.Name
-	}
+	
 	now := time.Now()
-	g.UpdatedAt = &now
-	resDB := rcvr.GroupRepository.UpdateGroup(c, &g)
+	updatedGroup := model.Groups{
+		ID:        g.ID,
+		UUID:      g.UUID,
+		Name:      g.Name,
+		UpdatedAt: &now,
+	}
+
+	if groupRequest.Name != "" {
+		updatedGroup.Name = groupRequest.Name
+	}
+
+	_, resDB := rcvr.GroupUsecase.UpdateGroup(c, &updatedGroup)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__004", Message: resDB.Error.Error(), Groups: []response.Group{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Group updated successfully", Groups: []response.Group{{ID: g.ID, UUID: g.UUID, Name: g.Name}}})
+	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Group updated successfully", Groups: []response.Group{{ID: updatedGroup.ID, UUID: updatedGroup.UUID, Name: updatedGroup.Name}}})
 }
 
-// DeleteGroup deletes a group (authenticated).
-//
-// Route: DELETE /v1/internal/groups/{id}
-// Security: Bearer token
-func (rcvr groupController) DeleteGroup(c *gin.Context) {
-	// swagger:operation DELETE /internal/groups/{id} groups deleteGroupInternal
+func (rcvr groupPrivate) DeleteGroup(c *gin.Context) {
+	// swagger:operation DELETE /private/groups/{id} groups deleteGroupPrivate
 	// ---
 	// summary: Delete a group.
 	// description: Delete a group by ID.
@@ -240,7 +247,7 @@ func (rcvr groupController) DeleteGroup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.GroupResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required", Groups: []response.Group{}})
 		return
 	}
-	resDB := rcvr.GroupRepository.DeleteGroup(c, groupRequest.UUID)
+	resDB := rcvr.GroupUsecase.DeleteGroup(c, groupRequest.UUID)
 	if resDB.Error != nil {
 		c.JSON(http.StatusInternalServerError, &response.GroupResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Groups: []response.Group{}})
 		return
@@ -248,62 +255,9 @@ func (rcvr groupController) DeleteGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.GroupResponse{Code: "SUCCESS", Message: "Group deleted successfully", Groups: []response.Group{}})
 }
 
-// CountGroups counts groups (authenticated).
-//
-// Route: GET /v1/internal/groups/count
-// Security: Bearer token
-func (rcvr groupController) CountGroups(c *gin.Context) {
-	// swagger:operation GET /internal/groups/count groups countGroupsInternal
-	// ---
-	// summary: Count groups.
-	// description: Get the count of groups matching the filter.
-	// responses:
-	//   "200":
-	//     description: The count of groups.
-	//     schema:
-	//       type: object
-	//       properties:
-	//         count:
-	//           type: integer
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/GroupResponse"
-	filter := repository.GroupQueryFilter{}
-	if v := c.Query("id"); v != "" {
-		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
-			id := uint(id64)
-			filter.ID = &id
-		}
+func NewGroupPrivate(groupUsecase usecase.Group, commonUsecase usecase.Common) GroupPrivate {
+	return &groupPrivate{
+		GroupUsecase:  groupUsecase,
+		CommonUsecase: commonUsecase,
 	}
-	if v := c.Query("uuid"); v != "" {
-		filter.UUID = &v
-	}
-	if v := c.Query("name"); v != "" {
-		filter.Name = &v
-	}
-	if v := c.Query("name_prefix"); v != "" {
-		filter.NamePrefix = &v
-	}
-	if v := c.Query("name_like"); v != "" {
-		filter.NameLike = &v
-	}
-	cnt, err := rcvr.GroupRepository.CountGroups(c, filter)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
-}
-
-// NewGroupController creates a new internal group controller.
-//
-// Parameters:
-//   - groupRepository: Group data repository
-//   - commonRepository: Common services repository
-//
-// Returns:
-//   - GroupController: Configured internal controller instance
-func NewGroupController(groupRepository repository.GroupRepository, commonRepository repository.CommonRepository) GroupController {
-	return &groupController{GroupRepository: groupRepository, CommonRepository: commonRepository}
 }

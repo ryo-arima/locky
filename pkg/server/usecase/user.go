@@ -12,26 +12,27 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/repository"
 )
 
-type UserUsecase interface {
+type User interface {
 	GetUsers(c *gin.Context) ([]response.User, error)
 	CreateUser(c *gin.Context, req request.UserRequest) (*response.User, error)
 	UpdateUser(c *gin.Context, req request.UserRequest) (*response.User, error)
 	DeleteUser(c *gin.Context, req request.UserRequest) error
 	ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]response.User, error)
 	CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error)
+	GetUserModelByEmail(c *gin.Context, email string) (*model.Users, error)
 }
 
-type userUsecase struct {
-	userRepo repository.UserRepository
+type user struct {
+	userRepo repository.User
 }
 
-func NewUserUsecase(userRepo repository.UserRepository) UserUsecase {
-	return &userUsecase{
+func NewUser(userRepo repository.User) User {
+	return &user{
 		userRepo: userRepo,
 	}
 }
 
-func (uc *userUsecase) GetUsers(c *gin.Context) ([]response.User, error) {
+func (uc *user) GetUsers(c *gin.Context) ([]response.User, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUGU1, reqID, "Getting all users")
@@ -52,7 +53,7 @@ func (uc *userUsecase) GetUsers(c *gin.Context) ([]response.User, error) {
 	return responseUsers, nil
 }
 
-func (uc *userUsecase) CreateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
+func (uc *user) CreateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUCR1, reqID, "Creating user: "+req.Email)
@@ -83,7 +84,7 @@ func (uc *userUsecase) CreateUser(c *gin.Context, req request.UserRequest) (*res
 	}, nil
 }
 
-func (uc *userUsecase) UpdateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
+func (uc *user) UpdateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUUP1, reqID, "Updating user: "+req.UUID)
@@ -112,7 +113,7 @@ func (uc *userUsecase) UpdateUser(c *gin.Context, req request.UserRequest) (*res
 	}, nil
 }
 
-func (uc *userUsecase) DeleteUser(c *gin.Context, req request.UserRequest) error {
+func (uc *user) DeleteUser(c *gin.Context, req request.UserRequest) error {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUDL1, reqID, "Deleting user: "+req.UUID)
@@ -129,7 +130,7 @@ func (uc *userUsecase) DeleteUser(c *gin.Context, req request.UserRequest) error
 	return nil
 }
 
-func (uc *userUsecase) ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]response.User, error) {
+func (uc *user) ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]response.User, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UULS1, reqID, "Listing users with filter")
@@ -154,7 +155,7 @@ func (uc *userUsecase) ListUsers(c *gin.Context, filter repository.UserQueryFilt
 	return responseUsers, nil
 }
 
-func (uc *userUsecase) CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error) {
+func (uc *user) CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUCT1, reqID, "Counting users with filter")
@@ -167,4 +168,19 @@ func (uc *userUsecase) CountUsers(c *gin.Context, filter repository.UserQueryFil
 
 	logger.Info(code.UUCT1, reqID, "Users counted successfully")
 	return count, nil
+}
+
+func (uc *user) GetUserModelByEmail(c *gin.Context, email string) (*model.Users, error) {
+	requestID, _ := c.Get("requestID")
+	reqID := requestID.(string)
+	logger.Info(code.UUGU1, reqID, "Getting user model by email: "+email)
+
+	users, err := uc.userRepo.ListUsers(c, repository.UserQueryFilter{Email: &email, Limit: 1})
+	if err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, nil
+	}
+	return &users[0], nil
 }

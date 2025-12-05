@@ -10,7 +10,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type GroupUsecase interface {
+type Group interface {
 	Bootstrap(request request.GroupRequest, format string) string
 	GetInternal(request request.GroupRequest, format string) string
 	GetPrivate(request request.GroupRequest, format string) string
@@ -22,48 +22,48 @@ type GroupUsecase interface {
 	DeletePrivate(request request.GroupRequest, format string) string
 }
 
-type groupUsecase struct {
-	repo repository.GroupRepository
+type group struct {
+	repo repository.Group
 }
 
-func NewGroupUsecase(conf config.BaseConfig) GroupUsecase {
-	return &groupUsecase{repo: repository.NewGroupRepository(conf)}
+func NewGroup(conf config.BaseConfig) Group {
+	return &group{repo: repository.NewGroup(conf)}
 }
 
-func (u *groupUsecase) Bootstrap(req request.GroupRequest, format string) string {
+func (u *group) Bootstrap(req request.GroupRequest, format string) string {
 	resp := u.repo.BootstrapGroupForDB(req)
 	return Format(format, resp)
 }
 
-func (u *groupUsecase) GetInternal(req request.GroupRequest, format string) string {
+func (u *group) GetInternal(req request.GroupRequest, format string) string {
 	resp := u.repo.GetGroupForInternal(req)
 	return Format(format, resp)
 }
-func (u *groupUsecase) GetPrivate(req request.GroupRequest, format string) string {
+func (u *group) GetPrivate(req request.GroupRequest, format string) string {
 	resp := u.repo.GetGroupForPrivate(req)
 	return Format(format, resp)
 }
-func (u *groupUsecase) CreateInternal(req request.GroupRequest, format string) string {
+func (u *group) CreateInternal(req request.GroupRequest, format string) string {
 	resp := u.repo.CreateGroupForInternal(req)
 	return Format(format, resp)
 }
-func (u *groupUsecase) CreatePrivate(req request.GroupRequest, format string) string {
+func (u *group) CreatePrivate(req request.GroupRequest, format string) string {
 	resp := u.repo.CreateGroupForPrivate(req)
 	return Format(format, resp)
 }
-func (u *groupUsecase) UpdateInternal(req request.GroupRequest, format string) string {
+func (u *group) UpdateInternal(req request.GroupRequest, format string) string {
 	resp := u.repo.UpdateGroupForInternal(req)
 	return Format(format, resp)
 }
-func (u *groupUsecase) UpdatePrivate(req request.GroupRequest, format string) string {
+func (u *group) UpdatePrivate(req request.GroupRequest, format string) string {
 	resp := u.repo.UpdateGroupForPrivate(req)
 	return Format(format, resp)
 }
-func (u *groupUsecase) DeleteInternal(req request.GroupRequest, format string) string {
+func (u *group) DeleteInternal(req request.GroupRequest, format string) string {
 	resp := u.repo.DeleteGroupForInternal(req)
 	return Format(format, resp)
 }
-func (u *groupUsecase) DeletePrivate(req request.GroupRequest, format string) string {
+func (u *group) DeletePrivate(req request.GroupRequest, format string) string {
 	resp := u.repo.DeleteGroupForPrivate(req)
 	return Format(format, resp)
 }

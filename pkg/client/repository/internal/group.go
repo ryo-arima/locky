@@ -10,7 +10,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type GroupRepository interface {
+type Group interface {
 	BootstrapGroupForDB(request request.GroupRequest) response.GroupResponse
 	GetGroup(request request.GroupRequest) response.GroupResponse
 	CreateGroup(request request.GroupRequest) response.GroupResponse
@@ -18,11 +18,11 @@ type GroupRepository interface {
 	DeleteGroup(request request.GroupRequest) response.GroupResponse
 }
 
-type groupRepository struct {
+type group struct {
 	BaseConfig config.BaseConfig
 }
 
-func (rcvr groupRepository) BootstrapGroupForDB(request request.GroupRequest) response.GroupResponse {
+func (rcvr *group) BootstrapGroupForDB(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
 	fmt.Println("BootstrapGroupForDB")
 
@@ -53,7 +53,7 @@ func (rcvr groupRepository) BootstrapGroupForDB(request request.GroupRequest) re
 	return resp
 }
 
-func (rcvr groupRepository) GetGroup(request request.GroupRequest) response.GroupResponse {
+func (rcvr *group) GetGroup(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/groups"
 	err := repository.SendRequest("GET", endpoint, nil, &resp)
@@ -64,7 +64,7 @@ func (rcvr groupRepository) GetGroup(request request.GroupRequest) response.Grou
 	return resp
 }
 
-func (rcvr groupRepository) CreateGroup(request request.GroupRequest) response.GroupResponse {
+func (rcvr *group) CreateGroup(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/group"
 	err := repository.SendRequest("POST", endpoint, request, &resp)
@@ -75,7 +75,7 @@ func (rcvr groupRepository) CreateGroup(request request.GroupRequest) response.G
 	return resp
 }
 
-func (rcvr groupRepository) UpdateGroup(request request.GroupRequest) response.GroupResponse {
+func (rcvr *group) UpdateGroup(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
 	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("PUT", endpoint, request, &resp)
@@ -86,7 +86,7 @@ func (rcvr groupRepository) UpdateGroup(request request.GroupRequest) response.G
 	return resp
 }
 
-func (rcvr groupRepository) DeleteGroup(request request.GroupRequest) response.GroupResponse {
+func (rcvr *group) DeleteGroup(request request.GroupRequest) response.GroupResponse {
 	var resp response.GroupResponse
 	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("DELETE", endpoint, nil, &resp)
@@ -97,6 +97,6 @@ func (rcvr groupRepository) DeleteGroup(request request.GroupRequest) response.G
 	return resp
 }
 
-func NewGroupRepository(conf config.BaseConfig) GroupRepository {
-	return &groupRepository{BaseConfig: conf}
+func NewGroup(conf config.BaseConfig) Group {
+	return &group{BaseConfig: conf}
 }

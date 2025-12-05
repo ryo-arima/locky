@@ -1,4 +1,4 @@
-package internal
+package controller
 
 import (
 	"net/http"
@@ -11,14 +11,14 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
-// UserController provides authenticated (non-admin) user operations.
+// UserInternal provides authenticated (non-admin) user operations.
 //
 // This interface exposes standard user operations requiring authentication:
 //   - GetUsers: List users
 //   - UpdateUser: Update user
 //   - DeleteUser: Delete user
 //   - CreateUser: Create user
-type UserController interface {
+type UserInternal interface {
 	GetUsers(c *gin.Context)
 	UpdateUser(c *gin.Context)
 	DeleteUser(c *gin.Context)
@@ -26,16 +26,15 @@ type UserController interface {
 	CountUsers(c *gin.Context) // Added: count
 }
 
-type userController struct {
-	UserUsecase      usecase.UserUsecase
-	CommonRepository repository.CommonRepository
+type userInternal struct {
+	UserUsecase usecase.User
 }
 
 // GetUsers lists users (authenticated).
 //
 // Route: GET /v1/internal/users
 // Security: Bearer token
-func (rcvr userController) GetUsers(c *gin.Context) {
+func (rcvr userInternal) GetUsers(c *gin.Context) {
 	// swagger:operation GET /internal/users users getUsersInternal
 	// ---
 	// summary: Get a list of users.
@@ -105,7 +104,7 @@ func (rcvr userController) GetUsers(c *gin.Context) {
 //
 // Route: PUT /v1/internal/users/{id}
 // Security: Bearer token
-func (rcvr userController) UpdateUser(c *gin.Context) {
+func (rcvr userInternal) UpdateUser(c *gin.Context) {
 	// swagger:operation PUT /internal/users/{id} users updateUserInternal
 	// ---
 	// summary: Update a user.
@@ -149,7 +148,7 @@ func (rcvr userController) UpdateUser(c *gin.Context) {
 //
 // Route: DELETE /v1/internal/users/{id}
 // Security: Bearer token
-func (rcvr userController) DeleteUser(c *gin.Context) {
+func (rcvr userInternal) DeleteUser(c *gin.Context) {
 	// swagger:operation DELETE /internal/users/{id} users deleteUserInternal
 	// ---
 	// summary: Delete a user.
@@ -187,7 +186,7 @@ func (rcvr userController) DeleteUser(c *gin.Context) {
 //
 // Route: POST /v1/internal/users
 // Security: Bearer token
-func (rcvr userController) CreateUser(c *gin.Context) {
+func (rcvr userInternal) CreateUser(c *gin.Context) {
 	// swagger:operation POST /internal/users users createUserInternal
 	// ---
 	// summary: Create a new user.
@@ -226,7 +225,7 @@ func (rcvr userController) CreateUser(c *gin.Context) {
 //
 // Route: GET /v1/internal/users/count
 // Security: Bearer token
-func (rcvr userController) CountUsers(c *gin.Context) {
+func (rcvr userInternal) CountUsers(c *gin.Context) {
 	// swagger:operation GET /internal/users/count users countUsersInternal
 	// ---
 	// summary: Get the count of users.
@@ -287,6 +286,6 @@ func (rcvr userController) CountUsers(c *gin.Context) {
 //
 // Returns:
 //   - UserController: Configured internal controller instance
-func NewUserController(userUsecase usecase.UserUsecase, commonRepository repository.CommonRepository) UserController {
-	return &userController{UserUsecase: userUsecase, CommonRepository: commonRepository}
+func NewUserInternal(userUsecase usecase.User) UserInternal {
+	return &userInternal{UserUsecase: userUsecase}
 }

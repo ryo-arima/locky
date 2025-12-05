@@ -12,7 +12,7 @@ import (
 )
 
 func InitBootstrapMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	bootstrapMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Initialize the members table in the database.",
@@ -26,7 +26,7 @@ func InitBootstrapMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	createMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Create a new member association (internal).",
@@ -49,7 +49,7 @@ func InitCreateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	createMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Create a new member association (admin).",
@@ -72,7 +72,7 @@ func InitCreateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	getMemberCmd := &cobra.Command{
 		Use:     "members",
 		Aliases: []string{"member"},
@@ -87,7 +87,7 @@ func InitGetMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	getMemberCmd := &cobra.Command{
 		Use:     "members",
 		Aliases: []string{"member"},
@@ -102,7 +102,7 @@ func InitGetMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	updateMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Update a member association (internal).",
@@ -133,7 +133,7 @@ func InitUpdateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	updateMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Update a member association (admin).",
@@ -164,7 +164,7 @@ func InitUpdateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	deleteMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Delete a member association (internal).",
@@ -185,7 +185,7 @@ func InitDeleteMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	deleteMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Delete a member association (admin).",

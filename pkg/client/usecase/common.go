@@ -15,7 +15,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type CommonUsecase interface {
+type Common interface {
 	Login(request request.LoginRequest) response.LoginResponse
 	RefreshToken(refreshToken string) response.RefreshTokenResponse
 	Logout(accessToken string) response.CommonResponse
@@ -23,27 +23,27 @@ type CommonUsecase interface {
 	GetUserInfo(accessToken string) response.CommonResponse
 }
 
-type commonUsecase struct {
-	repo repository.CommonRepository
+type common struct {
+	repo repository.Common
 }
 
-func NewCommonUsecase(conf config.BaseConfig) CommonUsecase {
-	return &commonUsecase{repo: repository.NewCommonRepository(conf)}
+func NewCommon(conf config.BaseConfig) Common {
+	return &common{repo: repository.NewCommon(conf)}
 }
 
-func (u *commonUsecase) Login(req request.LoginRequest) response.LoginResponse {
+func (u *common) Login(req request.LoginRequest) response.LoginResponse {
 	return u.repo.Login(req)
 }
-func (u *commonUsecase) RefreshToken(refreshToken string) response.RefreshTokenResponse {
+func (u *common) RefreshToken(refreshToken string) response.RefreshTokenResponse {
 	return u.repo.RefreshToken(refreshToken)
 }
-func (u *commonUsecase) Logout(accessToken string) response.CommonResponse {
+func (u *common) Logout(accessToken string) response.CommonResponse {
 	return u.repo.Logout(accessToken)
 }
-func (u *commonUsecase) ValidateToken(accessToken string) response.ValidateTokenResponse {
+func (u *common) ValidateToken(accessToken string) response.ValidateTokenResponse {
 	return u.repo.ValidateToken(accessToken)
 }
-func (u *commonUsecase) GetUserInfo(accessToken string) response.CommonResponse {
+func (u *common) GetUserInfo(accessToken string) response.CommonResponse {
 	return u.repo.GetUserInfo(accessToken)
 }
 

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type GroupUsecase interface {
+type Group interface {
 	GetGroups(c *gin.Context) ([]response.Group, error)
 	GetGroupByUUID(c *gin.Context, uuid string) (*response.Group, error)
 	GetGroupByID(c *gin.Context, id uint) (*response.Group, error)
@@ -19,12 +19,12 @@ type GroupUsecase interface {
 	CountGroups(c *gin.Context, filter repository.GroupQueryFilter) (int64, error)
 }
 
-type groupUsecase struct {
-	groupRepo repository.GroupRepository
+type group struct {
+	groupRepo repository.Group
 }
 
-func NewGroupUsecase(groupRepo repository.GroupRepository) GroupUsecase {
-	return &groupUsecase{
+func NewGroup(groupRepo repository.Group) Group {
+	return &group{
 		groupRepo: groupRepo,
 	}
 }
@@ -47,12 +47,12 @@ func convertGroupModelsToResponses(groups []model.Groups) []response.Group {
 	return responseGroups
 }
 
-func (uc *groupUsecase) GetGroups(c *gin.Context) ([]response.Group, error) {
+func (uc *group) GetGroups(c *gin.Context) ([]response.Group, error) {
 	groups := uc.groupRepo.GetGroups(c)
 	return convertGroupModelsToResponses(groups), nil
 }
 
-func (uc *groupUsecase) GetGroupByUUID(c *gin.Context, uuid string) (*response.Group, error) {
+func (uc *group) GetGroupByUUID(c *gin.Context, uuid string) (*response.Group, error) {
 	group, err := uc.groupRepo.GetGroupByUUID(c, uuid)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (uc *groupUsecase) GetGroupByUUID(c *gin.Context, uuid string) (*response.G
 	return &resp, nil
 }
 
-func (uc *groupUsecase) GetGroupByID(c *gin.Context, id uint) (*response.Group, error) {
+func (uc *group) GetGroupByID(c *gin.Context, id uint) (*response.Group, error) {
 	group, err := uc.groupRepo.GetGroupByID(c, id)
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (uc *groupUsecase) GetGroupByID(c *gin.Context, id uint) (*response.Group, 
 	return &resp, nil
 }
 
-func (uc *groupUsecase) CreateGroup(c *gin.Context, group *model.Groups) (*response.Group, *gorm.DB) {
+func (uc *group) CreateGroup(c *gin.Context, group *model.Groups) (*response.Group, *gorm.DB) {
 	resDB := uc.groupRepo.CreateGroup(c, group)
 	if resDB.Error != nil {
 		return nil, resDB
@@ -79,7 +79,7 @@ func (uc *groupUsecase) CreateGroup(c *gin.Context, group *model.Groups) (*respo
 	return &resp, resDB
 }
 
-func (uc *groupUsecase) UpdateGroup(c *gin.Context, group *model.Groups) (*response.Group, *gorm.DB) {
+func (uc *group) UpdateGroup(c *gin.Context, group *model.Groups) (*response.Group, *gorm.DB) {
 	resDB := uc.groupRepo.UpdateGroup(c, group)
 	if resDB.Error != nil {
 		return nil, resDB
@@ -88,11 +88,11 @@ func (uc *groupUsecase) UpdateGroup(c *gin.Context, group *model.Groups) (*respo
 	return &resp, resDB
 }
 
-func (uc *groupUsecase) DeleteGroup(c *gin.Context, uuid string) *gorm.DB {
+func (uc *group) DeleteGroup(c *gin.Context, uuid string) *gorm.DB {
 	return uc.groupRepo.DeleteGroup(c, uuid)
 }
 
-func (uc *groupUsecase) ListGroups(c *gin.Context, filter repository.GroupQueryFilter) ([]response.Group, error) {
+func (uc *group) ListGroups(c *gin.Context, filter repository.GroupQueryFilter) ([]response.Group, error) {
 	groups, err := uc.groupRepo.ListGroups(c, filter)
 	if err != nil {
 		return nil, err
@@ -100,6 +100,6 @@ func (uc *groupUsecase) ListGroups(c *gin.Context, filter repository.GroupQueryF
 	return convertGroupModelsToResponses(groups), nil
 }
 
-func (uc *groupUsecase) CountGroups(c *gin.Context, filter repository.GroupQueryFilter) (int64, error) {
+func (uc *group) CountGroups(c *gin.Context, filter repository.GroupQueryFilter) (int64, error) {
 	return uc.groupRepo.CountGroups(c, filter)
 }

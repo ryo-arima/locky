@@ -29,7 +29,7 @@ func (p *permItems) Type() string { return "perm" }
 
 // Admin role get subcommand (under get to match other resources)
 func InitGetRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewRoleUsecase(conf)
+	uc := usecase.NewRole(conf)
 	cmd := &cobra.Command{Use: "roles", Aliases: []string{"role"}, Short: "Get roles (admin)", Args: cobra.MaximumNArgs(1), Run: func(cmd *cobra.Command, args []string) {
 		id := ""
 		if len(args) == 1 {
@@ -42,7 +42,7 @@ func InitGetRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
 
 // Admin role create
 func InitCreateRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewRoleUsecase(conf)
+	uc := usecase.NewRole(conf)
 	perms := permItems{}
 	cmd := &cobra.Command{Use: "role", Short: "Create role (admin)", Args: cobra.ExactArgs(1), Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print(uc.Create(args[0], perms, GetOutputFormat()))
@@ -53,7 +53,7 @@ func InitCreateRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
 
 // Admin role update
 func InitUpdateRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewRoleUsecase(conf)
+	uc := usecase.NewRole(conf)
 	perms := permItems{}
 	cmd := &cobra.Command{Use: "role", Short: "Update role (admin)", Args: cobra.ExactArgs(1), Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print(uc.Update(args[0], perms, GetOutputFormat()))
@@ -64,7 +64,7 @@ func InitUpdateRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
 
 // Admin role delete
 func InitDeleteRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewRoleUsecase(conf)
+	uc := usecase.NewRole(conf)
 	cmd := &cobra.Command{Use: "role", Short: "Delete role (admin)", Args: cobra.ExactArgs(1), Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print(uc.Delete(args[0], GetOutputFormat()))
 	}}
@@ -73,7 +73,7 @@ func InitDeleteRoleCmdForAdmin(conf config.BaseConfig) *cobra.Command {
 
 // App (internal read-only)
 func InitGetRoleCmdForApp(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewRoleUsecase(conf)
+	uc := usecase.NewRole(conf)
 	cmd := &cobra.Command{Use: "roles", Aliases: []string{"role"}, Short: "Get roles (internal)", Args: cobra.MaximumNArgs(1), Run: func(cmd *cobra.Command, args []string) {
 		id := ""
 		if len(args) == 1 {

@@ -9,30 +9,30 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type RoleRepository interface {
+type Role interface {
 	ListRoles(filter repository.RoleFilter) response.RoleResponse
 	CreateRole(req request.RolePermissionRequest) response.RoleResponse
 	UpdateRole(role string, req request.RolePermissionRequest) response.RoleResponse
 	DeleteRole(role string) response.RoleResponse
 }
 
-type roleRepository struct {
+type role struct {
 	base config.BaseConfig
 }
 
-func NewRoleRepository(base config.BaseConfig) RoleRepository {
-	return &roleRepository{base: base}
+func NewRole(base config.BaseConfig) Role {
+	return &role{base: base}
 }
 
-func (r *roleRepository) endpoint(path string) string {
+func (r *role) endpoint(path string) string {
 	return repository.TrimEndpoint(r.base.YamlConfig.Application.Client.ServerEndpoint) + path
 }
 
-func (r *roleRepository) authReq(method, url string, body interface{}, out *response.RoleResponse) error {
+func (r *role) authReq(method, url string, body interface{}, out *response.RoleResponse) error {
 	return repository.SendRequest(method, url, body, out)
 }
 
-func (r *roleRepository) ListRoles(filter repository.RoleFilter) response.RoleResponse {
+func (r *role) ListRoles(filter repository.RoleFilter) response.RoleResponse {
 	url := r.endpoint("/v1/private/roles")
 	if filter.ID != "" {
 		url += "?id=" + filter.ID
@@ -45,7 +45,7 @@ func (r *roleRepository) ListRoles(filter repository.RoleFilter) response.RoleRe
 	return resp
 }
 
-func (r *roleRepository) CreateRole(req request.RolePermissionRequest) response.RoleResponse {
+func (r *role) CreateRole(req request.RolePermissionRequest) response.RoleResponse {
 	var resp response.RoleResponse
 	if req.Role == "" {
 		resp.Code = "ROLE_CREATE_VALIDATION_ERROR"
@@ -60,7 +60,7 @@ func (r *roleRepository) CreateRole(req request.RolePermissionRequest) response.
 	return resp
 }
 
-func (r *roleRepository) UpdateRole(role string, req request.RolePermissionRequest) response.RoleResponse {
+func (r *role) UpdateRole(role string, req request.RolePermissionRequest) response.RoleResponse {
 	var resp response.RoleResponse
 	if role == "" {
 		resp.Code = "ROLE_UPDATE_VALIDATION_ERROR"
@@ -75,7 +75,7 @@ func (r *roleRepository) UpdateRole(role string, req request.RolePermissionReque
 	return resp
 }
 
-func (r *roleRepository) DeleteRole(role string) response.RoleResponse {
+func (r *role) DeleteRole(role string) response.RoleResponse {
 	var resp response.RoleResponse
 	if role == "" {
 		resp.Code = "ROLE_DELETE_VALIDATION_ERROR"

@@ -1,4 +1,4 @@
-package public
+package controller
 
 import (
 	"fmt"
@@ -13,7 +13,6 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 	"github.com/ryo-arima/locky/pkg/logger"
-	"github.com/ryo-arima/locky/pkg/server/repository"
 	share "github.com/ryo-arima/locky/pkg/server/share"
 	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
@@ -26,15 +25,15 @@ import (
 // Available endpoints:
 //   - CreateUser: Handles new user registration
 //   - GetUsers: Retrieves user list (public access)
-type UserController interface {
+type UserPublic interface {
 	CreateUser(c *gin.Context)
 	GetUsers(c *gin.Context)
 }
 
-type userController struct {
-	UserUsecase      usecase.UserUsecase
-	CommonRepository repository.CommonRepository
-	conf             config.BaseConfig
+type userPublic struct {
+	UserUsecase   usecase.User
+	CommonUsecase usecase.Common
+	conf          config.BaseConfig
 }
 
 // CreateUser handles new user registration.
@@ -57,7 +56,7 @@ type userController struct {
 //	200: userResponse
 //	400: errorResponse
 //	500: errorResponse
-func (rcvr userController) CreateUser(c *gin.Context) {
+func (rcvr userPublic) CreateUser(c *gin.Context) {
 	// - name: user
 	//   in: body
 	//   description: The user to create.
@@ -168,7 +167,7 @@ func (rcvr userController) CreateUser(c *gin.Context) {
 //
 //	200: userResponse
 //	400: errorResponse
-func (rcvr userController) GetUsers(c *gin.Context) {
+func (rcvr userPublic) GetUsers(c *gin.Context) {
 	//     schema:
 	//       $ref: "#/definitions/UserResponse"
 	//   "400":
@@ -205,10 +204,10 @@ func (rcvr userController) GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, userResponse)
 }
 
-func NewUserController(userUsecase usecase.UserUsecase, commonRepository repository.CommonRepository, conf config.BaseConfig) UserController {
-	return &userController{
-		UserUsecase:      userUsecase,
-		CommonRepository: commonRepository,
-		conf:             conf,
+func NewUserPublic(userUsecase usecase.User, commonUsecase usecase.Common, conf config.BaseConfig) UserPublic {
+	return &userPublic{
+		UserUsecase:   userUsecase,
+		CommonUsecase: commonUsecase,
+		conf:          conf,
 	}
 }

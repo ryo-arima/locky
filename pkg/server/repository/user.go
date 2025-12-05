@@ -10,7 +10,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/logger"
 )
 
-type UserRepository interface {
+type User interface {
 	GetUsers(c *gin.Context) []model.Users
 	CreateUser(c *gin.Context, user model.Users) model.Users
 	UpdateUser(c *gin.Context, user model.Users) model.Users
@@ -19,11 +19,11 @@ type UserRepository interface {
 	CountUsers(c *gin.Context, filter UserQueryFilter) (int64, error)
 }
 
-type userRepository struct {
+type user struct {
 	BaseConfig config.BaseConfig
 }
 
-func (rcvr userRepository) GetUsers(c *gin.Context) []model.Users {
+func (rcvr user) GetUsers(c *gin.Context) []model.Users {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.RURP1, reqID, "Getting all users from database")
@@ -35,7 +35,7 @@ func (rcvr userRepository) GetUsers(c *gin.Context) []model.Users {
 	return users
 }
 
-func (rcvr userRepository) CreateUser(c *gin.Context, user model.Users) model.Users {
+func (rcvr user) CreateUser(c *gin.Context, user model.Users) model.Users {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.RUCR1, reqID, "Creating user in database: "+user.Email)
@@ -49,7 +49,7 @@ func (rcvr userRepository) CreateUser(c *gin.Context, user model.Users) model.Us
 	return user
 }
 
-func (rcvr userRepository) UpdateUser(c *gin.Context, user model.Users) model.Users {
+func (rcvr user) UpdateUser(c *gin.Context, user model.Users) model.Users {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.RUUP1, reqID, "Updating user in database: "+user.UUID)
@@ -63,7 +63,7 @@ func (rcvr userRepository) UpdateUser(c *gin.Context, user model.Users) model.Us
 	return user
 }
 
-func (rcvr userRepository) DeleteUser(c *gin.Context, user model.Users) model.Users {
+func (rcvr user) DeleteUser(c *gin.Context, user model.Users) model.Users {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.RUDL1, reqID, "Deleting user from database: "+user.UUID)
@@ -101,7 +101,7 @@ func (f *UserQueryFilter) normalize() {
 }
 
 // ListUsers retrieves users with filter and pagination
-func (rcvr userRepository) ListUsers(c *gin.Context, filter UserQueryFilter) ([]model.Users, error) {
+func (rcvr user) ListUsers(c *gin.Context, filter UserQueryFilter) ([]model.Users, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.RULS1, reqID, "Listing users from database with filter")
@@ -149,7 +149,7 @@ func (rcvr userRepository) ListUsers(c *gin.Context, filter UserQueryFilter) ([]
 }
 
 // CountUsers counts users with filter conditions
-func (rcvr userRepository) CountUsers(c *gin.Context, filter UserQueryFilter) (int64, error) {
+func (rcvr user) CountUsers(c *gin.Context, filter UserQueryFilter) (int64, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.RUCT1, reqID, "Counting users in database with filter")
@@ -193,6 +193,6 @@ func (rcvr userRepository) CountUsers(c *gin.Context, filter UserQueryFilter) (i
 	return cnt, nil
 }
 
-func NewUserRepository(conf config.BaseConfig) UserRepository {
-	return &userRepository{BaseConfig: conf}
+func NewUser(conf config.BaseConfig) User {
+	return &user{BaseConfig: conf}
 }

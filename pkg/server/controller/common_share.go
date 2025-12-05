@@ -4,7 +4,7 @@
 //   - Public controllers: No authentication required
 //   - Internal controllers: Authentication required, standard operations
 //   - Private controllers: Admin authentication required
-package public
+package controller
 
 import (
 	"net/http"
@@ -12,14 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
-	"github.com/ryo-arima/locky/pkg/server/repository"
 	share "github.com/ryo-arima/locky/pkg/server/share"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
-// CommonController provides public authentication endpoints.
+// CommonShare provides public authentication endpoints.
 //
 // This interface handles authentication operations that don't require
 // prior authentication, following OpenStack Keystone design patterns.
@@ -30,7 +29,7 @@ import (
 //   - Login: Handles user login and JWT token issuance
 //   - RefreshToken: Refreshes JWT tokens using refresh tokens
 //   - Logout: Handles user logout (token invalidation)
-type CommonController interface {
+type CommonShare interface {
 	ValidateToken(c *gin.Context)
 	GetUserInfo(c *gin.Context)
 	Login(c *gin.Context)
@@ -38,9 +37,9 @@ type CommonController interface {
 	Logout(c *gin.Context)
 }
 
-type commonController struct {
-	UserRepository   repository.UserRepository
-	CommonRepository repository.CommonRepository
+type commonShare struct {
+	UserUsecase   usecase.User
+	CommonUsecase usecase.Common
 }
 
 // ValidateToken validates JWT token and returns user information.
@@ -66,7 +65,7 @@ type commonController struct {
 //	200: tokenValidationResponse
 //	400: errorResponse
 //	401: errorResponse
-func (rcvr commonController) ValidateToken(c *gin.Context) {
+func (rcvr commonPublic) ValidateToken(c *gin.Context) {
 	// Get token from Authorization header
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -84,7 +83,7 @@ func (rcvr commonController) ValidateToken(c *gin.Context) {
 	}
 
 	// Validate token
-	claims, err := rcvr.CommonRepository.ValidateJWTToken(tokenString)
+	claims, err := rcvr.CommonUsecase.ValidateJWTToken(tokenString)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    "COMMON_VALIDATE_002",
@@ -95,7 +94,7 @@ func (rcvr commonController) ValidateToken(c *gin.Context) {
 	}
 
 	// Check if token is in denylist (logged out) - use JTI not the full token
-	isInvalidated, err := rcvr.CommonRepository.IsTokenInvalidated(c.Request.Context(), claims.Jti)
+	isInvalidated, err := rcvr.CommonUsecase.IsTokenInvalidated(c.Request.Context(), claims.Jti)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    "COMMON_VALIDATE_004",
@@ -149,7 +148,7 @@ func (rcvr commonController) ValidateToken(c *gin.Context) {
 //
 //	200: userInfoResponse
 //	401: errorResponse
-func (rcvr commonController) GetUserInfo(c *gin.Context) {
+func (rcvr commonPublic) GetUserInfo(c *gin.Context) {
 	// Get user claims from context (set by middleware)
 	userClaims, exists := share.GetUserClaims(c)
 	if !exists {
@@ -193,7 +192,7 @@ func (rcvr commonController) GetUserInfo(c *gin.Context) {
 //	400: errorResponse
 //	401: errorResponse
 //	500: errorResponse
-func (rcvr commonController) Login(c *gin.Context) {
+func (rcvr commonPublic) Login(c *gin.Context) {
 	var loginRequest request.LoginRequest
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
 		c.JSON(http.StatusBadRequest, &response.LoginResponse{
@@ -212,15 +211,14 @@ func (rcvr commonController) Login(c *gin.Context) {
 		return
 	}
 
-	// Get all users to find matching email
-	users := rcvr.UserRepository.GetUsers(c)
-	var foundUser *model.Users
-
-	for _, user := range users {
-		if user.Email == loginRequest.Email {
-			foundUser = &user
-			break
-		}
+	// Get user by email
+	foundUser, err := rcvr.UserUsecase.GetUserModelByEmail(c, loginRequest.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.LoginResponse{
+			Code:    "AUTH_LOGIN_003",
+			Message: "Failed to retrieve user",
+		})
+		return
 	}
 
 	if foundUser == nil {
@@ -242,7 +240,7 @@ func (rcvr commonController) Login(c *gin.Context) {
 
 	// Determine user role (simple logic - can be enhanced)
 	role := "user"
-	baseConfig := rcvr.CommonRepository.GetBaseConfig()
+	baseConfig := rcvr.CommonUsecase.GetBaseConfig()
 	for _, adminEmail := range baseConfig.YamlConfig.Application.Server.Admin.Emails {
 		if foundUser.Email == adminEmail {
 			role = "admin"
@@ -251,7 +249,7 @@ func (rcvr commonController) Login(c *gin.Context) {
 	}
 
 	// Generate token pair
-	tokenPair, err := rcvr.CommonRepository.GenerateTokenPair(
+	tokenPair, err := rcvr.CommonUsecase.GenerateTokenPair(
 		foundUser.ID,
 		foundUser.UUID,
 		foundUser.Email,
@@ -302,7 +300,7 @@ func (rcvr commonController) Login(c *gin.Context) {
 //	400: errorResponse
 //	401: errorResponse
 //	500: errorResponse
-func (rcvr commonController) RefreshToken(c *gin.Context) {
+func (rcvr commonPublic) RefreshToken(c *gin.Context) {
 	var refreshRequest request.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&refreshRequest); err != nil {
 		c.JSON(http.StatusBadRequest, &response.RefreshTokenResponse{
@@ -313,7 +311,7 @@ func (rcvr commonController) RefreshToken(c *gin.Context) {
 	}
 
 	// Validate refresh token
-	claims, err := rcvr.CommonRepository.ValidateJWTToken(refreshRequest.RefreshToken)
+	claims, err := rcvr.CommonUsecase.ValidateJWTToken(refreshRequest.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, &response.RefreshTokenResponse{
 			Code:    "AUTH_REFRESH_002",
@@ -323,7 +321,7 @@ func (rcvr commonController) RefreshToken(c *gin.Context) {
 	}
 
 	// Generate new token pair
-	tokenPair, err := rcvr.CommonRepository.GenerateTokenPair(
+	tokenPair, err := rcvr.CommonUsecase.GenerateTokenPair(
 		claims.UserID,
 		claims.UUID,
 		claims.Email,
@@ -368,7 +366,7 @@ func (rcvr commonController) RefreshToken(c *gin.Context) {
 //	200: logoutResponse
 //	400: errorResponse
 //	500: errorResponse
-func (rcvr commonController) Logout(c *gin.Context) {
+func (rcvr commonPublic) Logout(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -392,7 +390,7 @@ func (rcvr commonController) Logout(c *gin.Context) {
 	}
 
 	// Invalidate the token by adding it to the Redis denylist
-	err := rcvr.CommonRepository.InvalidateToken(c.Request.Context(), tokenString)
+	err := rcvr.CommonUsecase.InvalidateToken(c.Request.Context(), tokenString)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    "AUTH_LOGOUT_003",
@@ -403,7 +401,7 @@ func (rcvr commonController) Logout(c *gin.Context) {
 	}
 
 	// Delete cache (interface method)
-	rcvr.CommonRepository.DeleteTokenCache(tokenString)
+	rcvr.CommonUsecase.DeleteTokenCache(tokenString)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "SUCCESS",
@@ -411,7 +409,7 @@ func (rcvr commonController) Logout(c *gin.Context) {
 	})
 }
 
-// NewCommonController creates a new instance of CommonController.
+// NewCommonShare creates a new instance of CommonController.
 //
 // This constructor function initializes a new CommonController with the
 // required repository dependencies for handling authentication operations.
@@ -422,9 +420,9 @@ func (rcvr commonController) Logout(c *gin.Context) {
 //
 // Returns:
 //   - CommonController: Configured controller instance ready for use
-func NewCommonController(userRepository repository.UserRepository, commonRepository repository.CommonRepository) CommonController {
-	return &commonController{
-		UserRepository:   userRepository,
-		CommonRepository: commonRepository,
+func NewCommonShare(userUsecase usecase.User, commonUsecase usecase.Common) CommonShare {
+	return &commonShare{
+		UserUsecase:   userUsecase,
+		CommonUsecase: commonUsecase,
 	}
 }

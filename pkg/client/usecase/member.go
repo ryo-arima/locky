@@ -10,7 +10,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type MemberUsecase interface {
+type Member interface {
 	Bootstrap(request request.MemberRequest, format string) string
 	GetInternal(request request.MemberRequest, format string) string
 	GetPrivate(request request.MemberRequest, format string) string
@@ -22,47 +22,47 @@ type MemberUsecase interface {
 	DeletePrivate(request request.MemberRequest, format string) string
 }
 
-type memberUsecase struct {
-	repo repository.MemberRepository
+type member struct {
+	repo repository.Member
 }
 
-func NewMemberUsecase(conf config.BaseConfig) MemberUsecase {
-	return &memberUsecase{repo: repository.NewMemberRepository(conf)}
+func NewMember(conf config.BaseConfig) Member {
+	return &member{repo: repository.NewMember(conf)}
 }
 
-func (u *memberUsecase) Bootstrap(req request.MemberRequest, format string) string {
+func (u *member) Bootstrap(req request.MemberRequest, format string) string {
 	resp := u.repo.BootstrapMemberForDB(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) GetInternal(req request.MemberRequest, format string) string {
+func (u *member) GetInternal(req request.MemberRequest, format string) string {
 	resp := u.repo.GetMemberForInternal(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) GetPrivate(req request.MemberRequest, format string) string {
+func (u *member) GetPrivate(req request.MemberRequest, format string) string {
 	resp := u.repo.GetMemberForPrivate(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) CreateInternal(req request.MemberRequest, format string) string {
+func (u *member) CreateInternal(req request.MemberRequest, format string) string {
 	resp := u.repo.CreateMemberForInternal(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) CreatePrivate(req request.MemberRequest, format string) string {
+func (u *member) CreatePrivate(req request.MemberRequest, format string) string {
 	resp := u.repo.CreateMemberForPrivate(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) UpdateInternal(req request.MemberRequest, format string) string {
+func (u *member) UpdateInternal(req request.MemberRequest, format string) string {
 	resp := u.repo.UpdateMemberForInternal(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) UpdatePrivate(req request.MemberRequest, format string) string {
+func (u *member) UpdatePrivate(req request.MemberRequest, format string) string {
 	resp := u.repo.UpdateMemberForPrivate(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) DeleteInternal(req request.MemberRequest, format string) string {
+func (u *member) DeleteInternal(req request.MemberRequest, format string) string {
 	resp := u.repo.DeleteMemberForInternal(req)
 	return Format(format, resp)
 }
-func (u *memberUsecase) DeletePrivate(req request.MemberRequest, format string) string {
+func (u *member) DeletePrivate(req request.MemberRequest, format string) string {
 	resp := u.repo.DeleteMemberForPrivate(req)
 	return Format(format, resp)
 }

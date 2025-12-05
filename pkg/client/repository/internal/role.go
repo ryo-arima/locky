@@ -8,27 +8,27 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type RoleRepository interface {
+type Role interface {
 	ListRoles(filter repository.RoleFilter) response.RoleResponse
 }
 
-type roleRepository struct {
+type role struct {
 	base config.BaseConfig
 }
 
-func NewRoleRepository(base config.BaseConfig) RoleRepository {
-	return &roleRepository{base: base}
+func NewRole(base config.BaseConfig) Role {
+	return &role{base: base}
 }
 
-func (r *roleRepository) endpoint(path string) string {
+func (r *role) endpoint(path string) string {
 	return repository.TrimEndpoint(r.base.YamlConfig.Application.Client.ServerEndpoint) + path
 }
 
-func (r *roleRepository) authReq(method, url string, body interface{}, out *response.RoleResponse) error {
+func (r *role) authReq(method, url string, body interface{}, out *response.RoleResponse) error {
 	return repository.SendRequest(method, url, body, out)
 }
 
-func (r *roleRepository) ListRoles(filter repository.RoleFilter) response.RoleResponse {
+func (r *role) ListRoles(filter repository.RoleFilter) response.RoleResponse {
 	url := r.endpoint("/v1/internal/roles")
 	if filter.ID != "" {
 		url += "?id=" + filter.ID
