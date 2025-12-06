@@ -13,6 +13,11 @@ import (
 )
 
 func InitRouter(conf config.BaseConfig) *gin.Engine {
+	// Initialize global server logger
+	if logger, ok := conf.Logger.(*share.ServerLogger); ok {
+		share.SetServerLogger(logger)
+	}
+
 	// Set Gin to use our custom logger (if available)
 	if logger, ok := conf.Logger.(share.LoggerInterface); ok {
 		gin.DefaultWriter = share.NewGinLoggerWriter(logger)
