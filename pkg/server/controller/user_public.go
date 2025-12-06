@@ -17,13 +17,6 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
-// Local logger aliases for cleaner logging code
-var (
-	INFO  = share.GetServerLogger().INFO
-	WARN  = share.GetServerLogger().WARN
-	ERROR = share.GetServerLogger().ERROR
-)
-
 // toGlobalMCode converts code.MCode to global.MCode
 func toGlobalMCode(c code.MCode) global.MCode {
 	return global.MCode{
