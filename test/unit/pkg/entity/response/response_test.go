@@ -64,7 +64,7 @@ func TestMemberResponse_Structure(t *testing.T) {
 }
 
 func TestLoginResponse_Structure(t *testing.T) {
-	resp := response.LoginResponse{
+	resp := response.Login{
 		Code:    "SUCCESS",
 		Message: "Login successful",
 	}

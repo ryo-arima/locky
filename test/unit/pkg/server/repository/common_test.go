@@ -305,7 +305,7 @@ func TestCommonRepository_EdgeCases(t *testing.T) {
 				_ = config // Just verify it doesn't panic
 
 				// Verify interface compliance
-				var _ repository.CommonRepository = commonRepo
+				var _ repository.Common = commonRepo
 			}
 		})
 	}

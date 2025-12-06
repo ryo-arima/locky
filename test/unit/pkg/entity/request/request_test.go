@@ -44,7 +44,7 @@ func TestMemberRequest_Structure(t *testing.T) {
 }
 
 func TestLoginRequest_Structure(t *testing.T) {
-	req := request.LoginRequest{
+	req := request.Login{
 		Email:    "user@example.com",
 		Password: "securepassword",
 	}

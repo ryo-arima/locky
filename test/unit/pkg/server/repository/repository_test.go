@@ -74,7 +74,7 @@ func TestHashPassword(t *testing.T) {
 
 func TestVerifyPassword(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	password := "SecurePassword123!"
 	hashed, err := repo.HashPassword(password)
