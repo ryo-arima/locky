@@ -35,22 +35,19 @@ type Role interface {
 }
 
 type role struct {
-	// App-wide (global) permissions: etc/casbin/locky/*. Read-only in this repository.
+	// App-wide permissions: etc/casbin/locky/*. Used for role management.
 	appEnforcer *casbin.Enforcer
-	// Group/resource roles (CRUD target): etc/casbin/resources/*. Focus role CRUD here.
-	resourceEnforcer *casbin.Enforcer
 }
 
-// NewRoleRepository: receives 2 types of Enforcers and returns repository for resource role management.
+// NewRole: receives Enforcer and returns repository for role management.
 //
-//	appEnf      -> etc/casbin/locky/model.conf + policy.csv (app-wide RBAC)
-//	resourceEnf -> etc/casbin/resources/model.conf + policy.csv (group/internal resource RBAC / CRUD target)
-func NewRole(appEnf *casbin.Enforcer, resourceEnf *casbin.Enforcer) Role {
-	return &role{appEnforcer: appEnf, resourceEnforcer: resourceEnf}
+//	appEnf -> etc/casbin/locky/model.conf + policy.csv (app-wide RBAC / CRUD target)
+func NewRole(appEnf *casbin.Enforcer) Role {
+	return &role{appEnforcer: appEnf}
 }
 
 // internal helper: returns the Enforcer that is currently the CRUD target.
-func (rcvr *role) target() *casbin.Enforcer { return rcvr.resourceEnforcer }
+func (rcvr *role) target() *casbin.Enforcer { return rcvr.appEnforcer }
 
 // ListRoles: enumerate subjects in group policy
 func (rcvr *role) ListRoles(c *gin.Context) ([]string, error) {

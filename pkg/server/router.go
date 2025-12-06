@@ -24,21 +24,13 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 		panic(err)
 	}
 
-	// Casbin initialization: app-wide (locky) + group/resource permissions (resources)
+	// Casbin initialization: app-wide (locky) for group/resource permissions
 	appEnforcer, err := casbin.NewEnforcer("etc/casbin/locky/model.conf", "etc/casbin/locky/policy.csv")
 	if err != nil {
 		panic(err)
 	}
 	if err := appEnforcer.LoadPolicy(); err != nil {
 		log.Fatalf("failed to load app casbin policy: %v", err)
-	}
-
-	resourceEnforcer, err := casbin.NewEnforcer("etc/casbin/resources/model.conf", "etc/casbin/resources/policy.csv")
-	if err != nil {
-		panic(err)
-	}
-	if err := resourceEnforcer.LoadPolicy(); err != nil {
-		log.Fatalf("failed to load resource casbin policy: %v", err)
 	}
 
 	userRepository := repository.NewUser(conf)
@@ -62,7 +54,7 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	internalMemberController := controller.NewMemberInternal(memberUsecase)
 	privateMemberController := controller.NewMemberPrivate(memberUsecase)
 
-	roleRepository := repository.NewRole(appEnforcer, resourceEnforcer)
+	roleRepository := repository.NewRole(appEnforcer)
 	roleUsecase := usecase.NewRole(roleRepository)
 	internalRoleController := controller.NewRoleInternal(roleUsecase, appEnforcer)
 	privateRoleController := controller.NewRolePrivate(roleUsecase, appEnforcer)
