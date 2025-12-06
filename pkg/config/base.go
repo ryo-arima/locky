@@ -62,15 +62,17 @@ type Redis struct {
 	DB   IntOrString `yaml:"db"`
 }
 
+// RedisConfig defines Redis-related server configurations
 type RedisConfig struct {
-	JWTCache  bool `yaml:"jwt_cache"`   // Enable JWT token caching in Redis
-	CacheTTL  int  `yaml:"cache_ttl"`   // JWT cache TTL in seconds (0 = use token expiry)
+	JWTCache bool `yaml:"jwt_cache"` // Enable JWT token caching in Redis
+	CacheTTL int  `yaml:"cache_ttl"` // JWT cache TTL in seconds (0 = use token expiry)
 }
 
+// Server defines server-related configurations
 type Server struct {
 	Admin     Admin       `yaml:"admin"`
 	JWTSecret string      `yaml:"jwt_secret"`
-	LogLevel  string      `yaml:"log_level"` // Added: debug / info / warn / error
+	LogLevel  string      `yaml:"log_level"` // debug / info / warn / error
 	Redis     RedisConfig `yaml:"redis"`     // Redis-related configurations
 }
 

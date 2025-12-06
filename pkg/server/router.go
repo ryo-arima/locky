@@ -128,11 +128,11 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	internalAPI.PUT("/user/:id", authz(appEnforcer, "users", "write"), internalUserController.UpdateUser)
 	internalAPI.DELETE("/user/:id", authz(appEnforcer, "users", "write"), internalUserController.DeleteUser)
 	// Private: Administrative user management
-	privateAPI.GET("/users", authz(appEnforcer, "users", "read"), privateUserController.GetUsers)
-	privateAPI.GET("/users/count", authz(appEnforcer, "users", "read"), privateUserController.CountUsers)
-	privateAPI.POST("/user", authz(appEnforcer, "users", "write"), privateUserController.CreateUser)
-	privateAPI.PUT("/user/:id", authz(appEnforcer, "users", "write"), privateUserController.UpdateUser)
-	privateAPI.DELETE("/user/:id", authz(appEnforcer, "users", "write"), privateUserController.DeleteUser)
+	privateAPI.GET("/users", privateUserController.GetUsers)
+	privateAPI.GET("/users/count", privateUserController.CountUsers)
+	privateAPI.POST("/user", privateUserController.CreateUser)
+	privateAPI.PUT("/user/:id", privateUserController.UpdateUser)
+	privateAPI.DELETE("/user/:id", privateUserController.DeleteUser)
 
 	// ============ GROUP ENDPOINTS ============
 	internalAPI.GET("/groups", authz(appEnforcer, "groups", "read"), internalGroupController.GetGroups)
@@ -140,11 +140,11 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	internalAPI.POST("/group", authz(appEnforcer, "groups", "write"), internalGroupController.CreateGroup)
 	internalAPI.PUT("/group/:id", authz(appEnforcer, "groups", "write"), internalGroupController.UpdateGroup)
 	internalAPI.DELETE("/group/:id", authz(appEnforcer, "groups", "write"), internalGroupController.DeleteGroup)
-	privateAPI.GET("/groups", authz(appEnforcer, "groups", "read"), privateGroupController.GetGroups)
-	privateAPI.GET("/groups/count", authz(appEnforcer, "groups", "read"), privateGroupController.CountGroups)
-	privateAPI.POST("/group", authz(appEnforcer, "groups", "write"), privateGroupController.CreateGroup)
-	privateAPI.PUT("/group/:id", authz(appEnforcer, "groups", "write"), privateGroupController.UpdateGroup)
-	privateAPI.DELETE("/group/:id", authz(appEnforcer, "groups", "write"), privateGroupController.DeleteGroup)
+	privateAPI.GET("/groups", privateGroupController.GetGroups)
+	privateAPI.GET("/groups/count", privateGroupController.CountGroups)
+	privateAPI.POST("/group", privateGroupController.CreateGroup)
+	privateAPI.PUT("/group/:id", privateGroupController.UpdateGroup)
+	privateAPI.DELETE("/group/:id", privateGroupController.DeleteGroup)
 
 	// ============ MEMBER ENDPOINTS ============
 	internalAPI.GET("/members", authz(appEnforcer, "members", "read"), internalMemberController.GetMembers)
@@ -152,18 +152,18 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	internalAPI.POST("/member", authz(appEnforcer, "members", "write"), internalMemberController.CreateMember)
 	internalAPI.PUT("/member/:id", authz(appEnforcer, "members", "write"), internalMemberController.UpdateMember)
 	internalAPI.DELETE("/member/:id", authz(appEnforcer, "members", "write"), internalMemberController.DeleteMember)
-	privateAPI.GET("/members", authz(appEnforcer, "members", "read"), privateMemberController.GetMembers)
-	privateAPI.GET("/members/count", authz(appEnforcer, "members", "read"), privateMemberController.CountMembers)
-	privateAPI.POST("/member", authz(appEnforcer, "members", "write"), privateMemberController.CreateMember)
-	privateAPI.PUT("/member/:id", authz(appEnforcer, "members", "write"), privateMemberController.UpdateMember)
-	privateAPI.DELETE("/member/:id", authz(appEnforcer, "members", "write"), privateMemberController.DeleteMember)
+	privateAPI.GET("/members", privateMemberController.GetMembers)
+	privateAPI.GET("/members/count", privateMemberController.CountMembers)
+	privateAPI.POST("/member", privateMemberController.CreateMember)
+	privateAPI.PUT("/member/:id", privateMemberController.UpdateMember)
+	privateAPI.DELETE("/member/:id", privateMemberController.DeleteMember)
 
 	// ===== ROLE (policy driven) =====
 	internalAPI.GET("/roles", authz(appEnforcer, "roles", "read"), internalRoleController.ListRoles)
-	privateAPI.GET("/roles", authz(appEnforcer, "roles", "read"), privateRoleController.ListRoles)
-	privateAPI.POST("/role", authz(appEnforcer, "roles", "write"), privateRoleController.CreateRole)
-	privateAPI.PUT("/role/:id", authz(appEnforcer, "roles", "write"), privateRoleController.UpdateRole)
-	privateAPI.DELETE("/role/:id", authz(appEnforcer, "roles", "write"), privateRoleController.DeleteRole)
+	privateAPI.GET("/roles", privateRoleController.ListRoles)
+	privateAPI.POST("/role", privateRoleController.CreateRole)
+	privateAPI.PUT("/role/:id", privateRoleController.UpdateRole)
+	privateAPI.DELETE("/role/:id", privateRoleController.DeleteRole)
 
 	// ============ RESOURCE ENDPOINTS ============
 	internalAPI.GET("/resources", authz(appEnforcer, "resources", "read"), internalResourceController.GetResources)
@@ -171,11 +171,11 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	internalAPI.POST("/resource", authz(appEnforcer, "resources", "write"), internalResourceController.CreateResource)
 	internalAPI.PUT("/resource/:id", authz(appEnforcer, "resources", "write"), internalResourceController.UpdateResource)
 	internalAPI.DELETE("/resource/:id", authz(appEnforcer, "resources", "write"), internalResourceController.DeleteResource)
-	privateAPI.GET("/resources", authz(appEnforcer, "resources", "read"), privateResourceController.GetResources)
-	privateAPI.GET("/resources/count", authz(appEnforcer, "resources", "read"), privateResourceController.CountResources)
-	privateAPI.POST("/resource", authz(appEnforcer, "resources", "write"), privateResourceController.CreateResource)
-	privateAPI.PUT("/resource/:id", authz(appEnforcer, "resources", "write"), privateResourceController.UpdateResource)
-	privateAPI.DELETE("/resource/:id", authz(appEnforcer, "resources", "write"), privateResourceController.DeleteResource)
+	privateAPI.GET("/resources", privateResourceController.GetResources)
+	privateAPI.GET("/resources/count", privateResourceController.CountResources)
+	privateAPI.POST("/resource", privateResourceController.CreateResource)
+	privateAPI.PUT("/resource/:id", privateResourceController.UpdateResource)
+	privateAPI.DELETE("/resource/:id", privateResourceController.DeleteResource)
 
 	return router
 }
