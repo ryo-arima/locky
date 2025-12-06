@@ -21,40 +21,40 @@ func TestNewCommonUsecase(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	assert.NotNil(t, uc)
 	assert.Equal(t, cfg, uc.GetBaseConfig())
 }
 
-func TestNewGroupUsecase(t *testing.T) {
+func TestNewGroup(t *testing.T) {
 	cfg := config.BaseConfig{}
-	groupRepo := repository.NewGroupRepository(cfg)
+	groupRepo := repository.NewGroup(cfg)
 
-	uc := usecase.NewGroupUsecase(groupRepo)
+	uc := usecase.NewGroup(groupRepo)
 	assert.NotNil(t, uc)
 }
 
-func TestNewMemberUsecase(t *testing.T) {
+func TestNewMember(t *testing.T) {
 	cfg := config.BaseConfig{}
-	memberRepo := repository.NewMemberRepository(cfg)
+	memberRepo := repository.NewMember(cfg)
 
-	uc := usecase.NewMemberUsecase(memberRepo)
+	uc := usecase.NewMember(memberRepo)
 	assert.NotNil(t, uc)
 }
 
-func TestNewRoleUsecase(t *testing.T) {
-	// NewRoleRepository requires casbin.Enforcer instances
+func TestNewRole(t *testing.T) {
+	// NewRole requires casbin.Enforcer instances
 	// Skip this test as it requires complex setup
 	t.Skip("Skipping role usecase test - requires casbin enforcer setup")
 }
 
-func TestNewUserUsecase(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	cfg := config.BaseConfig{}
-	userRepo := repository.NewUserRepository(cfg)
+	userRepo := repository.NewUser(cfg)
 
-	uc := usecase.NewUserUsecase(userRepo)
+	uc := usecase.NewUser(userRepo)
 	assert.NotNil(t, uc)
 }
 
@@ -68,8 +68,8 @@ func TestCommonUsecase_HashPassword(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	password := "SecurePassword123!"
 	hashed, err := uc.HashPassword(password)
@@ -89,8 +89,8 @@ func TestCommonUsecase_VerifyPassword(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	password := "SecurePassword123!"
 	hashed, err := uc.HashPassword(password)
@@ -107,8 +107,8 @@ func TestCommonUsecase_VerifyPassword(t *testing.T) {
 
 func TestCommonUsecase_ValidatePasswordStrength(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	tests := []struct {
 		name     string
@@ -146,8 +146,8 @@ func TestCommonUsecase_ValidatePasswordStrength(t *testing.T) {
 
 func TestCommonUsecase_GenerateJWTSecret(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	secret, err := uc.GenerateJWTSecret()
 	require.NoError(t, err)
@@ -157,8 +157,8 @@ func TestCommonUsecase_GenerateJWTSecret(t *testing.T) {
 
 func TestCommonUsecase_ValidateJWTSecretStrength(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	tests := []struct {
 		name    string
@@ -199,8 +199,8 @@ func TestCommonUsecase_GenerateTokenPair(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	tokens, err := uc.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
 
@@ -220,8 +220,8 @@ func TestCommonUsecase_ValidateJWTToken(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	// Generate a token
 	tokens, err := uc.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
@@ -244,8 +244,8 @@ func TestCommonUsecase_ParseTokenUnverified(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	// Generate a token
 	tokens, err := uc.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
@@ -259,8 +259,8 @@ func TestCommonUsecase_ParseTokenUnverified(t *testing.T) {
 
 func TestCommonUsecase_IsTokenInvalidated(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
-	uc := usecase.NewCommonUsecase(repo)
+	repo := repository.NewCommon(cfg, nil)
+	uc := usecase.NewCommon(repo)
 
 	// Without Redis, this should return false (token is valid)
 	invalidated, err := uc.IsTokenInvalidated(context.Background(), "test-jti")

@@ -12,7 +12,7 @@ import (
 
 func TestNewUserControllerForPublic(t *testing.T) {
 	userRepo := &mock.MockUserRepository{}
-	userUsecase := usecase.NewUserUsecase(userRepo)
+	userUsecase := usecase.NewUser(userRepo)
 	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
 	conf := config.BaseConfig{}
 
@@ -24,7 +24,7 @@ func TestNewUserControllerForPublic(t *testing.T) {
 func TestNewUserControllerForInternal(t *testing.T) {
 	userRepo := &mock.MockUserRepository{}
 	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
-	userUsecase := usecase.NewUserUsecase(userRepo)
+	userUsecase := usecase.NewUser(userRepo)
 
 	ctrl := controller.NewUserInternal(userUsecase, commonRepo)
 
@@ -33,7 +33,7 @@ func TestNewUserControllerForInternal(t *testing.T) {
 
 func TestNewUserControllerForPrivate(t *testing.T) {
 	userRepo := &mock.MockUserRepository{}
-	userUsecase := usecase.NewUserUsecase(userRepo)
+	userUsecase := usecase.NewUser(userRepo)
 	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
 
 	ctrl := controller.NewUserPrivate(userUsecase, commonRepo)
@@ -45,7 +45,7 @@ func TestNewUserControllerForPrivate(t *testing.T) {
 func TestUserUsecaseInitialization(t *testing.T) {
 	userRepo := &mock.MockUserRepository{}
 
-	uc := usecase.NewUserUsecase(userRepo)
+	uc := usecase.NewUser(userRepo)
 
 	assert.NotNil(t, uc)
 }

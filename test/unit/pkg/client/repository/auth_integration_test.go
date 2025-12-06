@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 )
 
@@ -16,7 +15,7 @@ func TestAuthIntegration_UserCreationAndLogin(t *testing.T) {
 	defer testHelper.CleanupDB()
 
 	// Create repositories
-	userRepo := share.NewUserRepository(testHelper.BaseConfig)
+	userRepo := share.NewUser(testHelper.BaseConfig)
 	commonRepo := share.NewCommonRepository(testHelper.BaseConfig)
 
 	// Test data
@@ -209,7 +208,7 @@ func TestAuthIntegration_PasswordValidation(t *testing.T) {
 	testHelper := NewTestHelper()
 	defer testHelper.CleanupDB()
 
-	userRepo := share.NewUserRepository(testHelper.BaseConfig)
+	userRepo := share.NewUser(testHelper.BaseConfig)
 	commonRepo := share.NewCommonRepository(testHelper.BaseConfig)
 
 	passwordTests := []struct {

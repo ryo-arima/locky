@@ -3,7 +3,6 @@ package client
 import (
 	"testing"
 
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +26,7 @@ func TestNewCommonRepository(t *testing.T) {
 	assert.NotNil(t, repo)
 }
 
-func TestNewGroupRepository(t *testing.T) {
+func TestNewGroup(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -38,11 +37,11 @@ func TestNewGroupRepository(t *testing.T) {
 		},
 	}
 
-	repo := share.NewGroupRepository(cfg)
+	repo := share.NewGroup(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewMemberRepository(t *testing.T) {
+func TestNewMember(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -53,11 +52,11 @@ func TestNewMemberRepository(t *testing.T) {
 		},
 	}
 
-	repo := share.NewMemberRepository(cfg)
+	repo := share.NewMember(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewRoleRepository(t *testing.T) {
+func TestNewRole(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -68,11 +67,11 @@ func TestNewRoleRepository(t *testing.T) {
 		},
 	}
 
-	repo := share.NewRoleRepository(cfg)
+	repo := share.NewRole(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewUserRepository(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -83,7 +82,7 @@ func TestNewUserRepository(t *testing.T) {
 		},
 	}
 
-	repo := share.NewUserRepository(cfg)
+	repo := share.NewUser(cfg)
 	assert.NotNil(t, repo)
 }
 
@@ -112,8 +111,8 @@ func TestRepositoryInterfaces(t *testing.T) {
 
 	// Verify all repositories implement their interfaces
 	var _ share.CommonRepository = share.NewCommonRepository(cfg)
-	var _ share.GroupRepository = share.NewGroupRepository(cfg)
-	var _ share.MemberRepository = share.NewMemberRepository(cfg)
-	var _ share.RoleRepository = share.NewRoleRepository(cfg)
-	var _ share.UserRepository = share.NewUserRepository(cfg)
+	var _ share.GroupRepository = share.NewGroup(cfg)
+	var _ share.MemberRepository = share.NewMember(cfg)
+	var _ share.RoleRepository = share.NewRole(cfg)
+	var _ share.UserRepository = share.NewUser(cfg)
 }

@@ -38,13 +38,13 @@ func createMemberTestConfig() config.BaseConfig {
 	}
 }
 
-// TestMemberRepository_NewMemberRepository tests repository creation without database dependency
-func TestMemberRepository_NewMemberRepository(t *testing.T) {
+// TestMemberRepository_NewMember tests repository creation without database dependency
+func TestMemberRepository_NewMember(t *testing.T) {
 	// Setup
 	baseConfig := createMemberTestConfig()
 
 	// Test
-	memberRepo := repository.NewMemberRepository(baseConfig)
+	memberRepo := repository.NewMember(baseConfig)
 
 	// Assert using go-cmp with nil comparison
 	if diff := cmp.Diff(false, memberRepo == nil); diff != "" {
@@ -77,7 +77,7 @@ func TestMemberRepository_InterfaceCompliance(t *testing.T) {
 	}
 
 	// Test
-	memberRepo := repository.NewMemberRepository(baseConfig)
+	memberRepo := repository.NewMember(baseConfig)
 
 	// Assert - verify interface compliance
 	var _ repository.MemberRepository = memberRepo
@@ -125,7 +125,7 @@ func TestMemberRepository_TableDriven(t *testing.T) {
 			}
 
 			// Test
-			memberRepo := repository.NewMemberRepository(baseConfig)
+			memberRepo := repository.NewMember(baseConfig)
 
 			// Assert
 			isNil := memberRepo == nil
@@ -177,7 +177,7 @@ func TestMemberRepository_ConfigurationValidation(t *testing.T) {
 			}
 
 			// Test
-			memberRepo := repository.NewMemberRepository(baseConfig)
+			memberRepo := repository.NewMember(baseConfig)
 
 			// Assert
 			if memberRepo == nil {
@@ -220,7 +220,7 @@ func TestMemberRepository_EdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Test
-			memberRepo := repository.NewMemberRepository(tt.baseConfig)
+			memberRepo := repository.NewMember(tt.baseConfig)
 
 			// Assert - repository should still be created even with minimal config
 			if memberRepo == nil {

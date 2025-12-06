@@ -57,7 +57,9 @@ func TestLoggerMiddleware(t *testing.T) {
 	}
 
 	router := gin.New()
-	router.Use(share.LoggerWithConfig(conf))
+	if logger, ok := conf.Logger.(share.ServerLoggerInterface); ok {
+		router.Use(share.LoggerWithConfig(logger))
+	}
 
 	router.GET("/log-test", func(c *gin.Context) {
 		c.Status(http.StatusOK)

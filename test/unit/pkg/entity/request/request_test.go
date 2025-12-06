@@ -22,7 +22,7 @@ func TestUserRequest_Structure(t *testing.T) {
 }
 
 func TestGroupRequest_Structure(t *testing.T) {
-	req := request.GroupRequest{
+	req := request.Group{
 		UUID: "group-uuid-123",
 		Name: "Test Group",
 	}
@@ -32,7 +32,7 @@ func TestGroupRequest_Structure(t *testing.T) {
 }
 
 func TestMemberRequest_Structure(t *testing.T) {
-	req := request.MemberRequest{
+	req := request.Member{
 		UUID:      "member-uuid-123",
 		UserUUID:  "user-uuid-456",
 		GroupUUID: "group-uuid-789",

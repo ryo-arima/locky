@@ -27,7 +27,7 @@ func TestUserResponse_Structure(t *testing.T) {
 }
 
 func TestGroupResponse_Structure(t *testing.T) {
-	resp := response.GroupResponse{
+	resp := response.Groups{
 		Code:    "SUCCESS",
 		Message: "Group operation successful",
 		Groups: []response.Group{
@@ -45,7 +45,7 @@ func TestGroupResponse_Structure(t *testing.T) {
 }
 
 func TestMemberResponse_Structure(t *testing.T) {
-	resp := response.MemberResponse{
+	resp := response.Members{
 		Code:    "SUCCESS",
 		Message: "Member operation successful",
 		Members: []response.Member{

@@ -320,7 +320,7 @@ func (w *GinLoggerWriter) Write(p []byte) (n int, err error) {
 	}
 
 	// Parse Gin debug/warning/error messages - use empty message to avoid redundancy
-	mcode := global.MCode{"GINLOG", ""}
+	mcode := global.MCode{Code: "GINLOG", Message: ""}
 
 	// Clean up the message - remove [GIN-debug], [GIN-warning], etc prefixes and redundant [WARNING], [ERROR] text
 	cleanMsg := msg

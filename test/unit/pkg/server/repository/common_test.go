@@ -10,7 +10,7 @@ import (
 
 func TestCommonRepository_NewCommonRepository(t *testing.T) {
 	baseConfig := CreateTestConfig()
-	commonRepo := repository.NewCommonRepository(baseConfig, nil)
+	commonRepo := repository.NewCommon(baseConfig, nil)
 
 	// Test that the repository is created successfully
 	if commonRepo == nil {
@@ -56,7 +56,7 @@ func createTestConfig() config.BaseConfig {
 func TestCommonRepository_GetBaseConfig(t *testing.T) {
 	// Setup
 	baseConfig := CreateTestConfig()
-	commonRepo := repository.NewCommonRepository(baseConfig, nil)
+	commonRepo := repository.NewCommon(baseConfig, nil)
 
 	// Test
 	config := commonRepo.GetBaseConfig()
@@ -87,7 +87,7 @@ func TestNewCommonRepository(t *testing.T) {
 	baseConfig := CreateTestConfig()
 
 	// Test
-	commonRepo := repository.NewCommonRepository(baseConfig, nil)
+	commonRepo := repository.NewCommon(baseConfig, nil)
 
 	// Assert using go-cmp
 	if diff := cmp.Diff(false, commonRepo == nil); diff != "" {
@@ -106,7 +106,7 @@ func TestNewCommonRepository(t *testing.T) {
 func TestCommonRepository_GetBaseConfig_Multiple(t *testing.T) {
 	// Setup
 	baseConfig := CreateTestConfig()
-	commonRepo := repository.NewCommonRepository(baseConfig, nil)
+	commonRepo := repository.NewCommon(baseConfig, nil)
 
 	// Test - call GetBaseConfig multiple times
 	config1 := commonRepo.GetBaseConfig()
@@ -132,7 +132,7 @@ func TestCommonRepository_GetBaseConfig_Multiple(t *testing.T) {
 func TestCommonRepository_GetBaseConfig_Validation(t *testing.T) {
 	// Setup
 	baseConfig := CreateTestConfig()
-	commonRepo := repository.NewCommonRepository(baseConfig, nil)
+	commonRepo := repository.NewCommon(baseConfig, nil)
 
 	// Test
 	config := commonRepo.GetBaseConfig()
@@ -208,7 +208,7 @@ func TestCommonRepository_TableDriven(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup
 			baseConfig := CreateTestConfig()
-			commonRepo := repository.NewCommonRepository(baseConfig, nil)
+			commonRepo := repository.NewCommon(baseConfig, nil)
 
 			// Test based on operation
 			var actualValue interface{}
@@ -291,7 +291,7 @@ func TestCommonRepository_EdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Test
-			commonRepo := repository.NewCommonRepository(tt.baseConfig, nil)
+			commonRepo := repository.NewCommon(tt.baseConfig, nil)
 
 			// Assert
 			isNil := commonRepo == nil
@@ -317,7 +317,7 @@ func TestCommonRepository_InterfaceCompliance(t *testing.T) {
 	baseConfig := createTestConfig()
 
 	// Test
-	commonRepo := repository.NewCommonRepository(baseConfig, nil)
+	commonRepo := repository.NewCommon(baseConfig, nil)
 
 	// Assert - verify interface compliance at compile time
 	var _ repository.CommonRepository = commonRepo

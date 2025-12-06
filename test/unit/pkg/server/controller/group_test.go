@@ -3,21 +3,29 @@ package controller_test
 import (
 	"testing"
 
+	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/server/controller"
-	mock "github.com/ryo-arima/locky/test/unit/mock/server"
+	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewGroupControllerForInternal(t *testing.T) {
-	groupRepo := &mock.MockGroupRepository{}
-	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
-	ctrl := controller.NewGroupInternal(groupRepo, commonRepo)
+	cfg := config.BaseConfig{}
+	groupRepo := repository.NewGroup(cfg)
+	commonRepo := repository.NewCommon(cfg, nil)
+	groupUsecase := usecase.NewGroup(groupRepo)
+	commonUsecase := usecase.NewCommon(commonRepo)
+	ctrl := controller.NewGroupInternal(groupUsecase, commonUsecase)
 	assert.NotNil(t, ctrl)
 }
 
 func TestNewGroupControllerForPrivate(t *testing.T) {
-	groupRepo := &mock.MockGroupRepository{}
-	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
-	ctrl := controller.NewGroupPrivate(groupRepo, commonRepo)
+	cfg := config.BaseConfig{}
+	groupRepo := repository.NewGroup(cfg)
+	commonRepo := repository.NewCommon(cfg, nil)
+	groupUsecase := usecase.NewGroup(groupRepo)
+	commonUsecase := usecase.NewCommon(commonRepo)
+	ctrl := controller.NewGroupPrivate(groupUsecase, commonUsecase)
 	assert.NotNil(t, ctrl)
 }
