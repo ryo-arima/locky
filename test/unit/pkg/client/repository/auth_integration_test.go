@@ -61,57 +61,57 @@ func TestAuthIntegration_UserCreationAndLogin(t *testing.T) {
 		// if loginResponse.TokenPair != nil && loginResponse.TokenPair.AccessToken != "" {
 		// 	t.Logf("Login successful! Access Token: %s", loginResponse.TokenPair.AccessToken[:20]+"...")
 
-			// Test 3: Validate the received token
-			t.Run("validate_access_token", func(t *testing.T) {
-				// validateResponse := commonRepo.ValidateToken(loginResponse.TokenPair.AccessToken)
+		// Test 3: Validate the received token
+		t.Run("validate_access_token", func(t *testing.T) {
+			// validateResponse := commonRepo.ValidateToken(loginResponse.TokenPair.AccessToken)
 
-				// Should get a response
-				// if validateResponse.Code == "" && validateResponse.Message == "" {
-				// 	t.Error("Expected validation response, got empty response")
-				// }
+			// Should get a response
+			// if validateResponse.Code == "" && validateResponse.Message == "" {
+			// 	t.Error("Expected validation response, got empty response")
+			// }
 
-				// t.Logf("Token validation response: %+v", validateResponse)
-			})
+			// t.Logf("Token validation response: %+v", validateResponse)
+		})
 
-			// Test 4: Get user info with token
-			t.Run("get_user_info", func(t *testing.T) {
-				// userInfoResponse := commonRepo.GetUserInfo(loginResponse.TokenPair.AccessToken)
+		// Test 4: Get user info with token
+		t.Run("get_user_info", func(t *testing.T) {
+			// userInfoResponse := commonRepo.GetUserInfo(loginResponse.TokenPair.AccessToken)
 
-				// Should get a response
-				// if userInfoResponse.Code == "" && userInfoResponse.Message == "" {
-				// 	t.Error("Expected user info response, got empty response")
-				// }
+			// Should get a response
+			// if userInfoResponse.Code == "" && userInfoResponse.Message == "" {
+			// 	t.Error("Expected user info response, got empty response")
+			// }
 
-				// t.Logf("User info response: %+v", userInfoResponse)
-			})
+			// t.Logf("User info response: %+v", userInfoResponse)
+		})
 
-			// Test 5: Refresh token
-			t.Run("refresh_token", func(t *testing.T) {
-				// if loginResponse.TokenPair.RefreshToken != "" {
-					// refreshResponse := commonRepo.RefreshToken(loginResponse.TokenPair.RefreshToken)
+		// Test 5: Refresh token
+		t.Run("refresh_token", func(t *testing.T) {
+			// if loginResponse.TokenPair.RefreshToken != "" {
+			// refreshResponse := commonRepo.RefreshToken(loginResponse.TokenPair.RefreshToken)
 
-					// Should get a response
-					// if refreshResponse.Code == "" && refreshResponse.Message == "" {
-					// 	t.Error("Expected refresh token response, got empty response")
-					// }
+			// Should get a response
+			// if refreshResponse.Code == "" && refreshResponse.Message == "" {
+			// 	t.Error("Expected refresh token response, got empty response")
+			// }
 
-					// t.Logf("Token refresh response: %+v", refreshResponse)
-				// } else {
-				// 	t.Skip("No refresh token available for testing")
-				// }
-			})
+			// t.Logf("Token refresh response: %+v", refreshResponse)
+			// } else {
+			// 	t.Skip("No refresh token available for testing")
+			// }
+		})
 
-			// Test 6: Logout
-			t.Run("logout", func(t *testing.T) {
-				// logoutResponse := commonRepo.Logout(loginResponse.TokenPair.AccessToken)
+		// Test 6: Logout
+		t.Run("logout", func(t *testing.T) {
+			// logoutResponse := commonRepo.Logout(loginResponse.TokenPair.AccessToken)
 
-				// Should get a response
-				// if logoutResponse.Code == "" && logoutResponse.Message == "" {
-				// 	t.Error("Expected logout response, got empty response")
-				// }
+			// Should get a response
+			// if logoutResponse.Code == "" && logoutResponse.Message == "" {
+			// 	t.Error("Expected logout response, got empty response")
+			// }
 
-				// t.Logf("Logout response: %+v", logoutResponse)
-			})
+			// t.Logf("Logout response: %+v", logoutResponse)
+		})
 		// } else {
 		// 	t.Log("Login did not return valid tokens - this may be expected if server is not running")
 		// }
@@ -127,83 +127,83 @@ func TestAuthIntegration_EdgeCases(t *testing.T) {
 	// commonRepo := // share.NewCommonRepository(testHelper.BaseConfig)
 
 	/*
-	testCases := []struct {
-		name        string
-		description string
-		testFunc    func(t *testing.T, repo // share.CommonRepository)
-	}{
-		{
-			name:        "login_with_invalid_credentials",
-			description: "Should handle login with invalid credentials gracefully",
-			testFunc: func(t *testing.T, repo // share.CommonRepository) {
-				invalidLogin := request.LoginRequest{
-					Email:    "nonexistent@example.com",
-					Password: "wrongpassword",
-				}
+		testCases := []struct {
+			name        string
+			description string
+			testFunc    func(t *testing.T, repo // share.CommonRepository)
+		}{
+			{
+				name:        "login_with_invalid_credentials",
+				description: "Should handle login with invalid credentials gracefully",
+				testFunc: func(t *testing.T, repo // share.CommonRepository) {
+					invalidLogin := request.LoginRequest{
+						Email:    "nonexistent@example.com",
+						Password: "wrongpassword",
+					}
 
-				response := repo.Login(invalidLogin)
+					response := repo.Login(invalidLogin)
 
-				// Should get a response (even if error)
-				if response.Code == "" && response.Message == "" {
-					t.Error("Expected error response for invalid credentials, got empty response")
-				}
+					// Should get a response (even if error)
+					if response.Code == "" && response.Message == "" {
+						t.Error("Expected error response for invalid credentials, got empty response")
+					}
 
-				t.Logf("Invalid login response: %+v", response)
+					t.Logf("Invalid login response: %+v", response)
+				},
 			},
-		},
-		{
-			name:        "validate_invalid_token",
-			description: "Should handle token validation with invalid token",
-			testFunc: func(t *testing.T, repo // share.CommonRepository) {
-				invalidToken := "invalid.jwt.token"
+			{
+				name:        "validate_invalid_token",
+				description: "Should handle token validation with invalid token",
+				testFunc: func(t *testing.T, repo // share.CommonRepository) {
+					invalidToken := "invalid.jwt.token"
 
-				response := repo.ValidateToken(invalidToken)
+					response := repo.ValidateToken(invalidToken)
 
-				// Should get a response (likely error)
-				if response.Code == "" && response.Message == "" {
-					t.Error("Expected response for invalid token, got empty response")
-				}
+					// Should get a response (likely error)
+					if response.Code == "" && response.Message == "" {
+						t.Error("Expected response for invalid token, got empty response")
+					}
 
-				t.Logf("Invalid token validation response: %+v", response)
+					t.Logf("Invalid token validation response: %+v", response)
+				},
 			},
-		},
-		{
-			name:        "refresh_with_invalid_token",
-			description: "Should handle refresh with invalid token",
-			testFunc: func(t *testing.T, repo // share.CommonRepository) {
-				invalidRefreshToken := "invalid.refresh.token"
+			{
+				name:        "refresh_with_invalid_token",
+				description: "Should handle refresh with invalid token",
+				testFunc: func(t *testing.T, repo // share.CommonRepository) {
+					invalidRefreshToken := "invalid.refresh.token"
 
-				response := repo.RefreshToken(invalidRefreshToken)
+					response := repo.RefreshToken(invalidRefreshToken)
 
-				// Should get a response (likely error)
-				if response.Code == "" && response.Message == "" {
-					t.Error("Expected response for invalid refresh token, got empty response")
-				}
+					// Should get a response (likely error)
+					if response.Code == "" && response.Message == "" {
+						t.Error("Expected response for invalid refresh token, got empty response")
+					}
 
-				t.Logf("Invalid refresh token response: %+v", response)
+					t.Logf("Invalid refresh token response: %+v", response)
+				},
 			},
-		},
-		{
-			name:        "logout_without_token",
-			description: "Should handle logout without token",
-			testFunc: func(t *testing.T, repo // share.CommonRepository) {
-				response := repo.Logout("")
+			{
+				name:        "logout_without_token",
+				description: "Should handle logout without token",
+				testFunc: func(t *testing.T, repo // share.CommonRepository) {
+					response := repo.Logout("")
 
-				// Should get a response
-				if response.Code == "" && response.Message == "" {
-					t.Error("Expected response for logout without token, got empty response")
-				}
+					// Should get a response
+					if response.Code == "" && response.Message == "" {
+						t.Error("Expected response for logout without token, got empty response")
+					}
 
-				t.Logf("Logout without token response: %+v", response)
+					t.Logf("Logout without token response: %+v", response)
+				},
 			},
-		},
-	}
+		}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			tc.testFunc(t, commonRepo)
-		})
-	}
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				tc.testFunc(t, commonRepo)
+			})
+		}
 	*/
 }
 
@@ -257,27 +257,27 @@ func TestAuthIntegration_PasswordValidation(t *testing.T) {
 	for i, pwTest := range passwordTests {
 		t.Run(pwTest.name, func(t *testing.T) {
 			/*
-			// Create unique test user for each password test
-			testUser := request.User{
-				Email:    fmt.Sprintf("passwordtest%d@example.com", i),
-				Name:     fmt.Sprintf("Password Test User %d", i),
-				Password: pwTest.password,
-			}
-
-			// Try to create user
-			createResult := userRepo.CreateUserForPublic(testUser)
-			t.Logf("Create user with %s: %+v", pwTest.description, createResult)
-
-			// If user creation got some response, try to login
-			if createResult.Code != "" || createResult.Message != "" {
-				loginRequest := request.LoginRequest{
-					Email:    testUser.Email,
-					Password: testUser.Password,
+				// Create unique test user for each password test
+				testUser := request.User{
+					Email:    fmt.Sprintf("passwordtest%d@example.com", i),
+					Name:     fmt.Sprintf("Password Test User %d", i),
+					Password: pwTest.password,
 				}
 
-				// loginResponse := commonRepo.Login(loginRequest)
-				t.Logf("Login attempt with %s: %+v", pwTest.description, loginResponse)
-			}
+				// Try to create user
+				createResult := userRepo.CreateUserForPublic(testUser)
+				t.Logf("Create user with %s: %+v", pwTest.description, createResult)
+
+				// If user creation got some response, try to login
+				if createResult.Code != "" || createResult.Message != "" {
+					loginRequest := request.LoginRequest{
+						Email:    testUser.Email,
+						Password: testUser.Password,
+					}
+
+					// loginResponse := commonRepo.Login(loginRequest)
+					t.Logf("Login attempt with %s: %+v", pwTest.description, loginResponse)
+				}
 			*/
 			_ = i
 			_ = pwTest
@@ -296,37 +296,37 @@ func TestAuthIntegration_ConcurrentAccess(t *testing.T) {
 	// Test concurrent login attempts
 	t.Run("concurrent_login_attempts", func(t *testing.T) {
 		/*
-		loginRequest := request.LoginRequest{
-			Email:    "concurrent@example.com",
-			Password: "ConcurrentTest123!",
-		}
-
-		// Channel to collect results
-		results := make(chan bool, 3)
-
-		// Launch 3 concurrent login attempts
-		for i := 0; i < 3; i++ {
-			go func(id int) {
-				// response := commonRepo.Login(loginRequest)
-				// Consider it successful if we get any response
-				success := response.Code != "" || response.Message != ""
-				results <- success
-				t.Logf("Concurrent login %d result: %+v", id, response)
-			}(i)
-		}
-
-		// Wait for all results
-		successCount := 0
-		for i := 0; i < 3; i++ {
-			if <-results {
-				successCount++
+			loginRequest := request.LoginRequest{
+				Email:    "concurrent@example.com",
+				Password: "ConcurrentTest123!",
 			}
-		}
 
-		// All attempts should get some response (even if login fails)
-		if successCount != 3 {
-			t.Errorf("Expected 3 responses, got %d successful responses", successCount)
-		}
+			// Channel to collect results
+			results := make(chan bool, 3)
+
+			// Launch 3 concurrent login attempts
+			for i := 0; i < 3; i++ {
+				go func(id int) {
+					// response := commonRepo.Login(loginRequest)
+					// Consider it successful if we get any response
+					success := response.Code != "" || response.Message != ""
+					results <- success
+					t.Logf("Concurrent login %d result: %+v", id, response)
+				}(i)
+			}
+
+			// Wait for all results
+			successCount := 0
+			for i := 0; i < 3; i++ {
+				if <-results {
+					successCount++
+				}
+			}
+
+			// All attempts should get some response (even if login fails)
+			if successCount != 3 {
+				t.Errorf("Expected 3 responses, got %d successful responses", successCount)
+			}
 		*/
 	})
 }
