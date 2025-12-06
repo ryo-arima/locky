@@ -1,28 +1,27 @@
-package internal
+package repository
 
 import (
 	"fmt"
 
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type User interface {
+type UserInternal interface {
 	BootstrapUserForDB(request request.User) response.Users
 	GetUser(request request.User) response.Users
 	UpdateUser(request request.User) response.Users
 	DeleteUser(request request.User) response.Users
 }
 
-type user struct {
+type userInternal struct {
 	BaseConfig config.BaseConfig
 }
 
 // Bootstrap
-func (rcvr *user) BootstrapUserForDB(request request.User) response.Users {
+func (rcvr *userInternal) BootstrapUserForDB(request request.User) response.Users {
 	var resp response.Users
 	fmt.Println("BootstrapUserForDB")
 
@@ -54,10 +53,10 @@ func (rcvr *user) BootstrapUserForDB(request request.User) response.Users {
 }
 
 // GET
-func (rcvr *user) GetUser(request request.User) response.Users {
+func (rcvr *userInternal) GetUser(request request.User) response.Users {
 	var resp response.Users
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/users"
-	err := share.SendRequest("GET", endpoint, nil, &resp)
+	err := SendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_GET_INTERNAL_001"
 		resp.Message = err.Error()
@@ -66,10 +65,10 @@ func (rcvr *user) GetUser(request request.User) response.Users {
 }
 
 // UPDATE
-func (rcvr *user) UpdateUser(request request.User) response.Users {
+func (rcvr *userInternal) UpdateUser(request request.User) response.Users {
 	var resp response.Users
 	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
-	err := share.SendRequest("PUT", endpoint, request, &resp)
+	err := SendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_UPDATE_INTERNAL_001"
 		resp.Message = err.Error()
@@ -78,10 +77,10 @@ func (rcvr *user) UpdateUser(request request.User) response.Users {
 }
 
 // DELETE
-func (rcvr *user) DeleteUser(request request.User) response.Users {
+func (rcvr *userInternal) DeleteUser(request request.User) response.Users {
 	var resp response.Users
 	endpoint := fmt.Sprintf("%s/v1/internal/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
-	err := share.SendRequest("DELETE", endpoint, nil, &resp)
+	err := SendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_DELETE_INTERNAL_001"
 		resp.Message = err.Error()
@@ -89,6 +88,6 @@ func (rcvr *user) DeleteUser(request request.User) response.Users {
 	return resp
 }
 
-func NewUser(conf config.BaseConfig) User {
-	return &user{BaseConfig: conf}
+func NewUserInternal(conf config.BaseConfig) UserInternal {
+	return &userInternal{BaseConfig: conf}
 }

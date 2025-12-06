@@ -65,7 +65,7 @@ type commonShare struct {
 //	200: tokenValidationResponse
 //	400: errorResponse
 //	401: errorResponse
-func (rcvr commonPublic) ValidateToken(c *gin.Context) {
+func (rcvr commonShare) ValidateToken(c *gin.Context) {
 	// Get token from Authorization header
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -148,7 +148,7 @@ func (rcvr commonPublic) ValidateToken(c *gin.Context) {
 //
 //	200: userInfoResponse
 //	401: errorResponse
-func (rcvr commonPublic) GetUserInfo(c *gin.Context) {
+func (rcvr commonShare) GetUserInfo(c *gin.Context) {
 	// Get user claims from context (set by middleware)
 	userClaims, exists := share.GetUserClaims(c)
 	if !exists {
@@ -192,10 +192,10 @@ func (rcvr commonPublic) GetUserInfo(c *gin.Context) {
 //	400: errorResponse
 //	401: errorResponse
 //	500: errorResponse
-func (rcvr commonPublic) Login(c *gin.Context) {
+func (rcvr commonShare) Login(c *gin.Context) {
 	var loginRequest request.Login
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.LoginResponse{
+		c.JSON(http.StatusBadRequest, &response.Login{
 			Code:    "AUTH_LOGIN_001",
 			Message: "Invalid request format: " + err.Error(),
 		})
@@ -204,7 +204,7 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 
 	// Validate required fields
 	if loginRequest.Email == "" || loginRequest.Password == "" {
-		c.JSON(http.StatusBadRequest, &response.LoginResponse{
+		c.JSON(http.StatusBadRequest, &response.Login{
 			Code:    "AUTH_LOGIN_002",
 			Message: "Email and password are required",
 		})
@@ -214,7 +214,7 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 	// Get user by email
 	foundUser, err := rcvr.UserUsecase.GetUserModelByEmail(c, loginRequest.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.LoginResponse{
+		c.JSON(http.StatusInternalServerError, &response.Login{
 			Code:    "AUTH_LOGIN_003",
 			Message: "Failed to retrieve user",
 		})
@@ -222,7 +222,7 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 	}
 
 	if foundUser == nil {
-		c.JSON(http.StatusUnauthorized, &response.LoginResponse{
+		c.JSON(http.StatusUnauthorized, &response.Login{
 			Code:    "AUTH_LOGIN_003",
 			Message: "Invalid email or password",
 		})
@@ -231,7 +231,7 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 
 	// Verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(loginRequest.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, &response.LoginResponse{
+		c.JSON(http.StatusUnauthorized, &response.Login{
 			Code:    "AUTH_LOGIN_004",
 			Message: "Invalid email or password",
 		})
@@ -257,7 +257,7 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 		role,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.LoginResponse{
+		c.JSON(http.StatusInternalServerError, &response.Login{
 			Code:    "AUTH_LOGIN_005",
 			Message: "Failed to generate tokens: " + err.Error(),
 		})
@@ -272,7 +272,7 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 		Name:  foundUser.Name,
 	}
 
-	c.JSON(http.StatusOK, &response.LoginResponse{
+	c.JSON(http.StatusOK, &response.Login{
 		Code:      "SUCCESS",
 		Message:   "Login successful",
 		TokenPair: tokenPair,
@@ -300,10 +300,10 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 //	400: errorResponse
 //	401: errorResponse
 //	500: errorResponse
-func (rcvr commonPublic) RefreshToken(c *gin.Context) {
+func (rcvr commonShare) RefreshToken(c *gin.Context) {
 	var refreshRequest request.RefreshToken
 	if err := c.ShouldBindJSON(&refreshRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.RefreshTokenResponse{
+		c.JSON(http.StatusBadRequest, &response.RefreshToken{
 			Code:    "AUTH_REFRESH_001",
 			Message: "Invalid request format: " + err.Error(),
 		})
@@ -313,7 +313,7 @@ func (rcvr commonPublic) RefreshToken(c *gin.Context) {
 	// Validate refresh token
 	claims, err := rcvr.CommonUsecase.ValidateJWTToken(refreshRequest.RefreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, &response.RefreshTokenResponse{
+		c.JSON(http.StatusUnauthorized, &response.RefreshToken{
 			Code:    "AUTH_REFRESH_002",
 			Message: "Invalid refresh token: " + err.Error(),
 		})
@@ -329,14 +329,14 @@ func (rcvr commonPublic) RefreshToken(c *gin.Context) {
 		claims.Role,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.RefreshTokenResponse{
+		c.JSON(http.StatusInternalServerError, &response.RefreshToken{
 			Code:    "AUTH_REFRESH_003",
 			Message: "Failed to generate new tokens: " + err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, &response.RefreshTokenResponse{
+	c.JSON(http.StatusOK, &response.RefreshToken{
 		Code:      "SUCCESS",
 		Message:   "Token refreshed successfully",
 		TokenPair: tokenPair,
@@ -366,7 +366,7 @@ func (rcvr commonPublic) RefreshToken(c *gin.Context) {
 //	200: logoutResponse
 //	400: errorResponse
 //	500: errorResponse
-func (rcvr commonPublic) Logout(c *gin.Context) {
+func (rcvr commonShare) Logout(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
 		c.JSON(http.StatusBadRequest, gin.H{

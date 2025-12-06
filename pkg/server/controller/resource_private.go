@@ -9,7 +9,6 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
-	"github.com/ryo-arima/locky/pkg/server/repository"
 	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
@@ -68,7 +67,7 @@ func (rcvr *resourcePrivate) GetResources(c *gin.Context) {
 		return
 	}
 
-	resources, err := rcvr.ResourceUsecase.GetResourcesAccessibleAdmin(c, "", repository.ResourceQueryFilter{})
+	resources, err := rcvr.ResourceUsecase.GetResourcesAccessibleAdmin(c, "", model.ResourceQueryFilter{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.Resources{Code: "RESOURCE_LIST_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
@@ -224,7 +223,7 @@ func (rcvr *resourcePrivate) DeleteResource(c *gin.Context) {
 //	"200":
 //	  description: Resource count.
 func (rcvr *resourcePrivate) CountResources(c *gin.Context) {
-	count, err := rcvr.ResourceUsecase.CountResourcesAccessibleAdmin(c, "", repository.ResourceQueryFilter{})
+	count, err := rcvr.ResourceUsecase.CountResourcesAccessibleAdmin(c, "", model.ResourceQueryFilter{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "RESOURCE_COUNT_ERROR", "message": err.Error()})
 		return

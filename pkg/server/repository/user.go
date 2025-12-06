@@ -10,13 +10,6 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
-var (
-	INFO  = share.GetServerLogger().INFO
-	WARN  = share.GetServerLogger().WARN
-	ERROR = share.GetServerLogger().ERROR
-	Mcode = global.Mcode
-)
-
 type User interface {
 	GetUsers(c *gin.Context) []model.Users
 	GetUserByEmail(c *gin.Context, email string) (*model.Users, error)

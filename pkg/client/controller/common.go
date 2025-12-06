@@ -96,16 +96,14 @@ func InitCommonLoginCmd(conf config.BaseConfig) *cobra.Command {
 			}
 
 			if email == "" || password == "" {
-				PrintMessage("Email and password are required")
-				return
-			}
+			PrintMessage("Email and password are required")
+			return
+		}
 
-			loginResponse := uc.Login(request.LoginRequest{
-				Email:    email,
-				Password: password,
-			})
-
-			// Save tokens to environment variables or files for later use
+		loginResponse := uc.Login(request.Login{
+			Email:    email,
+			Password: password,
+		})			// Save tokens to environment variables or files for later use
 			if loginResponse.TokenPair != nil {
 				os.Setenv("LOCKY_ACCESS_TOKEN", loginResponse.TokenPair.AccessToken)
 				os.Setenv("LOCKY_REFRESH_TOKEN", loginResponse.TokenPair.RefreshToken)

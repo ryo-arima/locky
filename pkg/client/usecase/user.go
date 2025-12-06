@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ryo-arima/locky/pkg/client/repository/internal"
-	"github.com/ryo-arima/locky/pkg/client/repository/private"
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
+	"github.com/ryo-arima/locky/pkg/client/repository"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
@@ -25,55 +23,61 @@ type User interface {
 }
 
 type user struct {
-	repo repository.User
+	internalRepo repository.UserInternal
+	privateRepo  repository.UserPrivate
+	publicRepo   repository.UserPublic
 }
 
 func NewUser(conf config.BaseConfig) User {
-	return &user{repo: repository.NewUser(conf)}
+	return &user{
+		internalRepo: repository.NewUserInternal(conf),
+		privateRepo:  repository.NewUserPrivate(conf),
+		publicRepo:   repository.NewUserPublic(conf),
+	}
 }
 
 func (u *user) Bootstrap(req request.User, format string) string {
-	resp := u.repo.BootstrapUserForDB(req)
+	resp := u.internalRepo.BootstrapUserForDB(req)
 	return Format(format, resp)
 }
 
 func (u *user) GetInternal(req request.User, format string) string {
-	resp := u.repo.GetUserForInternal(req)
+	resp := u.internalRepo.GetUser(req)
 	return Format(format, resp)
 }
 
 func (u *user) GetPrivate(req request.User, format string) string {
-	resp := u.repo.GetUserForPrivate(req)
+	resp := u.privateRepo.GetUser(req)
 	return Format(format, resp)
 }
 
 func (u *user) CreatePublic(req request.User, format string) string {
-	resp := u.repo.CreateUserForPublic(req)
+	resp := u.publicRepo.CreateUser(req)
 	return Format(format, resp)
 }
 
 func (u *user) CreatePrivate(req request.User, format string) string {
-	resp := u.repo.CreateUserForPrivate(req)
+	resp := u.privateRepo.CreateUser(req)
 	return Format(format, resp)
 }
 
 func (u *user) UpdateInternal(req request.User, format string) string {
-	resp := u.repo.UpdateUserForInternal(req)
+	resp := u.internalRepo.UpdateUser(req)
 	return Format(format, resp)
 }
 
 func (u *user) UpdatePrivate(req request.User, format string) string {
-	resp := u.repo.UpdateUserForPrivate(req)
+	resp := u.privateRepo.UpdateUser(req)
 	return Format(format, resp)
 }
 
 func (u *user) DeleteInternal(req request.User, format string) string {
-	resp := u.repo.DeleteUserForInternal(req)
+	resp := u.internalRepo.DeleteUser(req)
 	return Format(format, resp)
 }
 
 func (u *user) DeletePrivate(req request.User, format string) string {
-	resp := u.repo.DeleteUserForPrivate(req)
+	resp := u.privateRepo.DeleteUser(req)
 	return Format(format, resp)
 }
 

@@ -18,7 +18,7 @@ func InitBootstrapUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 		Short: "Initialize the users table in the database.",
 		Long:  "This command drops the existing users table and recreates it based on the current model.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.Bootstrap(request.UserRequest{}, GetOutputFormat())
+			out := uc.Bootstrap(request.User{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -36,7 +36,7 @@ func InitCreateUserCmdForAnonymousUser(conf config.BaseConfig) *cobra.Command {
 			name, _ := cmd.Flags().GetString("name")
 			password, _ := cmd.Flags().GetString("password")
 
-			out := uc.CreatePublic(request.UserRequest{
+			out := uc.CreatePublic(request.User{
 				Email:    email,
 				Name:     name,
 				Password: password,
@@ -64,7 +64,7 @@ func InitCreateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			name, _ := cmd.Flags().GetString("name")
 			password, _ := cmd.Flags().GetString("password")
 
-			out := uc.CreatePrivate(request.UserRequest{
+			out := uc.CreatePrivate(request.User{
 				Email:    email,
 				Name:     name,
 				Password: password,
@@ -89,7 +89,7 @@ func InitGetUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 		Short:   "Get a list of users (internal).",
 		Long:    "Retrieves a list of all users visible to an authenticated app user.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetInternal(request.UserRequest{}, GetOutputFormat())
+			out := uc.GetInternal(request.User{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -104,7 +104,7 @@ func InitGetUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 		Short:   "Get a list of users (admin).",
 		Long:    "Retrieves a list of all users visible to an admin.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetPrivate(request.UserRequest{}, GetOutputFormat())
+			out := uc.GetPrivate(request.User{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -125,7 +125,7 @@ func InitUpdateUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.UpdateInternal(request.UserRequest{
+			out := uc.UpdateInternal(request.User{
 				ID:       uint(id),
 				Name:     name,
 				Password: password,
@@ -154,7 +154,7 @@ func InitUpdateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.UpdatePrivate(request.UserRequest{
+			out := uc.UpdatePrivate(request.User{
 				ID:       uint(id),
 				Name:     name,
 				Password: password,
@@ -181,7 +181,7 @@ func InitDeleteUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeleteInternal(request.UserRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeleteInternal(request.User{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -202,7 +202,7 @@ func InitDeleteUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeletePrivate(request.UserRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeletePrivate(request.User{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}

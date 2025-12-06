@@ -1,9 +1,7 @@
 package usecase
 
 import (
-	"github.com/ryo-arima/locky/pkg/client/repository/internal"
-	"github.com/ryo-arima/locky/pkg/client/repository/private"
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
+	"github.com/ryo-arima/locky/pkg/client/repository"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 )
@@ -16,29 +14,35 @@ type Role interface {
 	Delete(role string, format string) string
 }
 
-type role struct{ repo repository.Role }
+type role struct {
+	internalRepo repository.RoleInternal
+	privateRepo  repository.RolePrivate
+}
 
 func NewRole(conf config.BaseConfig) Role {
-	return &role{repo: repository.NewRole(conf)}
+	return &role{
+		internalRepo: repository.NewRoleInternal(conf),
+		privateRepo:  repository.NewRolePrivate(conf),
+	}
 }
 
 func (u *role) ListInternal(id, format string) string {
-	resp := u.repo.ListRolesInternal(share.RoleFilter{ID: id})
+	resp := u.internalRepo.ListRoles(repository.RoleFilter{ID: id})
 	return Format(format, resp)
 }
 func (u *role) ListPrivate(id, format string) string {
-	resp := u.repo.ListRolesPrivate(share.RoleFilter{ID: id})
+	resp := u.privateRepo.ListRoles(repository.RoleFilter{ID: id})
 	return Format(format, resp)
 }
 func (u *role) Create(role string, perms []request.RolePermissionItem, format string) string {
-	resp := u.repo.CreateRole(request.RolePermissionRequest{Role: role, Permissions: perms})
+	resp := u.privateRepo.CreateRole(request.RolePermission{Role: role, Permissions: perms})
 	return Format(format, resp)
 }
 func (u *role) Update(role string, perms []request.RolePermissionItem, format string) string {
-	resp := u.repo.UpdateRole(role, request.RolePermissionRequest{Role: role, Permissions: perms})
+	resp := u.privateRepo.UpdateRole(role, request.RolePermission{Role: role, Permissions: perms})
 	return Format(format, resp)
 }
 func (u *role) Delete(role string, format string) string {
-	resp := u.repo.DeleteRole(role)
+	resp := u.privateRepo.DeleteRole(role)
 	return Format(format, resp)
 }

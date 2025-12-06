@@ -12,10 +12,19 @@ import (
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
+	"github.com/ryo-arima/locky/pkg/global"
 	// "github.com/ryo-arima/locky/pkg/logger"
 	share "github.com/ryo-arima/locky/pkg/server/share"
 	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
+
+// toGlobalMCode converts code.MCode to global.MCode
+func toGlobalMCode(c code.MCode) global.MCode {
+	return global.MCode{
+		Code:    c.Code,
+		Message: c.Message,
+	}
+}
 
 // UserController provides public user management endpoints.
 //
@@ -82,21 +91,21 @@ func (rcvr userPublic) CreateUser(c *gin.Context) {
 	path := c.Request.URL.Path
 
 	// Log request received
-	logger.Info(code.UCPCU0, requestID, method+" "+path)
+	INFO(requestID, toGlobalMCode(code.UCPCU0), method+" "+path)
 
 	if err := c.Bind(&userRequest); err != nil {
-		logger.Warn(code.UCPCU1, requestID, "Bind request failed")
+		WARN(requestID, toGlobalMCode(code.UCPCU1), "Bind request failed")
 		res := &response.Users{Code: code.UCPCU001.Code, Message: err.Error(), Users: []response.User{}}
-		logger.Warn(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+		WARN(requestID, toGlobalMCode(code.UCPCU6), fmt.Sprintf("%d", http.StatusBadRequest))
 		c.JSON(http.StatusBadRequest, res)
 		return
 	}
 
 	// Validate required fields
 	if userRequest.Email == "" || userRequest.Name == "" || userRequest.Password == "" {
-		logger.Warn(code.UCPCU2, requestID, "Required fields missing")
+		WARN(requestID, toGlobalMCode(code.UCPCU2), "Required fields missing")
 		res := &response.Users{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: "email, name, and password are required", Users: []response.User{}}
-		logger.Warn(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+		WARN(requestID, toGlobalMCode(code.UCPCU6), fmt.Sprintf("%d", http.StatusBadRequest))
 		c.JSON(http.StatusBadRequest, res)
 		return
 	}
@@ -105,9 +114,9 @@ func (rcvr userPublic) CreateUser(c *gin.Context) {
 	users, _ := rcvr.UserUsecase.GetUsers(c)
 	for _, user := range users {
 		if user.Email == userRequest.Email {
-			logger.Warn(code.UCPCU3, requestID, "Email already exists")
+			WARN(requestID, toGlobalMCode(code.UCPCU3), "Email already exists")
 			res := &response.Users{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: "email already exists", Users: []response.User{}}
-			logger.Warn(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+			WARN(requestID, toGlobalMCode(code.UCPCU6), fmt.Sprintf("%d", http.StatusBadRequest))
 			c.JSON(http.StatusBadRequest, res)
 			return
 		}
@@ -119,9 +128,9 @@ func (rcvr userPublic) CreateUser(c *gin.Context) {
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userRequest.Password), bcrypt.DefaultCost)
 	if err != nil {
-		logger.Error(code.UCPCU4, requestID, "Password hash failed")
+		ERROR(requestID, toGlobalMCode(code.UCPCU4), "Password hash failed")
 		res := &response.Users{Code: "SERVER_CONTROLLER_CREATE__FOR__004", Message: "failed to hash password", Users: []response.User{}}
-		logger.Error(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusInternalServerError))
+		ERROR(requestID, toGlobalMCode(code.UCPCU6), fmt.Sprintf("%d", http.StatusInternalServerError))
 		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
@@ -143,9 +152,9 @@ func (rcvr userPublic) CreateUser(c *gin.Context) {
 		},
 	}
 
-	logger.Info(code.UCPCU5, requestID, "User created")
+	INFO(requestID, toGlobalMCode(code.UCPCU5), "User created")
 
-	logger.Info(code.UCPCU6, requestID, fmt.Sprintf("%d", http.StatusOK))
+	INFO(requestID, toGlobalMCode(code.UCPCU6), fmt.Sprintf("%d", http.StatusOK))
 	c.JSON(http.StatusOK, userResponse)
 }
 
@@ -180,12 +189,12 @@ func (rcvr userPublic) GetUsers(c *gin.Context) {
 	path := c.Request.URL.Path
 
 	// Log request received
-	logger.Info(code.UCPGU0, requestID, method+" "+path)
+	INFO(requestID, toGlobalMCode(code.UCPGU0), method+" "+path)
 
 	if err := c.Bind(&userRequest); err != nil {
-		logger.Warn(code.UCPGU1, requestID, "Bind request failed")
+		WARN(requestID, toGlobalMCode(code.UCPGU1), "Bind request failed")
 		res := &response.Users{Code: "SERVER_CONTROLLER_GET__FOR__001", Message: err.Error(), Users: []response.User{}}
-		logger.Warn(code.UCPGU3, requestID, fmt.Sprintf("%d", http.StatusBadRequest))
+		WARN(requestID, toGlobalMCode(code.UCPGU3), fmt.Sprintf("%d", http.StatusBadRequest))
 		c.JSON(http.StatusBadRequest, res)
 		return
 	}
@@ -198,9 +207,9 @@ func (rcvr userPublic) GetUsers(c *gin.Context) {
 		Users:   users,
 	}
 
-	logger.Info(code.UCPGU2, requestID, "Users retrieved")
+	INFO(requestID, toGlobalMCode(code.UCPGU2), "Users retrieved")
 
-	logger.Info(code.UCPGU3, requestID, fmt.Sprintf("%d", http.StatusOK))
+	INFO(requestID, toGlobalMCode(code.UCPGU3), fmt.Sprintf("%d", http.StatusOK))
 	c.JSON(http.StatusOK, userResponse)
 }
 

@@ -18,7 +18,7 @@ func InitBootstrapGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 		Short: "Initialize the groups table in the database.",
 		Long:  "This command drops the existing groups table and recreates it based on the current model.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.Bootstrap(request.GroupRequest{}, GetOutputFormat())
+			out := uc.Bootstrap(request.Group{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -33,7 +33,7 @@ func InitCreateGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 		Long:  "Creates a new group with the provided name.",
 		Run: func(cmd *cobra.Command, args []string) {
 			name, _ := cmd.Flags().GetString("name")
-			out := uc.CreateInternal(request.GroupRequest{Name: name}, GetOutputFormat())
+			out := uc.CreateInternal(request.Group{Name: name}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -50,7 +50,7 @@ func InitCreateGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 		Long:  "Creates a new group with the provided name.",
 		Run: func(cmd *cobra.Command, args []string) {
 			name, _ := cmd.Flags().GetString("name")
-			out := uc.CreatePrivate(request.GroupRequest{Name: name}, GetOutputFormat())
+			out := uc.CreatePrivate(request.Group{Name: name}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -67,7 +67,7 @@ func InitGetGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 		Short:   "Get a list of groups (internal).",
 		Long:    "Retrieves a list of all groups visible to an authenticated app user.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetInternal(request.GroupRequest{}, GetOutputFormat())
+			out := uc.GetInternal(request.Group{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -82,7 +82,7 @@ func InitGetGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 		Short:   "Get a list of groups (admin).",
 		Long:    "Retrieves a list of all groups visible to an admin.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetPrivate(request.GroupRequest{}, GetOutputFormat())
+			out := uc.GetPrivate(request.Group{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -104,7 +104,7 @@ func InitUpdateGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 				log.Fatalf("Invalid ID: %v", err)
 			}
 
-			out := uc.UpdateInternal(request.GroupRequest{
+			out := uc.UpdateInternal(request.Group{
 				ID:   uint(id),
 				Name: name,
 			}, GetOutputFormat())
@@ -133,7 +133,7 @@ func InitUpdateGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 				log.Fatalf("Invalid ID: %v", err)
 			}
 
-			out := uc.UpdatePrivate(request.GroupRequest{
+			out := uc.UpdatePrivate(request.Group{
 				ID:   uint(id),
 				Name: name,
 			}, GetOutputFormat())
@@ -159,7 +159,7 @@ func InitDeleteGroupCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeleteInternal(request.GroupRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeleteInternal(request.Group{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -180,7 +180,7 @@ func InitDeleteGroupCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeletePrivate(request.GroupRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeletePrivate(request.Group{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}

@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ryo-arima/locky/pkg/client/repository/internal"
-	"github.com/ryo-arima/locky/pkg/client/repository/private"
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
+	"github.com/ryo-arima/locky/pkg/client/repository"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
@@ -25,52 +23,52 @@ type Group interface {
 }
 
 type group struct {
-	internal internal.Group
-	private  private.Group
+	internalRepo repository.GroupInternal
+	privateRepo  repository.GroupPrivate
 }
 
 func NewGroup(conf config.BaseConfig) Group {
 	return &group{
-		internal: internal.NewGroup(conf),
-		private:  private.NewGroup(conf),
+		internalRepo: repository.NewGroupInternal(conf),
+		privateRepo:  repository.NewGroupPrivate(conf),
 	}
 }
 
 func (u *group) Bootstrap(req request.Group, format string) string {
-	resp := u.internal.BootstrapGroupForDB(req)
+	resp := u.internalRepo.BootstrapGroupForDB(req)
 	return Format(format, resp)
 }
 
 func (u *group) GetInternal(req request.Group, format string) string {
-	resp := u.internal.GetGroupForInternal(req)
+	resp := u.internalRepo.GetGroup(req)
 	return Format(format, resp)
 }
 func (u *group) GetPrivate(req request.Group, format string) string {
-	resp := u.private.GetGroupForPrivate(req)
+	resp := u.privateRepo.GetGroup(req)
 	return Format(format, resp)
 }
 func (u *group) CreateInternal(req request.Group, format string) string {
-	resp := u.internal.CreateGroupForInternal(req)
+	resp := u.internalRepo.CreateGroup(req)
 	return Format(format, resp)
 }
 func (u *group) CreatePrivate(req request.Group, format string) string {
-	resp := u.private.CreateGroupForPrivate(req)
+	resp := u.privateRepo.CreateGroup(req)
 	return Format(format, resp)
 }
 func (u *group) UpdateInternal(req request.Group, format string) string {
-	resp := u.internal.UpdateGroupForInternal(req)
+	resp := u.internalRepo.UpdateGroup(req)
 	return Format(format, resp)
 }
 func (u *group) UpdatePrivate(req request.Group, format string) string {
-	resp := u.private.UpdateGroupForPrivate(req)
+	resp := u.privateRepo.UpdateGroup(req)
 	return Format(format, resp)
 }
 func (u *group) DeleteInternal(req request.Group, format string) string {
-	resp := u.internal.DeleteGroupForInternal(req)
+	resp := u.internalRepo.DeleteGroup(req)
 	return Format(format, resp)
 }
 func (u *group) DeletePrivate(req request.Group, format string) string {
-	resp := u.private.DeleteGroupForPrivate(req)
+	resp := u.privateRepo.DeleteGroup(req)
 	return Format(format, resp)
 }
 

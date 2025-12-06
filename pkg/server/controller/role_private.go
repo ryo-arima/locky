@@ -49,7 +49,7 @@ func (rcvr *rolePrivate) ListRoles(c *gin.Context) {
 func (rcvr *rolePrivate) CreateRole(c *gin.Context) {
 	var req request.RolePermission
 	if err := c.Bind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_CREATE_BIND_ERROR", Message: err.Error(), Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_CREATE_BIND_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
 	if req.Role == "" {
@@ -71,7 +71,7 @@ func (rcvr *rolePrivate) UpdateRole(c *gin.Context) {
 	role := c.Param("id")
 	var req request.RolePermission
 	if err := c.Bind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_UPDATE_BIND_ERROR", Message: err.Error(), Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_UPDATE_BIND_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
 	if role == "" {
@@ -99,5 +99,5 @@ func (rcvr *rolePrivate) DeleteRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_DELETE_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
-	c.JSON(http.StatusOK, response.RoleResponse{Code: "SUCCESS", Message: "Role deleted", Roles: []string{role}})
+	c.JSON(http.StatusOK, response.Roles{Code: "SUCCESS", Message: "Role deleted", Roles: []string{role}})
 }

@@ -1,16 +1,15 @@
-package internal
+package repository
 
 import (
 	"fmt"
 
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type Group interface {
+type GroupInternal interface {
 	BootstrapGroupForDB(request request.Group) response.Groups
 	GetGroup(request request.Group) response.Groups
 	CreateGroup(request request.Group) response.Groups
@@ -18,11 +17,11 @@ type Group interface {
 	DeleteGroup(request request.Group) response.Groups
 }
 
-type group struct {
+type groupInternal struct {
 	BaseConfig config.BaseConfig
 }
 
-func (rcvr *group) BootstrapGroupForDB(request request.Group) response.Groups {
+func (rcvr *groupInternal) BootstrapGroupForDB(request request.Group) response.Groups {
 	var resp response.Groups
 	fmt.Println("BootstrapGroupForDB")
 
@@ -53,10 +52,10 @@ func (rcvr *group) BootstrapGroupForDB(request request.Group) response.Groups {
 	return resp
 }
 
-func (rcvr *group) GetGroup(request request.Group) response.Groups {
+func (rcvr *groupInternal) GetGroup(request request.Group) response.Groups {
 	var resp response.Groups
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/groups"
-	err := repository.SendRequest("GET", endpoint, nil, &resp)
+	err := SendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_GET_INTERNAL_001"
 		resp.Message = err.Error()
@@ -64,10 +63,10 @@ func (rcvr *group) GetGroup(request request.Group) response.Groups {
 	return resp
 }
 
-func (rcvr *group) CreateGroup(request request.Group) response.Groups {
+func (rcvr *groupInternal) CreateGroup(request request.Group) response.Groups {
 	var resp response.Groups
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/group"
-	err := repository.SendRequest("POST", endpoint, request, &resp)
+	err := SendRequest("POST", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_CREATE_INTERNAL_001"
 		resp.Message = err.Error()
@@ -75,10 +74,10 @@ func (rcvr *group) CreateGroup(request request.Group) response.Groups {
 	return resp
 }
 
-func (rcvr *group) UpdateGroup(request request.Group) response.Groups {
+func (rcvr *groupInternal) UpdateGroup(request request.Group) response.Groups {
 	var resp response.Groups
 	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
-	err := repository.SendRequest("PUT", endpoint, request, &resp)
+	err := SendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_UPDATE_INTERNAL_001"
 		resp.Message = err.Error()
@@ -86,10 +85,10 @@ func (rcvr *group) UpdateGroup(request request.Group) response.Groups {
 	return resp
 }
 
-func (rcvr *group) DeleteGroup(request request.Group) response.Groups {
+func (rcvr *groupInternal) DeleteGroup(request request.Group) response.Groups {
 	var resp response.Groups
 	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
-	err := repository.SendRequest("DELETE", endpoint, nil, &resp)
+	err := SendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_GROUP_DELETE_INTERNAL_001"
 		resp.Message = err.Error()
@@ -97,6 +96,6 @@ func (rcvr *group) DeleteGroup(request request.Group) response.Groups {
 	return resp
 }
 
-func NewGroup(conf config.BaseConfig) Group {
-	return &group{BaseConfig: conf}
+func NewGroupInternal(conf config.BaseConfig) GroupInternal {
+	return &groupInternal{BaseConfig: conf}
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/server"
-	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
 var testServer *http.Server
@@ -41,9 +40,6 @@ func StartTestServer() error {
 	}
 
 	os.Setenv("CONFIG_FILE", testConfigPath)
-
-	// Set logger factory
-	config.SetLoggerFactory(share.NewLogger)
 
 	conf := config.NewBaseConfig()
 

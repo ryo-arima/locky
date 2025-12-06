@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ryo-arima/locky/pkg/client/repository/internal"
-	"github.com/ryo-arima/locky/pkg/client/repository/private"
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
+	"github.com/ryo-arima/locky/pkg/client/repository"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
@@ -25,47 +23,51 @@ type Member interface {
 }
 
 type member struct {
-	repo repository.Member
+	internalRepo repository.MemberInternal
+	privateRepo  repository.MemberPrivate
 }
 
 func NewMember(conf config.BaseConfig) Member {
-	return &member{repo: repository.NewMember(conf)}
+	return &member{
+		internalRepo: repository.NewMemberInternal(conf),
+		privateRepo:  repository.NewMemberPrivate(conf),
+	}
 }
 
 func (u *member) Bootstrap(req request.Member, format string) string {
-	resp := u.repo.BootstrapMemberForDB(req)
+	resp := u.internalRepo.BootstrapMemberForDB(req)
 	return Format(format, resp)
 }
 func (u *member) GetInternal(req request.Member, format string) string {
-	resp := u.repo.GetMemberForInternal(req)
+	resp := u.internalRepo.GetMember(req)
 	return Format(format, resp)
 }
 func (u *member) GetPrivate(req request.Member, format string) string {
-	resp := u.repo.GetMemberForPrivate(req)
+	resp := u.privateRepo.GetMember(req)
 	return Format(format, resp)
 }
 func (u *member) CreateInternal(req request.Member, format string) string {
-	resp := u.repo.CreateMemberForInternal(req)
+	resp := u.internalRepo.CreateMember(req)
 	return Format(format, resp)
 }
 func (u *member) CreatePrivate(req request.Member, format string) string {
-	resp := u.repo.CreateMemberForPrivate(req)
+	resp := u.privateRepo.CreateMember(req)
 	return Format(format, resp)
 }
 func (u *member) UpdateInternal(req request.Member, format string) string {
-	resp := u.repo.UpdateMemberForInternal(req)
+	resp := u.internalRepo.UpdateMember(req)
 	return Format(format, resp)
 }
 func (u *member) UpdatePrivate(req request.Member, format string) string {
-	resp := u.repo.UpdateMemberForPrivate(req)
+	resp := u.privateRepo.UpdateMember(req)
 	return Format(format, resp)
 }
 func (u *member) DeleteInternal(req request.Member, format string) string {
-	resp := u.repo.DeleteMemberForInternal(req)
+	resp := u.internalRepo.DeleteMember(req)
 	return Format(format, resp)
 }
 func (u *member) DeletePrivate(req request.Member, format string) string {
-	resp := u.repo.DeleteMemberForPrivate(req)
+	resp := u.privateRepo.DeleteMember(req)
 	return Format(format, resp)
 }
 

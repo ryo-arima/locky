@@ -86,11 +86,21 @@ func main() {
 	conf := config.NewBaseConfig()
 
 	// Initialize logger from share package
-	serverLogger := share.NewServerLogger(conf.YamlConfig.Logger, conf)
+	loggerConfig := share.ServerLoggerConfig{
+		Component:    conf.YamlConfig.Logger.Component,
+		Service:      conf.YamlConfig.Logger.Service,
+		Level:        conf.YamlConfig.Logger.Level,
+		Structured:   conf.YamlConfig.Logger.Structured,
+		EnableCaller: conf.YamlConfig.Logger.EnableCaller,
+		Output:       conf.YamlConfig.Logger.Output,
+	}
+	serverLogger := share.NewServerLogger(loggerConfig, conf)
 	conf.Logger = serverLogger
 
 	// Set global server logger for repository/usecase/controller access
-	share.SetServerLogger(serverLogger)
+	if sl, ok := serverLogger.(*share.ServerLogger); ok {
+		share.SetServerLogger(sl)
+	}
 
 	// サーバー起動時にのみ DB 接続
 	_ = conf.ConnectDB()

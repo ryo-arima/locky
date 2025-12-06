@@ -467,7 +467,7 @@ func (rcvr *common) SendPasswordResetEmail(ctx context.Context, to, name, resetU
 	return rcvr.SendEmail(ctx, to, subject, body, false)
 }
 
-func NewCommon(baseConfig config.BaseConfig, redisClient *redis.Client) share.Common {
+func NewCommon(baseConfig config.BaseConfig, redisClient *redis.Client) Common {
 	// Initialize mail config reference from base config
 	var mailConfig *config.Mail
 	if baseConfig.YamlConfig.Application.Mail.Host != "" {

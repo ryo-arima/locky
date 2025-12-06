@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/ryo-arima/locky/pkg/client/repository/share"
+	"github.com/ryo-arima/locky/pkg/client/repository"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
@@ -24,7 +24,7 @@ type Common interface {
 }
 
 type common struct {
-	repo share.Common
+	repo repository.Common
 }
 
 func NewCommon(conf config.BaseConfig) Common {
@@ -76,9 +76,9 @@ func tableString(v interface{}) string {
 	case *response.Members:
 		return membersTableString(*data)
 	case response.Roles:
-		return share.RolesTableStringAlias(data)
+		return repository.RolesTableStringAlias(data)
 	case *response.Roles:
-		return share.RolesTableStringAlias(*data)
+		return repository.RolesTableStringAlias(*data)
 	case response.Login:
 		return loginTableString(data)
 	case *response.Login:

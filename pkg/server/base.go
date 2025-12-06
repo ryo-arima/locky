@@ -8,11 +8,11 @@ import (
 
 func Main(conf config.BaseConfig) {
 	if logger, ok := conf.Logger.(share.LoggerInterface); ok {
-		logger.INFO(global.SSM1, "Starting locky server on port 8000")
+		logger.INFO("server-init", global.SSM1, "Starting locky server on port 8000")
 	}
 	router := InitRouter(conf)
 	if logger, ok := conf.Logger.(share.LoggerInterface); ok {
-		logger.INFO(global.SSM3, "Server is ready")
+		logger.INFO("server-init", global.SSM3, "Server is ready")
 	}
 	router.Run(":8000")
 }

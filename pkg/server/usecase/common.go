@@ -5,7 +5,7 @@ import (
 
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
-	"github.com/ryo-arima/locky/pkg/server/share"
+	"github.com/ryo-arima/locky/pkg/server/repository"
 )
 
 type Common interface {
@@ -28,10 +28,10 @@ type Common interface {
 }
 
 type common struct {
-	commonRepo share.Common
+	commonRepo repository.Common
 }
 
-func NewCommon(commonRepo share.Common) Common {
+func NewCommon(commonRepo repository.Common) Common {
 	return &common{
 		commonRepo: commonRepo,
 	}

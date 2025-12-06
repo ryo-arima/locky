@@ -62,10 +62,11 @@ func NewResourceInternal(resourceUsecase usecase.Resource) ResourceInternal {
 //	"401":
 //	  description: Unauthorized.
 func (rcvr *resourceInternal) GetResources(c *gin.Context) {
-	INFO(Mcode(SRNRSR1), "GetResources called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "GetResources called")
 	var resourceRequest request.Resource
 	if err := c.Bind(&resourceRequest); err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to bind request")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to bind request")
 		c.JSON(http.StatusBadRequest, &response.Resources{Code: "RESOURCE_BIND_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
@@ -73,7 +74,7 @@ func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 	// Get user UUID from JWT token
 	userUUID, ok := share.GetUserUUID(c)
 	if !ok {
-		ERROR(Mcode(SRNRSR2), "User not authenticated")
+		ERROR(reqID, Mcode(SRNRSR2), "User not authenticated")
 		c.JSON(http.StatusUnauthorized, &response.Resources{Code: "UNAUTHORIZED", Message: "User not authenticated", Resources: []response.Resource{}})
 		return
 	}
@@ -86,11 +87,11 @@ func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 		resource, err := rcvr.ResourceUsecase.GetResourceAccessible(c, userUUID, id)
 		if err != nil {
 			if err.Error() == "access denied" {
-				ERROR(Mcode(SRNRSR2), "Access denied")
+				ERROR(reqID, Mcode(SRNRSR2), "Access denied")
 				c.JSON(http.StatusForbidden, &response.Resources{Code: "ACCESS_DENIED", Message: "User does not have access to this resource", Resources: []response.Resource{}})
 				return
 			}
-			ERROR(Mcode(SRNRSR2), "Resource not found")
+			ERROR(reqID, Mcode(SRNRSR2), "Resource not found")
 			c.JSON(http.StatusNotFound, &response.Resources{Code: "RESOURCE_NOT_FOUND", Message: err.Error(), Resources: []response.Resource{}})
 			return
 		}
@@ -104,7 +105,7 @@ func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 			UpdatedAt: resource.UpdatedAt,
 			DeletedAt: resource.DeletedAt,
 		}
-		INFO(Mcode(SRNRSR1), "GetResources succeeded")
+		INFO(reqID, Mcode(SRNRSR1), "GetResources succeeded")
 		c.JSON(http.StatusOK, &response.Resources{Code: "SUCCESS", Message: "Resource retrieved successfully", Resources: []response.Resource{resp}})
 		return
 	}
@@ -137,7 +138,7 @@ func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 
 	resources, err := rcvr.ResourceUsecase.GetResourcesAccessible(c, userUUID, filter)
 	if err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to list resources")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to list resources")
 		c.JSON(http.StatusInternalServerError, &response.Resources{Code: "RESOURCE_LIST_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
@@ -155,7 +156,7 @@ func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 			DeletedAt: r.DeletedAt,
 		})
 	}
-	INFO(Mcode(SRNRSR1), "GetResources succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "GetResources succeeded")
 	c.JSON(http.StatusOK, &response.Resources{Code: "SUCCESS", Message: "Resources retrieved successfully", Resources: resp})
 }
 
@@ -174,22 +175,23 @@ func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 //	"403":
 //	  description: Forbidden - user does not have editor/owner access.
 func (rcvr *resourceInternal) CreateResource(c *gin.Context) {
-	INFO(Mcode(SRNRSR1), "CreateResource called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "CreateResource called")
 	var resourceRequest request.Resource
 	if err := c.Bind(&resourceRequest); err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to bind request")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to bind request")
 		c.JSON(http.StatusBadRequest, &response.Resources{Code: "RESOURCE_BIND_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
 
 	if resourceRequest.Name == "" {
-		ERROR(Mcode(SRNRSR2), "Resource name is required")
+		ERROR(reqID, Mcode(SRNRSR2), "Resource name is required")
 		c.JSON(http.StatusBadRequest, &response.Resources{Code: "RESOURCE_NAME_REQUIRED", Message: "Resource name is required", Resources: []response.Resource{}})
 		return
 	}
 
 	if resourceRequest.GroupUUID == "" {
-		ERROR(Mcode(SRNRSR2), "Group UUID is required")
+		ERROR(reqID, Mcode(SRNRSR2), "Group UUID is required")
 		c.JSON(http.StatusBadRequest, &response.Resources{Code: "GROUP_UUID_REQUIRED", Message: "Group UUID is required", Resources: []response.Resource{}})
 		return
 	}
@@ -197,7 +199,7 @@ func (rcvr *resourceInternal) CreateResource(c *gin.Context) {
 	// Get user UUID from JWT token
 	userUUID, ok := share.GetUserUUID(c)
 	if !ok {
-		ERROR(Mcode(SRNRSR2), "User not authenticated")
+		ERROR(reqID, Mcode(SRNRSR2), "User not authenticated")
 		c.JSON(http.StatusUnauthorized, &response.Resources{Code: "UNAUTHORIZED", Message: "User not authenticated", Resources: []response.Resource{}})
 		return
 	}
@@ -214,11 +216,11 @@ func (rcvr *resourceInternal) CreateResource(c *gin.Context) {
 
 	if err := rcvr.ResourceUsecase.CreateResourceWithAccess(c, userUUID, resource); err != nil {
 		if err.Error() == "access denied" || err.Error() == "insufficient role to create resource" {
-			ERROR(Mcode(SRNRSR2), "Access denied")
+			ERROR(reqID, Mcode(SRNRSR2), "Access denied")
 			c.JSON(http.StatusForbidden, &response.Resources{Code: "ACCESS_DENIED", Message: err.Error(), Resources: []response.Resource{}})
 			return
 		}
-		ERROR(Mcode(SRNRSR2), "Failed to create resource")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to create resource")
 		c.JSON(http.StatusInternalServerError, &response.Resources{Code: "RESOURCE_CREATE_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
@@ -232,7 +234,7 @@ func (rcvr *resourceInternal) CreateResource(c *gin.Context) {
 		CreatedAt: resource.CreatedAt,
 		UpdatedAt: resource.UpdatedAt,
 	}
-	INFO(Mcode(SRNRSR1), "CreateResource succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "CreateResource succeeded")
 	c.JSON(http.StatusOK, &response.Resources{Code: "SUCCESS", Message: "Resource created successfully", Resources: []response.Resource{resp}})
 }
 
@@ -251,17 +253,18 @@ func (rcvr *resourceInternal) CreateResource(c *gin.Context) {
 //	"403":
 //	  description: Forbidden - user does not have editor/owner access.
 func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
-	INFO(Mcode(SRNRSR1), "UpdateResource called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "UpdateResource called")
 	id := c.Param("id")
 	if id == "" {
-		ERROR(Mcode(SRNRSR2), "Resource ID is required")
+		ERROR(reqID, Mcode(SRNRSR2), "Resource ID is required")
 		c.JSON(http.StatusBadRequest, &response.Resources{Code: "RESOURCE_ID_REQUIRED", Message: "Resource ID is required", Resources: []response.Resource{}})
 		return
 	}
 
 	var resourceRequest request.Resource
 	if err := c.Bind(&resourceRequest); err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to bind request")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to bind request")
 		c.JSON(http.StatusBadRequest, &response.Resources{Code: "RESOURCE_BIND_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
@@ -269,7 +272,7 @@ func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
 	// Get user UUID from JWT token
 	userUUID, ok := share.GetUserUUID(c)
 	if !ok {
-		ERROR(Mcode(SRNRSR2), "User not authenticated")
+		ERROR(reqID, Mcode(SRNRSR2), "User not authenticated")
 		c.JSON(http.StatusUnauthorized, &response.Resources{Code: "UNAUTHORIZED", Message: "User not authenticated", Resources: []response.Resource{}})
 		return
 	}
@@ -278,11 +281,11 @@ func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
 	resource, err := rcvr.ResourceUsecase.GetResourceAccessible(c, userUUID, id)
 	if err != nil {
 		if err.Error() == "access denied" {
-			ERROR(Mcode(SRNRSR2), "Access denied")
+			ERROR(reqID, Mcode(SRNRSR2), "Access denied")
 			c.JSON(http.StatusForbidden, &response.Resources{Code: "ACCESS_DENIED", Message: "User does not have access to this resource", Resources: []response.Resource{}})
 			return
 		}
-		ERROR(Mcode(SRNRSR2), "Resource not found")
+		ERROR(reqID, Mcode(SRNRSR2), "Resource not found")
 		c.JSON(http.StatusNotFound, &response.Resources{Code: "RESOURCE_NOT_FOUND", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
@@ -298,11 +301,11 @@ func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
 
 	if err := rcvr.ResourceUsecase.UpdateResourceWithAccess(c, userUUID, resource); err != nil {
 		if err.Error() == "access denied" || err.Error() == "insufficient role to update resource" {
-			ERROR(Mcode(SRNRSR2), "Access denied")
+			ERROR(reqID, Mcode(SRNRSR2), "Access denied")
 			c.JSON(http.StatusForbidden, &response.Resources{Code: "ACCESS_DENIED", Message: err.Error(), Resources: []response.Resource{}})
 			return
 		}
-		ERROR(Mcode(SRNRSR2), "Failed to update resource")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to update resource")
 		c.JSON(http.StatusInternalServerError, &response.Resources{Code: "RESOURCE_UPDATE_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
@@ -316,7 +319,7 @@ func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
 		CreatedAt: resource.CreatedAt,
 		UpdatedAt: resource.UpdatedAt,
 	}
-	INFO(Mcode(SRNRSR1), "UpdateResource succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "UpdateResource succeeded")
 	c.JSON(http.StatusOK, &response.Resources{Code: "SUCCESS", Message: "Resource updated successfully", Resources: []response.Resource{resp}})
 }
 
@@ -331,10 +334,11 @@ func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
 //	"400":
 //	  description: Bad request.
 func (rcvr *resourceInternal) DeleteResource(c *gin.Context) {
-	INFO(Mcode(SRNRSR1), "DeleteResource called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "DeleteResource called")
 	id := c.Param("id")
 	if id == "" {
-		ERROR(Mcode(SRNRSR2), "Resource ID is required")
+		ERROR(reqID, Mcode(SRNRSR2), "Resource ID is required")
 		c.JSON(http.StatusBadRequest, &response.Resources{Code: "RESOURCE_ID_REQUIRED", Message: "Resource ID is required", Resources: []response.Resource{}})
 		return
 	}
@@ -342,23 +346,23 @@ func (rcvr *resourceInternal) DeleteResource(c *gin.Context) {
 	// Get user UUID and delegate access check to usecase
 	userUUID, ok := share.GetUserUUID(c)
 	if !ok {
-		ERROR(Mcode(SRNRSR2), "User not authenticated")
+		ERROR(reqID, Mcode(SRNRSR2), "User not authenticated")
 		c.JSON(http.StatusUnauthorized, &response.Resources{Code: "UNAUTHORIZED", Message: "User not authenticated", Resources: []response.Resource{}})
 		return
 	}
 
 	if err := rcvr.ResourceUsecase.DeleteResourceWithAccess(c, userUUID, id); err != nil {
 		if err.Error() == "access denied" || err.Error() == "insufficient role to delete resource" {
-			ERROR(Mcode(SRNRSR2), "Access denied")
+			ERROR(reqID, Mcode(SRNRSR2), "Access denied")
 			c.JSON(http.StatusForbidden, &response.Resources{Code: "ACCESS_DENIED", Message: err.Error(), Resources: []response.Resource{}})
 			return
 		}
-		ERROR(Mcode(SRNRSR2), "Failed to delete resource")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to delete resource")
 		c.JSON(http.StatusInternalServerError, &response.Resources{Code: "RESOURCE_DELETE_ERROR", Message: err.Error(), Resources: []response.Resource{}})
 		return
 	}
 
-	INFO(Mcode(SRNRSR1), "DeleteResource succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "DeleteResource succeeded")
 	c.JSON(http.StatusOK, &response.Resources{Code: "SUCCESS", Message: "Resource deleted successfully", Resources: []response.Resource{}})
 }
 
@@ -371,11 +375,12 @@ func (rcvr *resourceInternal) DeleteResource(c *gin.Context) {
 //	"200":
 //	  description: Resource count.
 func (rcvr *resourceInternal) CountResources(c *gin.Context) {
-	INFO(Mcode(SRNRSR1), "CountResources called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "CountResources called")
 	// Get user UUID
 	userUUID, ok := share.GetUserUUID(c)
 	if !ok {
-		ERROR(Mcode(SRNRSR2), "User not authenticated")
+		ERROR(reqID, Mcode(SRNRSR2), "User not authenticated")
 		c.JSON(http.StatusUnauthorized, gin.H{"code": "UNAUTHORIZED", "message": "User not authenticated"})
 		return
 	}
@@ -391,10 +396,10 @@ func (rcvr *resourceInternal) CountResources(c *gin.Context) {
 
 	count, err := rcvr.ResourceUsecase.CountResourcesAccessible(c, userUUID, filter)
 	if err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to count resources")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to count resources")
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "RESOURCE_COUNT_ERROR", "message": err.Error()})
 		return
 	}
-	INFO(Mcode(SRNRSR1), "CountResources succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "CountResources succeeded")
 	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Resource count retrieved", "count": count})
 }
