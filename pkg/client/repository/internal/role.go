@@ -9,7 +9,7 @@ import (
 )
 
 type Role interface {
-	ListRoles(filter share.RoleFilter) response.RoleResponse
+	ListRoles(filter share.RoleFilter) response.Roles
 }
 
 type role struct {
@@ -21,19 +21,19 @@ func NewRole(base config.BaseConfig) Role {
 }
 
 func (r *role) endpoint(path string) string {
-	return repository.TrimEndpoint(r.base.YamlConfig.Application.Client.ServerEndpoint) + path
+	return share.TrimEndpoint(r.base.YamlConfig.Application.Client.ServerEndpoint) + path
 }
 
-func (r *role) authReq(method, url string, body interface{}, out *response.RoleResponse) error {
-	return repository.SendRequest(method, url, body, out)
+func (r *role) authReq(method, url string, body interface{}, out *response.Roles) error {
+	return share.SendRequest(method, url, body, out)
 }
 
-func (r *role) ListRoles(filter share.RoleFilter) response.RoleResponse {
+func (r *role) ListRoles(filter share.RoleFilter) response.Roles {
 	url := r.endpoint("/v1/internal/roles")
 	if filter.ID != "" {
 		url += "?id=" + filter.ID
 	}
-	var resp response.RoleResponse
+	var resp response.Roles
 	if err := r.authReq(http.MethodGet, url, nil, &resp); err != nil {
 		resp.Code = "ROLE_LIST_ERROR"
 		resp.Message = err.Error()

@@ -10,10 +10,10 @@ import (
 )
 
 type User interface {
-	GetUser(request request.UserRequest) response.UserResponse
-	CreateUser(request request.UserRequest) response.UserResponse
-	UpdateUser(request request.UserRequest) response.UserResponse
-	DeleteUser(request request.UserRequest) response.UserResponse
+	GetUser(request request.User) response.Users
+	CreateUser(request request.User) response.Users
+	UpdateUser(request request.User) response.Users
+	DeleteUser(request request.User) response.Users
 }
 
 type user struct {
@@ -21,10 +21,10 @@ type user struct {
 }
 
 // GET
-func (rcvr *user) GetUser(request request.UserRequest) response.UserResponse {
-	var resp response.UserResponse
+func (rcvr *user) GetUser(request request.User) response.Users {
+	var resp response.Users
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/users"
-	err := repository.SendRequest("GET", endpoint, nil, &resp)
+	err := share.SendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_GET_PRIVATE_001"
 		resp.Message = err.Error()
@@ -33,10 +33,10 @@ func (rcvr *user) GetUser(request request.UserRequest) response.UserResponse {
 }
 
 // CREATE
-func (rcvr *user) CreateUser(request request.UserRequest) response.UserResponse {
-	var resp response.UserResponse
+func (rcvr *user) CreateUser(request request.User) response.Users {
+	var resp response.Users
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/private/user"
-	err := repository.SendRequest("POST", endpoint, request, &resp)
+	err := share.SendRequest("POST", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_CREATE_PRIVATE_001"
 		resp.Message = err.Error()
@@ -45,10 +45,10 @@ func (rcvr *user) CreateUser(request request.UserRequest) response.UserResponse 
 }
 
 // UPDATE
-func (rcvr *user) UpdateUser(request request.UserRequest) response.UserResponse {
-	var resp response.UserResponse
+func (rcvr *user) UpdateUser(request request.User) response.Users {
+	var resp response.Users
 	endpoint := fmt.Sprintf("%s/v1/private/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
-	err := repository.SendRequest("PUT", endpoint, request, &resp)
+	err := share.SendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_UPDATE_PRIVATE_001"
 		resp.Message = err.Error()
@@ -57,10 +57,10 @@ func (rcvr *user) UpdateUser(request request.UserRequest) response.UserResponse 
 }
 
 // DELETE
-func (rcvr *user) DeleteUser(request request.UserRequest) response.UserResponse {
-	var resp response.UserResponse
+func (rcvr *user) DeleteUser(request request.User) response.Users {
+	var resp response.Users
 	endpoint := fmt.Sprintf("%s/v1/private/user/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
-	err := repository.SendRequest("DELETE", endpoint, nil, &resp)
+	err := share.SendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {
 		resp.Code = "CLIENT_USER_DELETE_PRIVATE_001"
 		resp.Message = err.Error()

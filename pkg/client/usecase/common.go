@@ -16,11 +16,11 @@ import (
 )
 
 type Common interface {
-	Login(request request.LoginRequest) response.LoginResponse
-	RefreshToken(refreshToken string) response.RefreshTokenResponse
-	Logout(accessToken string) response.CommonResponse
-	ValidateToken(accessToken string) response.ValidateTokenResponse
-	GetUserInfo(accessToken string) response.CommonResponse
+	Login(request request.Login) response.Login
+	RefreshToken(refreshToken string) response.RefreshToken
+	Logout(accessToken string) response.Commons
+	ValidateToken(accessToken string) response.ValidateToken
+	GetUserInfo(accessToken string) response.Commons
 }
 
 type common struct {
@@ -31,19 +31,19 @@ func NewCommon(conf config.BaseConfig) Common {
 	return &common{repo: repository.NewCommon(conf)}
 }
 
-func (u *common) Login(req request.LoginRequest) response.LoginResponse {
+func (u *common) Login(req request.Login) response.Login {
 	return u.repo.Login(req)
 }
-func (u *common) RefreshToken(refreshToken string) response.RefreshTokenResponse {
+func (u *common) RefreshToken(refreshToken string) response.RefreshToken {
 	return u.repo.RefreshToken(refreshToken)
 }
-func (u *common) Logout(accessToken string) response.CommonResponse {
+func (u *common) Logout(accessToken string) response.Commons {
 	return u.repo.Logout(accessToken)
 }
-func (u *common) ValidateToken(accessToken string) response.ValidateTokenResponse {
+func (u *common) ValidateToken(accessToken string) response.ValidateToken {
 	return u.repo.ValidateToken(accessToken)
 }
-func (u *common) GetUserInfo(accessToken string) response.CommonResponse {
+func (u *common) GetUserInfo(accessToken string) response.Commons {
 	return u.repo.GetUserInfo(accessToken)
 }
 
@@ -63,33 +63,33 @@ func Format(format string, v interface{}) string {
 
 func tableString(v interface{}) string {
 	switch data := v.(type) {
-	case response.UserResponse:
+	case response.Users:
 		return usersTableString(data)
-	case *response.UserResponse:
+	case *response.Users:
 		return usersTableString(*data)
-	case response.GroupResponse:
+	case response.Groups:
 		return groupsTableString(data)
-	case *response.GroupResponse:
+	case *response.Groups:
 		return groupsTableString(*data)
-	case response.MemberResponse:
+	case response.Members:
 		return membersTableString(data)
-	case *response.MemberResponse:
+	case *response.Members:
 		return membersTableString(*data)
-	case response.RoleResponse:
-		return repository.RolesTableStringAlias(data)
-	case *response.RoleResponse:
-		return repository.RolesTableStringAlias(*data)
-	case response.LoginResponse:
+	case response.Roles:
+		return share.RolesTableStringAlias(data)
+	case *response.Roles:
+		return share.RolesTableStringAlias(*data)
+	case response.Login:
 		return loginTableString(data)
-	case *response.LoginResponse:
+	case *response.Login:
 		return loginTableString(*data)
-	case response.RefreshTokenResponse:
+	case response.RefreshToken:
 		return refreshTableString(data)
-	case *response.RefreshTokenResponse:
+	case *response.RefreshToken:
 		return refreshTableString(*data)
-	case response.CommonResponse:
+	case response.Commons:
 		return commonTableString(data)
-	case *response.CommonResponse:
+	case *response.Commons:
 		return commonTableString(*data)
 	default:
 		b, _ := json.Marshal(data)
@@ -103,7 +103,7 @@ func newTabWriterBuf() (*tabwriter.Writer, *bytes.Buffer) {
 	return w, buf
 }
 
-func loginTableString(res response.LoginResponse) string {
+func loginTableString(res response.Login) string {
 	w, buf := newTabWriterBuf()
 	fmt.Fprintln(w, strings.Join([]string{"FIELD", "VALUE"}, "\t"))
 	fmt.Fprintf(w, "Code\t%s\n", res.Code)
@@ -121,7 +121,7 @@ func loginTableString(res response.LoginResponse) string {
 	return buf.String()
 }
 
-func refreshTableString(res response.RefreshTokenResponse) string {
+func refreshTableString(res response.RefreshToken) string {
 	w, buf := newTabWriterBuf()
 	fmt.Fprintln(w, strings.Join([]string{"FIELD", "VALUE"}, "\t"))
 	fmt.Fprintf(w, "Code\t%s\n", res.Code)
@@ -136,7 +136,7 @@ func refreshTableString(res response.RefreshTokenResponse) string {
 	return buf.String()
 }
 
-func commonTableString(res response.CommonResponse) string {
+func commonTableString(res response.Commons) string {
 	w, buf := newTabWriterBuf()
 	fmt.Fprintln(w, strings.Join([]string{"CODE", "MESSAGE"}, "\t"))
 	fmt.Fprintf(w, "%s\t%s\n", res.Code, res.Message)

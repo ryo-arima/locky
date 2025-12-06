@@ -10,10 +10,10 @@ import (
 )
 
 type Role interface {
-	ListRoles(filter share.RoleFilter) response.RoleResponse
-	CreateRole(req request.RolePermissionRequest) response.RoleResponse
-	UpdateRole(role string, req request.RolePermissionRequest) response.RoleResponse
-	DeleteRole(role string) response.RoleResponse
+	ListRoles(filter share.RoleFilter) response.Roles
+	CreateRole(req request.RolePermission) response.Roles
+	UpdateRole(role string, req request.RolePermission) response.Roles
+	DeleteRole(role string) response.Roles
 }
 
 type role struct {
@@ -25,7 +25,7 @@ func NewRole(base config.BaseConfig) Role {
 }
 
 func (r *role) endpoint(path string) string {
-	return repository.TrimEndpoint(r.base.YamlConfig.Application.Client.ServerEndpoint) + path
+	return share.TrimEndpoint(r.base.YamlConfig.Application.Client.ServerEndpoint) + path
 }
 
 func (r *role) authReq(method, url string, body interface{}, out *response.RoleResponse) error {

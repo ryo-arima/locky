@@ -4,10 +4,17 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ryo-arima/locky/pkg/code"
+	"github.com/ryo-arima/locky/pkg/global"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
-	// "github.com/ryo-arima/locky/pkg/logger"
+	"github.com/ryo-arima/locky/pkg/server/share"
+)
+
+var (
+	INFO  = share.GetServerLogger().INFO
+	WARN  = share.GetServerLogger().WARN
+	ERROR = share.GetServerLogger().ERROR
+	Mcode = global.Mcode
 )
 
 type User interface {
@@ -25,14 +32,13 @@ type user struct {
 }
 
 func (rcvr user) GetUsers(c *gin.Context) []model.Users {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.RURP1, reqID, "Getting all users from database")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, global.SRNRSR1, "Getting all users from database")
 
 	var users []model.Users
 	rcvr.BaseConfig.DBConnection.Find(&users)
 
-	logger.Info(code.RURP1, reqID, "Retrieved users from database")
+	INFO(reqID, global.SRNRSR1, "Retrieved users from database")
 	return users
 }
 
@@ -45,44 +51,41 @@ func (rcvr user) GetUserByEmail(c *gin.Context, email string) (*model.Users, err
 }
 
 func (rcvr user) CreateUser(c *gin.Context, user model.Users) model.Users {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.RUCR1, reqID, "Creating user in database: "+user.Email)
+	reqID := share.GetRequestID(c)
+	INFO(reqID, global.SRNRSR1, "Creating user in database: "+user.Email)
 
 	if err := rcvr.BaseConfig.DBConnection.Create(&user).Error; err != nil {
-		logger.Error(code.RUCR1, reqID, "Failed to create user: "+err.Error())
+		ERROR(reqID, global.SRNRSR2, "Failed to create user: "+err.Error())
 		return model.Users{}
 	}
 
-	logger.Info(code.RUCR1, reqID, "User created in database: "+user.UUID)
+	INFO(reqID, global.SRNRSR1, "User created in database: "+user.UUID)
 	return user
 }
 
 func (rcvr user) UpdateUser(c *gin.Context, user model.Users) model.Users {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.RUUP1, reqID, "Updating user in database: "+user.UUID)
+	reqID := share.GetRequestID(c)
+	INFO(reqID, global.SRNRSR1, "Updating user in database: "+user.UUID)
 
 	if err := rcvr.BaseConfig.DBConnection.Save(&user).Error; err != nil {
-		logger.Error(code.RUUP1, reqID, "Failed to update user: "+err.Error())
+		ERROR(reqID, global.SRNRSR2, "Failed to update user: "+err.Error())
 		return model.Users{}
 	}
 
-	logger.Info(code.RUUP1, reqID, "User updated in database: "+user.UUID)
+	INFO(reqID, global.SRNRSR1, "User updated in database: "+user.UUID)
 	return user
 }
 
 func (rcvr user) DeleteUser(c *gin.Context, user model.Users) model.Users {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.RUDL1, reqID, "Deleting user from database: "+user.UUID)
+	reqID := share.GetRequestID(c)
+	INFO(reqID, global.SRNRSR1, "Deleting user from database: "+user.UUID)
 
 	if err := rcvr.BaseConfig.DBConnection.Delete(&user).Error; err != nil {
-		logger.Error(code.RUDL1, reqID, "Failed to delete user: "+err.Error())
+		ERROR(reqID, global.SRNRSR2, "Failed to delete user: "+err.Error())
 		return model.Users{}
 	}
 
-	logger.Info(code.RUDL1, reqID, "User deleted from database: "+user.UUID)
+	INFO(reqID, global.SRNRSR1, "User deleted from database: "+user.UUID)
 	return user
 }
 
@@ -111,14 +114,13 @@ func (f *UserQueryFilter) normalize() {
 
 // ListUsers retrieves users with filter and pagination
 func (rcvr user) ListUsers(c *gin.Context, filter UserQueryFilter) ([]model.Users, error) {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.RULS1, reqID, "Listing users from database with filter")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, global.SRNRSR1, "Listing users from database with filter")
 
 	filter.normalize()
 	db := rcvr.BaseConfig.DBConnection
 	if db == nil {
-		logger.Warn(code.RULS1, reqID, "Database connection is nil")
+		WARN(reqID, global.SRNRSR1, "Database connection is nil")
 		return []model.Users{}, nil
 	}
 	q := db.Model(&model.Users{})
@@ -149,19 +151,18 @@ func (rcvr user) ListUsers(c *gin.Context, filter UserQueryFilter) ([]model.User
 	q = q.Limit(filter.Limit).Offset(filter.Offset)
 	var users []model.Users
 	if err := q.Find(&users).Error; err != nil {
-		logger.Error(code.RULS1, reqID, "Failed to list users: "+err.Error())
+		ERROR(reqID, global.SRNRSR2, "Failed to list users: "+err.Error())
 		return []model.Users{}, err
 	}
 
-	logger.Info(code.RULS1, reqID, "Users listed from database successfully")
+	INFO(reqID, global.SRNRSR1, "Users listed from database successfully")
 	return users, nil
 }
 
 // CountUsers counts users with filter conditions
 func (rcvr user) CountUsers(c *gin.Context, filter UserQueryFilter) (int64, error) {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.RUCT1, reqID, "Counting users in database with filter")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, global.SRNRSR1, "Counting users in database with filter")
 
 	db := rcvr.BaseConfig.DBConnection
 	if db == nil {
@@ -194,11 +195,11 @@ func (rcvr user) CountUsers(c *gin.Context, filter UserQueryFilter) (int64, erro
 	}
 	var cnt int64
 	if err := q.Count(&cnt).Error; err != nil {
-		logger.Error(code.RUCT1, reqID, "Failed to count users: "+err.Error())
+		ERROR(reqID, global.SRNRSR2, "Failed to count users: "+err.Error())
 		return 0, err
 	}
 
-	logger.Info(code.RUCT1, reqID, "Users counted in database successfully")
+	INFO(reqID, global.SRNRSR1, "Users counted in database successfully")
 	return cnt, nil
 }
 

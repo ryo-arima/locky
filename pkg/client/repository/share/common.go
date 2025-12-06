@@ -15,11 +15,11 @@ import (
 )
 
 type Common interface {
-	Login(request request.LoginRequest) response.LoginResponse
-	RefreshToken(refreshToken string) response.RefreshTokenResponse
-	Logout(accessToken string) response.CommonResponse
-	ValidateToken(accessToken string) response.ValidateTokenResponse
-	GetUserInfo(accessToken string) response.CommonResponse
+	Login(request request.Login) response.Login
+	RefreshToken(refreshToken string) response.RefreshToken
+	Logout(accessToken string) response.Commons
+	ValidateToken(accessToken string) response.ValidateToken
+	GetUserInfo(accessToken string) response.Commons
 }
 
 type common struct {
@@ -65,23 +65,24 @@ func saveTokenPair(access, refresh string) {
 }
 
 // Login performs user authentication and returns JWT tokens
-func (rcvr *common) Login(loginRequest request.LoginRequest) (response response.LoginResponse) {
+func (rcvr *common) Login(loginRequest request.Login) response.Login {
+	var result response.Login
 	// Updated to match server router: POST /v1/share/common/auth/tokens
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
 
 	// Prepare the HTTP request
 	jsonData, err := json.Marshal(loginRequest)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_LOGIN_001"
-		response.Message = "Failed to marshal login request"
-		return response
+		result.Code = "CLIENT_AUTH_LOGIN_001"
+		result.Message = "Failed to marshal login request"
+		return result
 	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
-		response.Code = "CLIENT_AUTH_LOGIN_002"
-		response.Message = "Failed to create HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_LOGIN_002"
+		result.Message = "Failed to create HTTP request"
+		return result
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -89,34 +90,34 @@ func (rcvr *common) Login(loginRequest request.LoginRequest) (response response.
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_LOGIN_003"
-		response.Message = "Failed to send HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_LOGIN_003"
+		result.Message = "Failed to send HTTP request"
+		return result
 	}
 	defer resp.Body.Close()
 
 	// Decode the response
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		// try read raw for debug
 		_, _ = io.Copy(io.Discard, resp.Body)
-		response.Code = "CLIENT_AUTH_LOGIN_004"
-		response.Message = "Failed to decode response"
-		return response
+		result.Code = "CLIENT_AUTH_LOGIN_004"
+		result.Message = "Failed to decode response"
+		return result
 	}
 
 	// Save token on success (no output here - handled by controller layer)
-	if resp.StatusCode == http.StatusOK && response.TokenPair != nil {
-		os.Setenv("LOCKY_ACCESS_TOKEN", response.TokenPair.AccessToken)
-		os.Setenv("LOCKY_REFRESH_TOKEN", response.TokenPair.RefreshToken)
+	if resp.StatusCode == http.StatusOK && result.TokenPair != nil {
+		os.Setenv("LOCKY_ACCESS_TOKEN", result.TokenPair.AccessToken)
+		os.Setenv("LOCKY_REFRESH_TOKEN", result.TokenPair.RefreshToken)
 		// Save token (profile determination already saved individually on controller side; this is redundant save)
-		saveTokenPair(response.TokenPair.AccessToken, response.TokenPair.RefreshToken)
+		saveTokenPair(result.TokenPair.AccessToken, result.TokenPair.RefreshToken)
 	}
 
-	return response
+	return result
 }
 
 // RefreshToken refreshes the access token using refresh token
-func (rcvr *common) RefreshToken(refreshToken string) (response response.RefreshTokenResponse) {
+func (rcvr *common) RefreshToken(refreshToken string) response.RefreshToken {
 	// Updated to match server router: POST /v1/share/common/auth/tokens/refresh
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/refresh"
 
@@ -124,58 +125,60 @@ func (rcvr *common) RefreshToken(refreshToken string) (response response.Refresh
 		"refresh_token": refreshToken,
 	}
 
+	var result response.RefreshToken
 	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_REFRESH_001"
-		response.Message = "Failed to marshal refresh request"
-		return response
+		result.Code = "CLIENT_AUTH_REFRESH_001"
+		result.Message = "Failed to marshal refresh request"
+		return result
 	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
-		response.Code = "CLIENT_AUTH_REFRESH_002"
-		response.Message = "Failed to create HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_REFRESH_002"
+		result.Message = "Failed to create HTTP request"
+		return result
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_REFRESH_003"
-		response.Message = "Failed to send HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_REFRESH_003"
+		result.Message = "Failed to send HTTP request"
+		return result
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		response.Code = "CLIENT_AUTH_REFRESH_004"
-		response.Message = "Failed to decode response"
-		return response
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		result.Code = "CLIENT_AUTH_REFRESH_004"
+		result.Message = "Failed to decode response"
+		return result
 	}
 
 	if resp.StatusCode == http.StatusOK {
-		if response.TokenPair != nil {
-			os.Setenv("LOCKY_ACCESS_TOKEN", response.TokenPair.AccessToken)
-			os.Setenv("LOCKY_REFRESH_TOKEN", response.TokenPair.RefreshToken)
+		if result.TokenPair != nil {
+			os.Setenv("LOCKY_ACCESS_TOKEN", result.TokenPair.AccessToken)
+			os.Setenv("LOCKY_REFRESH_TOKEN", result.TokenPair.RefreshToken)
 			// Save token (profile determination already saved individually on controller side; this is redundant save)
-			saveTokenPair(response.TokenPair.AccessToken, response.TokenPair.RefreshToken)
+			saveTokenPair(result.TokenPair.AccessToken, result.TokenPair.RefreshToken)
 		}
 	}
 
-	return response
+	return result
 }
 
 // Logout performs user logout
-func (rcvr *common) Logout(accessToken string) (response response.CommonResponse) {
+func (rcvr *common) Logout(accessToken string) response.Commons {
 	// Updated to match server router: DELETE /v1/share/common/auth/tokens
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens"
 
+	var result response.Commons
 	req, err := http.NewRequest("DELETE", endpoint, nil)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_LOGOUT_001"
-		response.Message = "Failed to create HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_LOGOUT_001"
+		result.Message = "Failed to create HTTP request"
+		return result
 	}
 
 	if accessToken != "" {
@@ -186,31 +189,32 @@ func (rcvr *common) Logout(accessToken string) (response response.CommonResponse
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_LOGOUT_002"
-		response.Message = "Failed to send HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_LOGOUT_002"
+		result.Message = "Failed to send HTTP request"
+		return result
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		response.Code = "CLIENT_AUTH_LOGOUT_003"
-		response.Message = "Failed to decode response"
-		return response
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		result.Code = "CLIENT_AUTH_LOGOUT_003"
+		result.Message = "Failed to decode response"
+		return result
 	}
 
-	return response
+	return result
 }
 
 // ValidateToken validates an access token
-func (rcvr *common) ValidateToken(accessToken string) (response response.ValidateTokenResponse) {
+func (rcvr *common) ValidateToken(accessToken string) response.ValidateToken {
 	// Updated to match server router: GET /v1/share/common/auth/tokens/validate
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/validate"
 
+	var result response.ValidateToken
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_VALIDATE_001"
-		response.Message = "Failed to create HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_VALIDATE_001"
+		result.Message = "Failed to create HTTP request"
+		return result
 	}
 	if accessToken == "" {
 		// try file system
@@ -221,31 +225,32 @@ func (rcvr *common) ValidateToken(accessToken string) (response response.Validat
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_VALIDATE_002"
-		response.Message = "Failed to send HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_VALIDATE_002"
+		result.Message = "Failed to send HTTP request"
+		return result
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		response.Code = "CLIENT_AUTH_VALIDATE_003"
-		response.Message = "Failed to decode response"
-		return response
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		result.Code = "CLIENT_AUTH_VALIDATE_003"
+		result.Message = "Failed to decode response"
+		return result
 	}
 
-	return response
+	return result
 }
 
 // GetUserInfo retrieves user information using access token
-func (rcvr *common) GetUserInfo(accessToken string) (response response.CommonResponse) {
+func (rcvr *common) GetUserInfo(accessToken string) response.Commons {
 	// Updated to match server router: GET /v1/share/common/auth/tokens/user
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/share/common/auth/tokens/user"
 
+	var result response.Commons
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_USERINFO_001"
-		response.Message = "Failed to create HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_USERINFO_001"
+		result.Message = "Failed to create HTTP request"
+		return result
 	}
 	if accessToken == "" {
 		accessToken = loadAccessTokenFromFiles()
@@ -255,19 +260,19 @@ func (rcvr *common) GetUserInfo(accessToken string) (response response.CommonRes
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		response.Code = "CLIENT_AUTH_USERINFO_002"
-		response.Message = "Failed to send HTTP request"
-		return response
+		result.Code = "CLIENT_AUTH_USERINFO_002"
+		result.Message = "Failed to send HTTP request"
+		return result
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		response.Code = "CLIENT_AUTH_USERINFO_003"
-		response.Message = "Failed to decode response"
-		return response
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		result.Code = "CLIENT_AUTH_USERINFO_003"
+		result.Message = "Failed to decode response"
+		return result
 	}
 
-	return response
+	return result
 }
 
 func NewCommon(baseConfig config.BaseConfig) Common {

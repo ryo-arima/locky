@@ -11,19 +11,19 @@ import (
 )
 
 type Group interface {
-	BootstrapGroupForDB(request request.GroupRequest) response.GroupResponse
-	GetGroup(request request.GroupRequest) response.GroupResponse
-	CreateGroup(request request.GroupRequest) response.GroupResponse
-	UpdateGroup(request request.GroupRequest) response.GroupResponse
-	DeleteGroup(request request.GroupRequest) response.GroupResponse
+	BootstrapGroupForDB(request request.Group) response.Groups
+	GetGroup(request request.Group) response.Groups
+	CreateGroup(request request.Group) response.Groups
+	UpdateGroup(request request.Group) response.Groups
+	DeleteGroup(request request.Group) response.Groups
 }
 
 type group struct {
 	BaseConfig config.BaseConfig
 }
 
-func (rcvr *group) BootstrapGroupForDB(request request.GroupRequest) response.GroupResponse {
-	var resp response.GroupResponse
+func (rcvr *group) BootstrapGroupForDB(request request.Group) response.Groups {
+	var resp response.Groups
 	fmt.Println("BootstrapGroupForDB")
 
 	if rcvr.BaseConfig.DBConnection == nil {
@@ -53,8 +53,8 @@ func (rcvr *group) BootstrapGroupForDB(request request.GroupRequest) response.Gr
 	return resp
 }
 
-func (rcvr *group) GetGroup(request request.GroupRequest) response.GroupResponse {
-	var resp response.GroupResponse
+func (rcvr *group) GetGroup(request request.Group) response.Groups {
+	var resp response.Groups
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/groups"
 	err := repository.SendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
@@ -64,8 +64,8 @@ func (rcvr *group) GetGroup(request request.GroupRequest) response.GroupResponse
 	return resp
 }
 
-func (rcvr *group) CreateGroup(request request.GroupRequest) response.GroupResponse {
-	var resp response.GroupResponse
+func (rcvr *group) CreateGroup(request request.Group) response.Groups {
+	var resp response.Groups
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/group"
 	err := repository.SendRequest("POST", endpoint, request, &resp)
 	if err != nil {
@@ -75,8 +75,8 @@ func (rcvr *group) CreateGroup(request request.GroupRequest) response.GroupRespo
 	return resp
 }
 
-func (rcvr *group) UpdateGroup(request request.GroupRequest) response.GroupResponse {
-	var resp response.GroupResponse
+func (rcvr *group) UpdateGroup(request request.Group) response.Groups {
+	var resp response.Groups
 	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
@@ -86,8 +86,8 @@ func (rcvr *group) UpdateGroup(request request.GroupRequest) response.GroupRespo
 	return resp
 }
 
-func (rcvr *group) DeleteGroup(request request.GroupRequest) response.GroupResponse {
-	var resp response.GroupResponse
+func (rcvr *group) DeleteGroup(request request.Group) response.Groups {
+	var resp response.Groups
 	endpoint := fmt.Sprintf("%s/v1/internal/group/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {

@@ -15,7 +15,7 @@ func TrimEndpoint(endpoint string) string {
 }
 
 // Table formatting helper (used by usecase)
-func rolesTableString(res response.RoleResponse) string {
+func rolesTableString(res response.Roles) string {
 	if res.Code != "SUCCESS" {
 		return fmt.Sprintf("Code: %s\nMessage: %s\n", res.Code, res.Message)
 	}
@@ -43,4 +43,4 @@ func rolesTableString(res response.RoleResponse) string {
 }
 
 // RolesTableStringAlias public function (for display use from other packages)
-func RolesTableStringAlias(res response.RoleResponse) string { return rolesTableString(res) }
+func RolesTableStringAlias(res response.Roles) string { return rolesTableString(res) }

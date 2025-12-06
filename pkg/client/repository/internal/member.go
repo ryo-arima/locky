@@ -11,19 +11,19 @@ import (
 )
 
 type Member interface {
-	BootstrapMemberForDB(request request.MemberRequest) response.MemberResponse
-	GetMember(request request.MemberRequest) response.MemberResponse
-	CreateMember(request request.MemberRequest) response.MemberResponse
-	UpdateMember(request request.MemberRequest) response.MemberResponse
-	DeleteMember(request request.MemberRequest) response.MemberResponse
+	BootstrapMemberForDB(request request.Member) response.Members
+	GetMember(request request.Member) response.Members
+	CreateMember(request request.Member) response.Members
+	UpdateMember(request request.Member) response.Members
+	DeleteMember(request request.Member) response.Members
 }
 
 type member struct {
 	BaseConfig config.BaseConfig
 }
 
-func (rcvr *member) BootstrapMemberForDB(request request.MemberRequest) response.MemberResponse {
-	var resp response.MemberResponse
+func (rcvr *member) BootstrapMemberForDB(request request.Member) response.Members {
+	var resp response.Members
 	fmt.Println("BootstrapMemberForDB")
 
 	if rcvr.BaseConfig.DBConnection == nil {
@@ -53,8 +53,8 @@ func (rcvr *member) BootstrapMemberForDB(request request.MemberRequest) response
 	return resp
 }
 
-func (rcvr *member) GetMember(request request.MemberRequest) response.MemberResponse {
-	var resp response.MemberResponse
+func (rcvr *member) GetMember(request request.Member) response.Members {
+	var resp response.Members
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/members"
 	err := repository.SendRequest("GET", endpoint, nil, &resp)
 	if err != nil {
@@ -64,8 +64,8 @@ func (rcvr *member) GetMember(request request.MemberRequest) response.MemberResp
 	return resp
 }
 
-func (rcvr *member) CreateMember(request request.MemberRequest) response.MemberResponse {
-	var resp response.MemberResponse
+func (rcvr *member) CreateMember(request request.Member) response.Members {
+	var resp response.Members
 	endpoint := rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint + "/v1/internal/member"
 	err := repository.SendRequest("POST", endpoint, request, &resp)
 	if err != nil {
@@ -75,8 +75,8 @@ func (rcvr *member) CreateMember(request request.MemberRequest) response.MemberR
 	return resp
 }
 
-func (rcvr *member) UpdateMember(request request.MemberRequest) response.MemberResponse {
-	var resp response.MemberResponse
+func (rcvr *member) UpdateMember(request request.Member) response.Members {
+	var resp response.Members
 	endpoint := fmt.Sprintf("%s/v1/internal/member/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("PUT", endpoint, request, &resp)
 	if err != nil {
@@ -86,8 +86,8 @@ func (rcvr *member) UpdateMember(request request.MemberRequest) response.MemberR
 	return resp
 }
 
-func (rcvr *member) DeleteMember(request request.MemberRequest) response.MemberResponse {
-	var resp response.MemberResponse
+func (rcvr *member) DeleteMember(request request.Member) response.Members {
+	var resp response.Members
 	endpoint := fmt.Sprintf("%s/v1/internal/member/%d", rcvr.BaseConfig.YamlConfig.Application.Client.ServerEndpoint, request.ID)
 	err := repository.SendRequest("DELETE", endpoint, nil, &resp)
 	if err != nil {

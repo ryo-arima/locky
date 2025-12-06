@@ -1,6 +1,7 @@
 package share
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,6 +12,13 @@ import (
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 )
+
+// Common interface for middleware layer (minimal interface to avoid import cycle)
+type Common interface {
+	ParseTokenUnverified(tokenString string) (*model.JWTClaims, error)
+	IsTokenInvalidated(ctx context.Context, jti string) (bool, error)
+	ValidateJWTToken(tokenString string) (*model.JWTClaims, error)
+}
 
 func ForPublic(conf config.BaseConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {

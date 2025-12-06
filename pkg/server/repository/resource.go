@@ -41,7 +41,7 @@ type resource struct {
 
 func NewResource(conf config.BaseConfig) Resource {
 	return &resource{
-		db:     conf.DB,
+		db:     conf.DBConnection,
 		logger: global.SRNRSR1,
 	}
 }
@@ -88,18 +88,20 @@ func (r *resource) GetResources(c *gin.Context, filter model.ResourceQueryFilter
 }
 
 func (r *resource) GetResource(c *gin.Context, id string) (*model.Resources, error) {
-	INFO(Mcode(SRNRSR1), "GetResource called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "GetResource called")
 	var resource model.Resources
 	if err := r.db.Where("uuid = ? AND deleted_at IS NULL", id).First(&resource).Error; err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to get resource")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to get resource")
 		return nil, err
 	}
-	INFO(Mcode(SRNRSR1), "GetResource succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "GetResource succeeded")
 	return &resource, nil
 }
 
 func (r *resource) CountResources(c *gin.Context, filter model.ResourceQueryFilter) (int64, error) {
-	INFO(Mcode(SRNRSR1), "CountResources called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "CountResources called")
 	q := r.db.Model(&model.Resources{}).Where("deleted_at IS NULL")
 
 	if filter.ID != nil {
@@ -129,39 +131,42 @@ func (r *resource) CountResources(c *gin.Context, filter model.ResourceQueryFilt
 
 	var count int64
 	if err := q.Count(&count).Error; err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to count resources")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to count resources")
 		return 0, err
 	}
-	INFO(Mcode(SRNRSR1), "CountResources succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "CountResources succeeded")
 	return count, nil
 }
 
 func (r *resource) CreateResource(c *gin.Context, resource *model.Resources) error {
-	INFO(Mcode(SRNRSR1), "CreateResource called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "CreateResource called")
 	if err := r.db.Create(resource).Error; err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to create resource")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to create resource")
 		return err
 	}
-	INFO(Mcode(SRNRSR1), "CreateResource succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "CreateResource succeeded")
 	return nil
 }
 
 func (r *resource) UpdateResource(c *gin.Context, resource *model.Resources) error {
-	INFO(Mcode(SRNRSR1), "UpdateResource called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "UpdateResource called")
 	if err := r.db.Where("uuid = ?", resource.UUID).Updates(resource).Error; err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to update resource")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to update resource")
 		return err
 	}
-	INFO(Mcode(SRNRSR1), "UpdateResource succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "UpdateResource succeeded")
 	return nil
 }
 
 func (r *resource) DeleteResource(c *gin.Context, id string) error {
-	INFO(Mcode(SRNRSR1), "DeleteResource called")
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "DeleteResource called")
 	if err := r.db.Model(&model.Resources{}).Where("uuid = ?", id).Update("deleted_at", gorm.Expr("NOW()")).Error; err != nil {
-		ERROR(Mcode(SRNRSR2), "Failed to delete resource")
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to delete resource")
 		return err
 	}
-	INFO(Mcode(SRNRSR1), "DeleteResource succeeded")
+	INFO(reqID, Mcode(SRNRSR1), "DeleteResource succeeded")
 	return nil
 }

@@ -188,7 +188,7 @@ func (l *ServerLogger) log(level ServerLogLevel, requestID string, mcode global.
 	entry := ServerLogEntry{
 		Timestamp: timestamp,
 		Level:     level.String(),
-		Code:      mcode.PaddedCode(GetMaxCodeLength()),
+		Code:      mcode.PaddedCode(),
 		Component: l.config.Component,
 		Service:   l.config.Service,
 		Message:   finalMessage,
@@ -339,13 +339,13 @@ func (w *GinLoggerWriter) Write(p []byte) (n int, err error) {
 
 	// Determine log level based on message content
 	if strings.Contains(msg, "[WARNING]") || strings.Contains(msg, "[GIN-warning]") || strings.Contains(msg, "WARNING") {
-		w.logger.WARN(mcode, cleanMsg)
+		w.logger.WARN("", mcode, cleanMsg)
 	} else if strings.Contains(msg, "[ERROR]") || strings.Contains(msg, "[GIN-error]") || strings.Contains(msg, "ERROR") {
-		w.logger.ERROR(mcode, cleanMsg)
+		w.logger.ERROR("", mcode, cleanMsg)
 	} else if strings.Contains(msg, "[GIN-debug]") || strings.Contains(msg, "[debug]") {
-		w.logger.DEBUG(mcode, cleanMsg, nil)
+		w.logger.DEBUG("", mcode, cleanMsg, nil)
 	} else {
-		w.logger.INFO(mcode, cleanMsg)
+		w.logger.INFO("", mcode, cleanMsg)
 	}
 
 	return len(p), nil
@@ -395,11 +395,11 @@ func LoggerWithConfig(logger ServerLoggerInterface) gin.HandlerFunc {
 		requestInfo := fmt.Sprintf("%s %s %d", c.Request.Method, path, status)
 
 		if status >= 500 {
-			logger.ERROR(global.SMLWC5, requestInfo)
+			logger.ERROR(requestID, global.SMLWC5, requestInfo)
 		} else if status >= 400 {
-			logger.WARN(global.SMLWC4, requestInfo)
+			logger.WARN(requestID, global.SMLWC4, requestInfo)
 		} else {
-			logger.INFO(global.SMLWC3, requestInfo)
+			logger.INFO(requestID, global.SMLWC3, requestInfo)
 		}
 	}
 }

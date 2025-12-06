@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"github.com/ryo-arima/locky/pkg/client/repository/internal"
+	"github.com/ryo-arima/locky/pkg/client/repository/private"
 	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
