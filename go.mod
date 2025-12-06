@@ -1,6 +1,6 @@
 module github.com/ryo-arima/locky
 
-go 1.25.1
+go 1.25.5
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
