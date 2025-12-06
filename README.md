@@ -2,7 +2,7 @@
 
 A robust Role-Based Access Control (RBAC) service built with Go, providing comprehensive user, group, member, and role management with fine-grained permissions.
 
-[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat&logo=go)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.25.5+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![E2E Tests](https://github.com/ryo-arima/locky/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/ryo-arima/locky/actions/workflows/e2e-test.yml)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-success)](https://ryo-arima.github.io/locky/)
@@ -24,7 +24,7 @@ A robust Role-Based Access Control (RBAC) service built with Go, providing compr
 
 ### Prerequisites
 
-- Go 1.22 or higher
+- Go 1.25.5 or higher
 - MySQL 8.0+ or TiDB
 - Redis 6.0+
 - Docker & Docker Compose (optional)
@@ -55,12 +55,12 @@ The server will start on `http://localhost:8080`.
 
 ```bash
 # Register a user
-curl -X POST http://localhost:8080/v1/public/users/register \
+curl -X POST http://localhost:8080/v1/public/user \
   -H "Content-Type: application/json" \
   -d '{"name":"Test User","email":"test@example.com","password":"password123"}'
 
 # Login
-curl -X POST http://localhost:8080/v1/public/users/login \
+curl -X POST http://localhost:8080/v1/public/token \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password123"}'
 
@@ -120,23 +120,32 @@ Comprehensive documentation is available at **[https://ryo-arima.github.io/locky
 
 ### Public Endpoints (No Authentication Required)
 
-- `POST /v1/public/users/register` - Register a new user
-- `POST /v1/public/users/login` - Authenticate and get JWT token
-- `GET /v1/public/health` - Health check
+- `POST /v1/public/user` - Register a new user
+- `POST /v1/public/token` - Authenticate and get JWT token
+- `GET /health` - Health check
 
-### Internal Endpoints (JWT Required)
+### Share Endpoints (JWT Required)
+
+- `POST /v1/share/token/refresh` - Refresh JWT token
+- `DELETE /v1/share/token` - Logout and invalidate token
+- `GET /v1/share/token/validate` - Validate JWT token
+- `GET /v1/share/token/user` - Get user info from token
+
+### Internal Endpoints (JWT + Casbin Authorization Required)
 
 - `GET /v1/internal/users` - List users
 - `GET /v1/internal/groups` - List groups
 - `GET /v1/internal/members` - List members
 - `GET /v1/internal/roles` - List roles
+- `GET /v1/internal/resources` - List resources
 
-### Private Endpoints (JWT + Permissions Required)
+### Private Endpoints (JWT Required, No Casbin)
 
-- `PUT /v1/private/users/{id}` - Update user
-- `DELETE /v1/private/users/{id}` - Delete user
-- `POST /v1/private/groups` - Create group
-- `POST /v1/private/roles` - Create role
+- `PUT /v1/private/user/{id}` - Update user
+- `DELETE /v1/private/user/{id}` - Delete user
+- `POST /v1/private/group` - Create group
+- `POST /v1/private/role` - Create role
+- `POST /v1/private/resource` - Create resource
 
 [Full API documentation →](https://ryo-arima.github.io/locky/swagger/index.html)
 
@@ -155,6 +164,9 @@ Server:
   host: "0.0.0.0"
   port: 8080
   jwt_secret: "your-secure-secret-256-bits"
+  Redis:
+    JWTCache: true      # Enable JWT token caching
+    CacheTTL: 3600      # Cache TTL in seconds
 
 MySQL:
   host: "localhost"
@@ -166,6 +178,10 @@ Redis:
   host: "localhost"
   port: 6379
   db: 0
+
+Casbin:
+  app_model: "etc/casbin/locky/model.conf"
+  app_policy: "etc/casbin/locky/policy.csv"
 ```
 
 [Configuration guide →](https://ryo-arima.github.io/locky/configuration/guide.html)
@@ -203,7 +219,7 @@ E2E tests verify the entire system including server, database, Redis, and CLI cl
 
 **Prerequisites:**
 - Docker & Docker Compose
-- Go 1.24+
+- Go 1.25.5+
 
 **Platform Configuration:**
 
@@ -242,11 +258,13 @@ docker compose down -v
 ```
 
 **Test Coverage:**
-- ✅ Authentication Flow (Login, Token validation, Refresh, Logout)
-- ✅ App User Group CRUD
-- ✅ User/Role Read Operations
 - ✅ Anonymous User Registration
-- ⏭️ Admin User/Group/Role CRUD (requires admin role assignment)
+- ⏭️ Authentication Flow (Login, Token validation, Refresh, Logout) - Endpoints need implementation
+- ⏭️ App User Group CRUD - Requires authentication implementation
+- ⏭️ User/Role Read Operations - Requires authentication implementation
+- ⏭️ Admin operations - Requires admin role assignment
+
+**Note:** Most E2E tests are currently skipped pending full authentication and authorization implementation.
 
 **GitHub Actions:**
 E2E tests run automatically on pull requests and pushes to `dev` branch using `linux/amd64` platform.
@@ -383,13 +401,13 @@ locky/
 
 ## Technology Stack
 
-- **Language**: Go 1.22+
+- **Language**: Go 1.25.5+
 - **Web Framework**: [Gin](https://github.com/gin-gonic/gin)
 - **ORM**: [GORM](https://gorm.io/)
 - **Authentication**: JWT with [golang-jwt](https://github.com/golang-jwt/jwt)
-- **Authorization**: [Casbin](https://casbin.org/)
+- **Authorization**: [Casbin](https://casbin.org/) (Group-based RBAC)
 - **Database**: MySQL 8.0+ / TiDB
-- **Cache**: Redis 6.0+
+- **Cache**: Redis 6.0+ (JWT token caching, session management)
 - **Documentation**: mdBook, Swagger/OpenAPI
 
 ## Contributing
@@ -445,14 +463,10 @@ docker compose down
 #### Test Coverage
 
 Currently implemented E2E tests:
-- ✅ **TestAuthenticationFlow** - User registration, login, token validation, logout
-- ✅ **TestAppGroupCRUD** - Group creation, update, list, delete operations
-- ✅ **TestAppUserOperations** - User listing operations
-- ✅ **TestAppRoleReadOnly** - Role listing operations  
-- ✅ **TestAnonymousUserRegistration** - Anonymous user registration
-- ⏭️ **TestAdminUserCRUD** - Admin user operations (requires role assignment setup)
-- ⏭️ **TestAdminGroupCRUD** - Admin group operations (requires role assignment setup)
-- ⏭️ **TestAdminRoleCRUD** - Admin role operations (requires role assignment setup)
+- ✅ **TestMain** - Test environment initialization
+- ⏭️ All other tests - Pending authentication and authorization implementation
+
+**Note:** E2E test implementation is in progress. Most test cases are currently disabled pending full system integration.
 
 #### CI/CD
 
