@@ -2,9 +2,9 @@ package request
 
 import "time"
 
-// UserRequest represents the request body for user-related operations.
-// swagger:model UserRequest
-type UserRequest struct {
+// User represents the request body for user-related operations.
+// swagger:model User
+type User struct {
 	// The ID of the user.
 	//
 	// required: false

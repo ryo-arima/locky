@@ -11,9 +11,10 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/usecase"
 )
 
-type MemberControllerForPrivate interface {
+type MemberPrivate interface {
 	GetMembers(c *gin.Context)
 	CreateMember(c *gin.Context)
 	UpdateMember(c *gin.Context)
@@ -21,25 +22,25 @@ type MemberControllerForPrivate interface {
 	CountMembers(c *gin.Context)
 }
 
-type memberControllerForPrivate struct {
-	MemberRepository repository.MemberRepository
-	CommonRepository repository.CommonRepository
+type memberPrivate struct {
+	MemberUsecase usecase.Member
 }
 
-func (rcvr memberControllerForPrivate) GetMembers(c *gin.Context) {
-	// swagger:operation GET /private/members members getMembersPrivate
-	// ---
-	// summary: Get a list of members.
-	// description: Get a list of all members in the system.
-	// responses:
-	//   "200":
-	//     description: A list of members.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
+// swagger:operation GET /private/members members getMembersPrivate
+// ---
+// summary: Get a list of members.
+// description: Get a list of all members in the system.
+// responses:
+//
+//	"200":
+//	  description: A list of members.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+func (rcvr memberPrivate) GetMembers(c *gin.Context) {
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -75,19 +76,19 @@ func (rcvr memberControllerForPrivate) GetMembers(c *gin.Context) {
 			filter.Offset = n
 		}
 	}
-	members, err := rcvr.MemberRepository.ListMembers(c, filter)
+	members, err := rcvr.MemberUsecase.ListMembers(c, filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Members: []response.Member{}})
+		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
 	resp := make([]response.Member, 0, len(members))
 	for _, m := range members {
 		resp = append(resp, response.Member{ID: m.ID, UUID: m.UUID, GroupUUID: m.GroupUUID, UserUUID: m.UserUUID, Role: m.Role, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt, DeletedAt: m.DeletedAt})
 	}
-	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Members retrieved successfully", Members: resp})
+	c.JSON(http.StatusOK, &response.Members{Code: "SUCCESS", Message: "Members retrieved successfully", Members: resp})
 }
 
-func (rcvr memberControllerForPrivate) CountMembers(c *gin.Context) {
+func (rcvr memberPrivate) CountMembers(c *gin.Context) {
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -113,7 +114,7 @@ func (rcvr memberControllerForPrivate) CountMembers(c *gin.Context) {
 	if v := c.Query("role_like"); v != "" {
 		filter.RoleLike = &v
 	}
-	cnt, err := rcvr.MemberRepository.CountMembers(c, filter)
+	cnt, err := rcvr.MemberUsecase.CountMembers(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "SERVER_CONTROLLER_COUNT__FOR__001", "message": err.Error(), "count": 0})
 		return
@@ -121,72 +122,76 @@ func (rcvr memberControllerForPrivate) CountMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
 }
 
-func (rcvr memberControllerForPrivate) CreateMember(c *gin.Context) {
-	// swagger:operation POST /private/members members createMemberPrivate
-	// ---
-	// summary: Create a new member.
-	// description: Create a new member with the provided information.
-	// parameters:
-	// - name: member
-	//   in: body
-	//   description: The member to create.
-	//   required: true
-	//   schema:
-	//     $ref: "#/definitions/MemberRequest"
-	// responses:
-	//   "200":
-	//     description: The created member.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	var memberRequest request.MemberRequest
+// swagger:operation POST /private/members members createMemberPrivate
+// ---
+// summary: Create a new member.
+// description: Create a new member with the provided information.
+// parameters:
+//   - name: member
+//     in: body
+//     description: The member to create.
+//     required: true
+//     schema:
+//     $ref: "#/definitions/MemberRequest"
+//
+// responses:
+//
+//	"200":
+//	  description: The created member.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+func (rcvr memberPrivate) CreateMember(c *gin.Context) {
+	var memberRequest request.Member
 	if err := c.Bind(&memberRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__001", Message: err.Error(), Members: []response.Member{}})
+		c.JSON(http.StatusBadRequest, &response.Members{Code: "SERVER_CONTROLLER_CREATE__FOR__001", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
 	if memberRequest.GroupUUID == "" || memberRequest.UserUUID == "" || memberRequest.Role == "" {
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: "group_uuid, user_uuid and role are required", Members: []response.Member{}})
+		c.JSON(http.StatusBadRequest, &response.Members{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: "group_uuid, user_uuid and role are required", Members: []response.Member{}})
 		return
 	}
 	now := time.Now()
 	m := model.Members{UUID: uuid.New().String(), GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, CreatedAt: &now, UpdatedAt: &now}
-	resDB := rcvr.MemberRepository.CreateMember(c, &m)
+	_, resDB := rcvr.MemberUsecase.CreateMember(c, &m)
 	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
+		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member created successfully", Members: []response.Member{{ID: m.ID, UUID: m.UUID, GroupUUID: m.GroupUUID, UserUUID: m.UserUUID, Role: m.Role}}})
+	c.JSON(http.StatusOK, &response.Members{Code: "SUCCESS", Message: "Member created successfully", Members: []response.Member{{ID: m.ID, UUID: m.UUID, GroupUUID: m.GroupUUID, UserUUID: m.UserUUID, Role: m.Role}}})
 }
 
-func (rcvr memberControllerForPrivate) UpdateMember(c *gin.Context) {
-	// swagger:operation PUT /private/members/{id} members updateMemberPrivate
-	// ---
-	// summary: Update a member.
-	// description: Update a member with the provided information.
-	// parameters:
-	// - name: id
-	//   in: path
-	//   description: The ID of the member to update.
-	//   required: true
-	//   type: integer
-	// - name: member
-	//   in: body
-	//   description: The member to update.
-	//   required: true
-	//   schema:
-	//     $ref: "#/definitions/MemberRequest"
-	// responses:
-	//   "200":
-	//     description: The updated member.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
+// swagger:operation PUT /private/members/{id} members updateMemberPrivate
+// ---
+// summary: Update a member.
+// description: Update a member with the provided information.
+// parameters:
+//   - name: id
+//     in: path
+//     description: The ID of the member to update.
+//     required: true
+//     type: integer
+//   - name: member
+//     in: body
+//     description: The member to update.
+//     required: true
+//     schema:
+//     $ref: "#/definitions/MemberRequest"
+//
+// responses:
+//
+//	"200":
+//	  description: The updated member.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+func (rcvr memberPrivate) UpdateMember(c *gin.Context) {
 	idParam := c.Param("id")
 	idUint := uint(0)
 	if idParam != "" {
@@ -194,13 +199,13 @@ func (rcvr memberControllerForPrivate) UpdateMember(c *gin.Context) {
 			idUint = uint(parsed)
 		}
 	}
-	var memberRequest request.MemberRequest
+	var memberRequest request.Member
 	if err := c.Bind(&memberRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__001", Message: err.Error(), Members: []response.Member{}})
+		c.JSON(http.StatusBadRequest, &response.Members{Code: "SERVER_CONTROLLER_UPDATE__FOR__001", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
 	if idUint == 0 && memberRequest.ID == 0 {
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: "id is required (path or body)", Members: []response.Member{}})
+		c.JSON(http.StatusBadRequest, &response.Members{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: "id is required (path or body)", Members: []response.Member{}})
 		return
 	}
 	if idUint == 0 {
@@ -208,56 +213,58 @@ func (rcvr memberControllerForPrivate) UpdateMember(c *gin.Context) {
 	}
 	now := time.Now()
 	upd := model.Members{ID: idUint, GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, UpdatedAt: &now}
-	resDB := rcvr.MemberRepository.UpdateMember(c, &upd)
+	_, resDB := rcvr.MemberUsecase.UpdateMember(c, &upd)
 	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
+		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member updated successfully", Members: []response.Member{{ID: upd.ID, UUID: upd.UUID, GroupUUID: upd.GroupUUID, UserUUID: upd.UserUUID, Role: upd.Role}}})
+	c.JSON(http.StatusOK, &response.Members{Code: "SUCCESS", Message: "Member updated successfully", Members: []response.Member{{ID: upd.ID, UUID: upd.UUID, GroupUUID: upd.GroupUUID, UserUUID: upd.UserUUID, Role: upd.Role}}})
 }
 
-func (rcvr memberControllerForPrivate) DeleteMember(c *gin.Context) {
-	// swagger:operation DELETE /private/members/{id} members deleteMemberPrivate
-	// ---
-	// summary: Delete a member.
-	// description: Delete a member by ID.
-	// parameters:
-	// - name: id
-	//   in: path
-	//   description: The ID of the member to delete.
-	//   required: true
-	//   type: integer
-	// responses:
-	//   "200":
-	//     description: The deleted member.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
+// swagger:operation DELETE /private/members/{id} members deleteMemberPrivate
+// ---
+// summary: Delete a member.
+// description: Delete a member by ID.
+// parameters:
+//   - name: id
+//     in: path
+//     description: The ID of the member to delete.
+//     required: true
+//     type: integer
+//
+// responses:
+//
+//	"200":
+//	  description: The deleted member.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+func (rcvr memberPrivate) DeleteMember(c *gin.Context) {
 	uuidParam := c.Param("id") // route is :id but expects UUID
-	var memberRequest request.MemberRequest
+	var memberRequest request.Member
 	if err := c.Bind(&memberRequest); err != nil {
 		// No body required so ignore Bind failure, but return BadRequest on error for type consistency
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__001", Message: err.Error(), Members: []response.Member{}})
+		c.JSON(http.StatusBadRequest, &response.Members{Code: "SERVER_CONTROLLER_DELETE__FOR__001", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
 	if uuidParam == "" && memberRequest.UUID == "" {
-		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required (path or body)", Members: []response.Member{}})
+		c.JSON(http.StatusBadRequest, &response.Members{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required (path or body)", Members: []response.Member{}})
 		return
 	}
 	if uuidParam == "" {
 		uuidParam = memberRequest.UUID
 	}
-	resDB := rcvr.MemberRepository.DeleteMember(c, uuidParam)
+	resDB := rcvr.MemberUsecase.DeleteMember(c, uuidParam)
 	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.MemberResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
+		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member deleted successfully", Members: []response.Member{}})
+	c.JSON(http.StatusOK, &response.Members{Code: "SUCCESS", Message: "Member deleted successfully", Members: []response.Member{}})
 }
 
-func NewMemberControllerForPrivate(memberRepository repository.MemberRepository, commonRepository repository.CommonRepository) MemberControllerForPrivate {
-	return &memberControllerForPrivate{MemberRepository: memberRepository, CommonRepository: commonRepository}
+func NewMemberPrivate(memberUsecase usecase.Member) MemberPrivate {
+	return &memberPrivate{MemberUsecase: memberUsecase}
 }

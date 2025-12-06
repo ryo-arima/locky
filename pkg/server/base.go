@@ -2,12 +2,17 @@ package server
 
 import (
 	"github.com/ryo-arima/locky/pkg/config"
-	"github.com/ryo-arima/locky/pkg/server/middleware"
+	"github.com/ryo-arima/locky/pkg/global"
+	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
 func Main(conf config.BaseConfig) {
-	conf.Logger.INFO(middleware.ToConfigMCode(middleware.SM1), "Starting locky server on port 8000", nil)
+	if logger, ok := conf.Logger.(share.LoggerInterface); ok {
+		logger.INFO("server-init", global.SSM1, "Starting locky server on port 8000")
+	}
 	router := InitRouter(conf)
-	conf.Logger.INFO(middleware.ToConfigMCode(middleware.SM3), "Server is ready", nil)
+	if logger, ok := conf.Logger.(share.LoggerInterface); ok {
+		logger.INFO("server-init", global.SSM3, "Server is ready")
+	}
 	router.Run(":8000")
 }

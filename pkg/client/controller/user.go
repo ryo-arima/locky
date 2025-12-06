@@ -12,13 +12,13 @@ import (
 )
 
 func InitBootstrapUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	bootstrapUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Initialize the users table in the database.",
 		Long:  "This command drops the existing users table and recreates it based on the current model.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.Bootstrap(request.UserRequest{}, GetOutputFormat())
+			out := uc.Bootstrap(request.User{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -26,7 +26,7 @@ func InitBootstrapUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateUserCmdForAnonymousUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	createUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Create a new user (public registration).",
@@ -36,7 +36,7 @@ func InitCreateUserCmdForAnonymousUser(conf config.BaseConfig) *cobra.Command {
 			name, _ := cmd.Flags().GetString("name")
 			password, _ := cmd.Flags().GetString("password")
 
-			out := uc.CreatePublic(request.UserRequest{
+			out := uc.CreatePublic(request.User{
 				Email:    email,
 				Name:     name,
 				Password: password,
@@ -54,7 +54,7 @@ func InitCreateUserCmdForAnonymousUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	createUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Create a new user (admin).",
@@ -64,7 +64,7 @@ func InitCreateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			name, _ := cmd.Flags().GetString("name")
 			password, _ := cmd.Flags().GetString("password")
 
-			out := uc.CreatePrivate(request.UserRequest{
+			out := uc.CreatePrivate(request.User{
 				Email:    email,
 				Name:     name,
 				Password: password,
@@ -82,14 +82,14 @@ func InitCreateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	getUserCmd := &cobra.Command{
 		Use:     "users",
 		Aliases: []string{"user"},
 		Short:   "Get a list of users (internal).",
 		Long:    "Retrieves a list of all users visible to an authenticated app user.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetInternal(request.UserRequest{}, GetOutputFormat())
+			out := uc.GetInternal(request.User{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -97,14 +97,14 @@ func InitGetUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	getUserCmd := &cobra.Command{
 		Use:     "users",
 		Aliases: []string{"user"},
 		Short:   "Get a list of users (admin).",
 		Long:    "Retrieves a list of all users visible to an admin.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetPrivate(request.UserRequest{}, GetOutputFormat())
+			out := uc.GetPrivate(request.User{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -112,7 +112,7 @@ func InitGetUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	updateUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Update a user (internal).",
@@ -125,7 +125,7 @@ func InitUpdateUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.UpdateInternal(request.UserRequest{
+			out := uc.UpdateInternal(request.User{
 				ID:       uint(id),
 				Name:     name,
 				Password: password,
@@ -141,7 +141,7 @@ func InitUpdateUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	updateUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Update a user (admin).",
@@ -154,7 +154,7 @@ func InitUpdateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.UpdatePrivate(request.UserRequest{
+			out := uc.UpdatePrivate(request.User{
 				ID:       uint(id),
 				Name:     name,
 				Password: password,
@@ -170,7 +170,7 @@ func InitUpdateUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	deleteUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Delete a user (internal).",
@@ -181,7 +181,7 @@ func InitDeleteUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeleteInternal(request.UserRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeleteInternal(request.User{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -191,7 +191,7 @@ func InitDeleteUserCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewUserUsecase(conf)
+	uc := usecase.NewUser(conf)
 	deleteUserCmd := &cobra.Command{
 		Use:   "user",
 		Short: "Delete a user (admin).",
@@ -202,7 +202,7 @@ func InitDeleteUserCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeletePrivate(request.UserRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeletePrivate(request.User{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}

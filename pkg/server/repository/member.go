@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type MemberRepository interface {
+type Member interface {
 	GetMembers(c *gin.Context) []model.Members
 	CreateMember(c *gin.Context, member *model.Members) *gorm.DB
 	UpdateMember(c *gin.Context, member *model.Members) *gorm.DB
@@ -21,35 +21,35 @@ type MemberRepository interface {
 	CountMembers(c *gin.Context, filter MemberQueryFilter) (int64, error)
 }
 
-type memberRepository struct {
+type member struct {
 	BaseConfig config.BaseConfig
 }
 
-func (rcvr memberRepository) GetMembers(c *gin.Context) []model.Members {
+func (rcvr member) GetMembers(c *gin.Context) []model.Members {
 	var members []model.Members
 	rcvr.BaseConfig.DBConnection.Find(&members)
 	return members
 }
 
-func (rcvr memberRepository) CreateMember(c *gin.Context, member *model.Members) *gorm.DB {
+func (rcvr member) CreateMember(c *gin.Context, member *model.Members) *gorm.DB {
 	if member == nil {
 		return &gorm.DB{Error: errors.New("member is nil")}
 	}
 	return rcvr.BaseConfig.DBConnection.Create(member)
 }
 
-func (rcvr memberRepository) UpdateMember(c *gin.Context, member *model.Members) *gorm.DB {
+func (rcvr member) UpdateMember(c *gin.Context, member *model.Members) *gorm.DB {
 	if member == nil {
 		return &gorm.DB{Error: errors.New("member is nil")}
 	}
 	return rcvr.BaseConfig.DBConnection.Model(&model.Members{}).Where("id = ?", member.ID).Updates(member)
 }
 
-func (rcvr memberRepository) DeleteMember(c *gin.Context, uuid string) *gorm.DB {
+func (rcvr member) DeleteMember(c *gin.Context, uuid string) *gorm.DB {
 	return rcvr.BaseConfig.DBConnection.Model(&model.Members{}).Where("uuid = ?", uuid).Update("deleted_at", time.Now())
 }
 
-func (rcvr memberRepository) GetMemberByUUID(c *gin.Context, uuid string) (model.Members, error) {
+func (rcvr member) GetMemberByUUID(c *gin.Context, uuid string) (model.Members, error) {
 	var m model.Members
 	res := rcvr.BaseConfig.DBConnection.Where("uuid = ?", uuid).First(&m)
 	if res.Error != nil {
@@ -81,7 +81,7 @@ func (f *MemberQueryFilter) normalize() {
 }
 
 // ListMembers filter + pagination
-func (rcvr memberRepository) ListMembers(c *gin.Context, filter MemberQueryFilter) ([]model.Members, error) {
+func (rcvr member) ListMembers(c *gin.Context, filter MemberQueryFilter) ([]model.Members, error) {
 	filter.normalize()
 	q := rcvr.BaseConfig.DBConnection.Model(&model.Members{})
 	if filter.ID != nil {
@@ -114,7 +114,7 @@ func (rcvr memberRepository) ListMembers(c *gin.Context, filter MemberQueryFilte
 }
 
 // CountMembers get count
-func (rcvr memberRepository) CountMembers(c *gin.Context, filter MemberQueryFilter) (int64, error) {
+func (rcvr member) CountMembers(c *gin.Context, filter MemberQueryFilter) (int64, error) {
 	q := rcvr.BaseConfig.DBConnection.Model(&model.Members{})
 	if filter.ID != nil {
 		q = q.Where("id = ?", *filter.ID)
@@ -144,6 +144,6 @@ func (rcvr memberRepository) CountMembers(c *gin.Context, filter MemberQueryFilt
 	return cnt, nil
 }
 
-func NewMemberRepository(conf config.BaseConfig) MemberRepository {
-	return &memberRepository{BaseConfig: conf}
+func NewMember(conf config.BaseConfig) Member {
+	return &member{BaseConfig: conf}
 }

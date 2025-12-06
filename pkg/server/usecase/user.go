@@ -8,33 +8,42 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
-	"github.com/ryo-arima/locky/pkg/logger"
+	"github.com/ryo-arima/locky/pkg/global"
 	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
-type UserUsecase interface {
+// Helper function to convert code.MCode to global.MCode
+func toGlobalMCode(c code.MCode) global.MCode {
+	return global.MCode{
+		Code:    c.Code,
+		Message: c.Message,
+	}
+}
+
+type User interface {
 	GetUsers(c *gin.Context) ([]response.User, error)
-	CreateUser(c *gin.Context, req request.UserRequest) (*response.User, error)
-	UpdateUser(c *gin.Context, req request.UserRequest) (*response.User, error)
-	DeleteUser(c *gin.Context, req request.UserRequest) error
+	CreateUser(c *gin.Context, req request.User) (*response.User, error)
+	UpdateUser(c *gin.Context, req request.User) (*response.User, error)
+	DeleteUser(c *gin.Context, req request.User) error
 	ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]response.User, error)
 	CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error)
+	GetUserModelByEmail(c *gin.Context, email string) (*model.Users, error)
 }
 
-type userUsecase struct {
-	userRepo repository.UserRepository
+type user struct {
+	userRepo repository.User
 }
 
-func NewUserUsecase(userRepo repository.UserRepository) UserUsecase {
-	return &userUsecase{
+func NewUser(userRepo repository.User) User {
+	return &user{
 		userRepo: userRepo,
 	}
 }
 
-func (uc *userUsecase) GetUsers(c *gin.Context) ([]response.User, error) {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.UUGU1, reqID, "Getting all users")
+func (uc *user) GetUsers(c *gin.Context) ([]response.User, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, toGlobalMCode(code.UUGU1), "Getting all users")
 
 	users := uc.userRepo.GetUsers(c)
 
@@ -48,14 +57,13 @@ func (uc *userUsecase) GetUsers(c *gin.Context) ([]response.User, error) {
 		})
 	}
 
-	logger.Info(code.UUGU1, reqID, "Users retrieved successfully")
+	INFO(reqID, toGlobalMCode(code.UUGU1), "Users retrieved successfully")
 	return responseUsers, nil
 }
 
-func (uc *userUsecase) CreateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.UUCR1, reqID, "Creating user: "+req.Email)
+func (uc *user) CreateUser(c *gin.Context, req request.User) (*response.User, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, toGlobalMCode(code.UUCR1), "Creating user: "+req.Email)
 
 	// Convert request to model
 	now := time.Now()
@@ -72,7 +80,7 @@ func (uc *userUsecase) CreateUser(c *gin.Context, req request.UserRequest) (*res
 	// Call repository
 	createdUser := uc.userRepo.CreateUser(c, user)
 
-	logger.Info(code.UUCR2, reqID, "User created successfully: "+createdUser.UUID)
+	INFO(reqID, toGlobalMCode(code.UUCR2), "User created successfully: "+createdUser.UUID)
 
 	// Convert model to response
 	return &response.User{
@@ -83,10 +91,9 @@ func (uc *userUsecase) CreateUser(c *gin.Context, req request.UserRequest) (*res
 	}, nil
 }
 
-func (uc *userUsecase) UpdateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.UUUP1, reqID, "Updating user: "+req.UUID)
+func (uc *user) UpdateUser(c *gin.Context, req request.User) (*response.User, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, toGlobalMCode(code.UUUP1), "Updating user: "+req.UUID)
 
 	// Convert request to model
 	now := time.Now()
@@ -101,7 +108,7 @@ func (uc *userUsecase) UpdateUser(c *gin.Context, req request.UserRequest) (*res
 	// Call repository
 	updatedUser := uc.userRepo.UpdateUser(c, user)
 
-	logger.Info(code.UUUP2, reqID, "User updated successfully: "+updatedUser.UUID)
+	INFO(reqID, toGlobalMCode(code.UUUP2), "User updated successfully: "+updatedUser.UUID)
 
 	// Convert model to response
 	return &response.User{
@@ -112,10 +119,9 @@ func (uc *userUsecase) UpdateUser(c *gin.Context, req request.UserRequest) (*res
 	}, nil
 }
 
-func (uc *userUsecase) DeleteUser(c *gin.Context, req request.UserRequest) error {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.UUDL1, reqID, "Deleting user: "+req.UUID)
+func (uc *user) DeleteUser(c *gin.Context, req request.User) error {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, toGlobalMCode(code.UUDL1), "Deleting user: "+req.UUID)
 
 	// Convert request to model
 	user := model.Users{
@@ -125,18 +131,17 @@ func (uc *userUsecase) DeleteUser(c *gin.Context, req request.UserRequest) error
 	// Call repository
 	uc.userRepo.DeleteUser(c, user)
 
-	logger.Info(code.UUDL1, reqID, "User deleted successfully: "+req.UUID)
+	INFO(reqID, toGlobalMCode(code.UUDL1), "User deleted successfully: "+req.UUID)
 	return nil
 }
 
-func (uc *userUsecase) ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]response.User, error) {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.UULS1, reqID, "Listing users with filter")
+func (uc *user) ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]response.User, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, toGlobalMCode(code.UULS1), "Listing users with filter")
 
 	users, err := uc.userRepo.ListUsers(c, filter)
 	if err != nil {
-		logger.Error(code.UULS1, reqID, "Failed to list users: "+err.Error())
+		ERROR(reqID, toGlobalMCode(code.UULS1), "Failed to list users: "+err.Error())
 		return nil, err
 	}
 
@@ -150,21 +155,34 @@ func (uc *userUsecase) ListUsers(c *gin.Context, filter repository.UserQueryFilt
 		})
 	}
 
-	logger.Info(code.UULS1, reqID, "Users listed successfully")
+	INFO(reqID, toGlobalMCode(code.UULS1), "Users listed successfully")
 	return responseUsers, nil
 }
 
-func (uc *userUsecase) CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error) {
-	requestID, _ := c.Get("requestID")
-	reqID := requestID.(string)
-	logger.Info(code.UUCT1, reqID, "Counting users with filter")
+func (uc *user) CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, toGlobalMCode(code.UUCT1), "Counting users with filter")
 
 	count, err := uc.userRepo.CountUsers(c, filter)
 	if err != nil {
-		logger.Error(code.UUCT1, reqID, "Failed to count users: "+err.Error())
+		ERROR(reqID, toGlobalMCode(code.UUCT1), "Failed to count users: "+err.Error())
 		return 0, err
 	}
 
-	logger.Info(code.UUCT1, reqID, "Users counted successfully")
+	INFO(reqID, toGlobalMCode(code.UUCT1), "Users counted successfully")
 	return count, nil
+}
+
+func (uc *user) GetUserModelByEmail(c *gin.Context, email string) (*model.Users, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, toGlobalMCode(code.UUGU1), "Getting user model by email: "+email)
+
+	users, err := uc.userRepo.ListUsers(c, repository.UserQueryFilter{Email: &email, Limit: 1})
+	if err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, nil
+	}
+	return &users[0], nil
 }

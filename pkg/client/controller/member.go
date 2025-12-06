@@ -12,13 +12,13 @@ import (
 )
 
 func InitBootstrapMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	bootstrapMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Initialize the members table in the database.",
 		Long:  "This command drops the existing members table and recreates it based on the current model.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.Bootstrap(request.MemberRequest{}, GetOutputFormat())
+			out := uc.Bootstrap(request.Member{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -26,7 +26,7 @@ func InitBootstrapMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	createMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Create a new member association (internal).",
@@ -34,7 +34,7 @@ func InitCreateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			userUUID, _ := cmd.Flags().GetString("user-uuid")
 			groupUUID, _ := cmd.Flags().GetString("group-uuid")
-			out := uc.CreateInternal(request.MemberRequest{
+			out := uc.CreateInternal(request.Member{
 				UserUUID:  userUUID,
 				GroupUUID: groupUUID,
 			}, GetOutputFormat())
@@ -49,7 +49,7 @@ func InitCreateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitCreateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	createMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Create a new member association (admin).",
@@ -57,7 +57,7 @@ func InitCreateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			userUUID, _ := cmd.Flags().GetString("user-uuid")
 			groupUUID, _ := cmd.Flags().GetString("group-uuid")
-			out := uc.CreatePrivate(request.MemberRequest{
+			out := uc.CreatePrivate(request.Member{
 				UserUUID:  userUUID,
 				GroupUUID: groupUUID,
 			}, GetOutputFormat())
@@ -72,14 +72,14 @@ func InitCreateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	getMemberCmd := &cobra.Command{
 		Use:     "members",
 		Aliases: []string{"member"},
 		Short:   "Get a list of members (internal).",
 		Long:    "Retrieves a list of all member associations visible to an authenticated app user.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetInternal(request.MemberRequest{}, GetOutputFormat())
+			out := uc.GetInternal(request.Member{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -87,14 +87,14 @@ func InitGetMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitGetMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	getMemberCmd := &cobra.Command{
 		Use:     "members",
 		Aliases: []string{"member"},
 		Short:   "Get a list of members (admin).",
 		Long:    "Retrieves a list of all member associations visible to an admin.",
 		Run: func(cmd *cobra.Command, args []string) {
-			out := uc.GetPrivate(request.MemberRequest{}, GetOutputFormat())
+			out := uc.GetPrivate(request.Member{}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -102,7 +102,7 @@ func InitGetMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	updateMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Update a member association (internal).",
@@ -117,7 +117,7 @@ func InitUpdateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 				log.Fatalf("Invalid ID: %v", err)
 			}
 
-			out := uc.UpdateInternal(request.MemberRequest{
+			out := uc.UpdateInternal(request.Member{
 				ID:        uint(id),
 				UserUUID:  userUUID,
 				GroupUUID: groupUUID,
@@ -133,7 +133,7 @@ func InitUpdateMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitUpdateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	updateMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Update a member association (admin).",
@@ -148,7 +148,7 @@ func InitUpdateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 				log.Fatalf("Invalid ID: %v", err)
 			}
 
-			out := uc.UpdatePrivate(request.MemberRequest{
+			out := uc.UpdatePrivate(request.Member{
 				ID:        uint(id),
 				UserUUID:  userUUID,
 				GroupUUID: groupUUID,
@@ -164,7 +164,7 @@ func InitUpdateMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	deleteMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Delete a member association (internal).",
@@ -175,7 +175,7 @@ func InitDeleteMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeleteInternal(request.MemberRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeleteInternal(request.Member{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}
@@ -185,7 +185,7 @@ func InitDeleteMemberCmdForAppUser(conf config.BaseConfig) *cobra.Command {
 }
 
 func InitDeleteMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewMemberUsecase(conf)
+	uc := usecase.NewMember(conf)
 	deleteMemberCmd := &cobra.Command{
 		Use:   "member",
 		Short: "Delete a member association (admin).",
@@ -196,7 +196,7 @@ func InitDeleteMemberCmdForAdminUser(conf config.BaseConfig) *cobra.Command {
 			if err != nil {
 				log.Fatalf("Invalid ID: %v", err)
 			}
-			out := uc.DeletePrivate(request.MemberRequest{ID: uint(id)}, GetOutputFormat())
+			out := uc.DeletePrivate(request.Member{ID: uint(id)}, GetOutputFormat())
 			fmt.Print(out)
 		},
 	}

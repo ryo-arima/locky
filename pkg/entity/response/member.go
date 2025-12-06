@@ -2,9 +2,9 @@ package response
 
 import "time"
 
-// MemberResponse represents the response body for member-related operations.
-// swagger:model MemberResponse
-type MemberResponse struct {
+// Members represents the response body for member-related operations.
+// swagger:model Members
+type Members struct {
 	// The response code.
 	//
 	// required: true

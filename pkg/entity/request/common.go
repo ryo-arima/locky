@@ -2,7 +2,7 @@ package request
 
 import "time"
 
-type CommonRequest struct {
+type Common struct {
 	ID        uint       `json:"id"`
 	UUID      string     `json:"uuid"`
 	Name      string     `json:"name"`
@@ -11,13 +11,13 @@ type CommonRequest struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-// LoginRequest represents login credentials
-type LoginRequest struct {
+// Login represents login credentials
+type Login struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
-// RefreshTokenRequest represents refresh token request
-type RefreshTokenRequest struct {
+// RefreshToken represents refresh token request
+type RefreshToken struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }

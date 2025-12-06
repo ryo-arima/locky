@@ -80,7 +80,7 @@ func isAdminEmail(conf config.BaseConfig, email string) bool {
 
 // InitLoginCmd creates a login command
 func InitCommonLoginCmd(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewCommonUsecase(conf)
+	uc := usecase.NewCommon(conf)
 	loginCmd := &cobra.Command{
 		Use:   "login",
 		Short: "login with email and password",
@@ -100,12 +100,10 @@ func InitCommonLoginCmd(conf config.BaseConfig) *cobra.Command {
 				return
 			}
 
-			loginResponse := uc.Login(request.LoginRequest{
+			loginResponse := uc.Login(request.Login{
 				Email:    email,
 				Password: password,
-			})
-
-			// Save tokens to environment variables or files for later use
+			}) // Save tokens to environment variables or files for later use
 			if loginResponse.TokenPair != nil {
 				os.Setenv("LOCKY_ACCESS_TOKEN", loginResponse.TokenPair.AccessToken)
 				os.Setenv("LOCKY_REFRESH_TOKEN", loginResponse.TokenPair.RefreshToken)
@@ -128,7 +126,7 @@ func InitCommonLoginCmd(conf config.BaseConfig) *cobra.Command {
 
 // InitRefreshTokenCmd creates a refresh token command
 func InitCommonRefreshTokenCmd(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewCommonUsecase(conf)
+	uc := usecase.NewCommon(conf)
 	refreshCmd := &cobra.Command{
 		Use:   "refresh",
 		Short: "refresh access token using refresh token",
@@ -174,7 +172,7 @@ func InitCommonRefreshTokenCmd(conf config.BaseConfig) *cobra.Command {
 
 // InitLogoutCmd creates a logout command
 func InitCommonLogoutCmd(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewCommonUsecase(conf)
+	uc := usecase.NewCommon(conf)
 	logoutCmd := &cobra.Command{
 		Use:   "logout",
 		Short: "logout and invalidate tokens",
@@ -207,7 +205,7 @@ func InitCommonLogoutCmd(conf config.BaseConfig) *cobra.Command {
 
 // InitValidateTokenCmd creates a validate token command
 func InitCommonValidateTokenCmd(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewCommonUsecase(conf)
+	uc := usecase.NewCommon(conf)
 	validateCmd := &cobra.Command{
 		Use:   "validate",
 		Short: "validate access token",
@@ -238,7 +236,7 @@ func InitCommonValidateTokenCmd(conf config.BaseConfig) *cobra.Command {
 
 // InitGetUserInfoCmd creates a get user info command
 func InitCommonUserInfoCmd(conf config.BaseConfig) *cobra.Command {
-	uc := usecase.NewCommonUsecase(conf)
+	uc := usecase.NewCommon(conf)
 	userInfoCmd := &cobra.Command{
 		Use:   "userinfo",
 		Short: "get user information",

@@ -19,15 +19,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
+	"github.com/ryo-arima/locky/pkg/server/share"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type CommonRepository interface {
+// Common interface for repository layer
+type Common interface {
+	share.Common // Embed share.Common for middleware compatibility
 	GetBaseConfig() config.BaseConfig
 	GenerateJWTToken(claims model.JWTClaims) (string, error)
-	ValidateJWTToken(tokenString string) (*model.JWTClaims, error)
-	ParseTokenUnverified(tokenString string) (*model.JWTClaims, error)
-	IsTokenInvalidated(ctx context.Context, jti string) (bool, error)
 	InvalidateToken(ctx context.Context, tokenString string) error
 	GenerateTokenPair(userID uint, userUUID, email, name, role string) (*model.TokenPair, error)
 	GenerateJWTSecret() (string, error)
@@ -35,32 +35,33 @@ type CommonRepository interface {
 	HashPassword(password string) (string, error)
 	VerifyPassword(hashedPassword, password string) error
 	ValidatePasswordStrength(password string) error
-	DeleteTokenCache(token string) // Added: Cache deletion on logout
+	DeleteTokenCache(token string)
 	SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error
 	SendWelcomeEmail(ctx context.Context, to, name string) error
 	SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error
 }
 
-type commonRepository struct {
+// common implements Common interface
+type common struct {
 	BaseConfig  config.BaseConfig
 	RedisClient *redis.Client
 	MailConfig  *config.Mail
 }
 
-func (commonRepository *commonRepository) GetBaseConfig() config.BaseConfig {
-	return commonRepository.BaseConfig
+func (rcvr *common) GetBaseConfig() config.BaseConfig {
+	return rcvr.BaseConfig
 }
 
 // GetJWTSecret returns the JWT secret key from config, environment variable, or a default value
-func (cr *commonRepository) getJWTSecret() string {
+func (rcvr *common) getJWTSecret() string {
 	// First try environment variable
 	if envSecret := os.Getenv("JWT_SECRET"); envSecret != "" {
 		return envSecret
 	}
 
 	// Then try config file
-	if cr.BaseConfig.YamlConfig.Application.Server.JWTSecret != "" {
-		return cr.BaseConfig.YamlConfig.Application.Server.JWTSecret
+	if rcvr.BaseConfig.YamlConfig.Application.Server.JWTSecret != "" {
+		return rcvr.BaseConfig.YamlConfig.Application.Server.JWTSecret
 	}
 
 	// Finally, use default (should be changed in production)
@@ -68,7 +69,7 @@ func (cr *commonRepository) getJWTSecret() string {
 }
 
 // GenerateJWTToken creates a JWT token with the given claims
-func (cr *commonRepository) GenerateJWTToken(claims model.JWTClaims) (string, error) {
+func (rcvr *common) GenerateJWTToken(claims model.JWTClaims) (string, error) {
 	// Create header
 	header := map[string]interface{}{
 		"alg": "HS256",
@@ -90,7 +91,7 @@ func (cr *commonRepository) GenerateJWTToken(claims model.JWTClaims) (string, er
 
 	// Create signature
 	message := headerEncoded + "." + payloadEncoded
-	signature := cr.createSignature(message)
+	signature := rcvr.createSignature(message)
 
 	// Combine all parts
 	token := message + "." + signature
@@ -98,10 +99,10 @@ func (cr *commonRepository) GenerateJWTToken(claims model.JWTClaims) (string, er
 }
 
 // ValidateJWTToken validates and parses a JWT token
-func (cr *commonRepository) ValidateJWTToken(tokenString string) (*model.JWTClaims, error) {
-	// 1. Try cache first
-	if cr.RedisClient != nil {
-		if cached, err := cr.getCachedTokenClaims(tokenString); err == nil && cached != nil {
+func (rcvr *common) ValidateJWTToken(tokenString string) (*model.JWTClaims, error) {
+	// 1. Try cache first if enabled
+	if rcvr.RedisClient != nil && rcvr.BaseConfig.YamlConfig.Application.Server.Redis.JWTCache {
+		if cached, err := rcvr.getCachedTokenClaims(tokenString); err == nil && cached != nil {
 			// Ensure not expired
 			if cached.ExpiresAt >= time.Now().Unix() {
 				return cached, nil
@@ -116,7 +117,7 @@ func (cr *commonRepository) ValidateJWTToken(tokenString string) (*model.JWTClai
 
 	// Verify signature
 	message := parts[0] + "." + parts[1]
-	expectedSignature := cr.createSignature(message)
+	expectedSignature := rcvr.createSignature(message)
 	if parts[2] != expectedSignature {
 		return nil, errors.New("invalid token signature")
 	}
@@ -138,16 +139,16 @@ func (cr *commonRepository) ValidateJWTToken(tokenString string) (*model.JWTClai
 		return nil, errors.New("token expired")
 	}
 
-	// Cache claims (TTL = min(30m, remaining lifetime))
-	if cr.RedisClient != nil {
-		_ = cr.cacheTokenClaims(tokenString, &claims)
+	// Cache claims if enabled
+	if rcvr.RedisClient != nil && rcvr.BaseConfig.YamlConfig.Application.Server.Redis.JWTCache {
+		_ = rcvr.cacheTokenClaims(tokenString, &claims)
 	}
 
 	return &claims, nil
 }
 
 // GenerateTokenPair creates both access and refresh tokens
-func (cr *commonRepository) GenerateTokenPair(userID uint, userUUID, email, name, role string) (*model.TokenPair, error) {
+func (rcvr *common) GenerateTokenPair(userID uint, userUUID, email, name, role string) (*model.TokenPair, error) {
 	now := time.Now()
 	accessTokenExpiry := now.Add(24 * time.Hour).Unix()      // 24 hours
 	refreshTokenExpiry := now.Add(7 * 24 * time.Hour).Unix() // 7 days
@@ -168,7 +169,7 @@ func (cr *commonRepository) GenerateTokenPair(userID uint, userUUID, email, name
 	}
 
 	// Generate access token
-	accessToken, err := cr.GenerateJWTToken(accessClaims)
+	accessToken, err := rcvr.GenerateJWTToken(accessClaims)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate access token: %w", err)
 	}
@@ -187,7 +188,7 @@ func (cr *commonRepository) GenerateTokenPair(userID uint, userUUID, email, name
 	}
 
 	// Generate refresh token
-	refreshToken, err := cr.GenerateJWTToken(refreshClaims)
+	refreshToken, err := rcvr.GenerateJWTToken(refreshClaims)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
 	}
@@ -201,8 +202,8 @@ func (cr *commonRepository) GenerateTokenPair(userID uint, userUUID, email, name
 }
 
 // createSignature creates HMAC-SHA256 signature for JWT
-func (cr *commonRepository) createSignature(message string) string {
-	secret := cr.getJWTSecret()
+func (rcvr *common) createSignature(message string) string {
+	secret := rcvr.getJWTSecret()
 	h := hmac.New(sha256.New, []byte(secret))
 	h.Write([]byte(message))
 	signature := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(h.Sum(nil))
@@ -210,7 +211,7 @@ func (cr *commonRepository) createSignature(message string) string {
 }
 
 // HashPassword hashes a password using bcrypt
-func (cr *commonRepository) HashPassword(password string) (string, error) {
+func (rcvr *common) HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -219,12 +220,12 @@ func (cr *commonRepository) HashPassword(password string) (string, error) {
 }
 
 // VerifyPassword verifies a password against its hash
-func (cr *commonRepository) VerifyPassword(hashedPassword, password string) error {
+func (rcvr *common) VerifyPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
 // ValidatePasswordStrength validates password strength
-func (cr *commonRepository) ValidatePasswordStrength(password string) error {
+func (rcvr *common) ValidatePasswordStrength(password string) error {
 	if len(password) < 8 {
 		return errors.New("password must be at least 8 characters long")
 	}
@@ -266,7 +267,7 @@ func (cr *commonRepository) ValidatePasswordStrength(password string) error {
 }
 
 // GenerateJWTSecret generates a secure random JWT secret
-func (cr *commonRepository) GenerateJWTSecret() (string, error) {
+func (rcvr *common) GenerateJWTSecret() (string, error) {
 	// Generate 32 bytes (256 bits) of random data
 	bytes := make([]byte, 32)
 	_, err := rand.Read(bytes)
@@ -280,7 +281,7 @@ func (cr *commonRepository) GenerateJWTSecret() (string, error) {
 }
 
 // ValidateJWTSecretStrength checks if JWT secret meets minimum security requirements
-func (cr *commonRepository) ValidateJWTSecretStrength(secret string) error {
+func (rcvr *common) ValidateJWTSecretStrength(secret string) error {
 	if len(secret) < 32 {
 		return fmt.Errorf("JWT secret must be at least 32 characters long")
 	}
@@ -304,8 +305,8 @@ func (cr *commonRepository) ValidateJWTSecretStrength(secret string) error {
 }
 
 // InvalidateToken adds a token's JTI to the Redis denylist
-func (cr *commonRepository) InvalidateToken(ctx context.Context, tokenString string) error {
-	claims, err := cr.ValidateJWTToken(tokenString)
+func (rcvr *common) InvalidateToken(ctx context.Context, tokenString string) error {
+	claims, err := rcvr.ValidateJWTToken(tokenString)
 	if err != nil {
 		// If token is already expired or invalid, we don't need to do anything.
 		// We can consider it "successfully" invalidated.
@@ -325,7 +326,7 @@ func (cr *commonRepository) InvalidateToken(ctx context.Context, tokenString str
 	ttl := expiresAt.Sub(now)
 
 	// Add to denylist in Redis
-	err = cr.RedisClient.Set(ctx, claims.Jti, "invalidated", ttl).Err()
+	err = rcvr.RedisClient.Set(ctx, claims.Jti, "invalidated", ttl).Err()
 	if err != nil {
 		return fmt.Errorf("failed to add token to denylist: %w", err)
 	}
@@ -335,7 +336,7 @@ func (cr *commonRepository) InvalidateToken(ctx context.Context, tokenString str
 
 // ParseTokenUnverified decodes the claims from a token without verifying its signature.
 // This is used to get the JTI for denylist checking before full validation.
-func (cr *commonRepository) ParseTokenUnverified(tokenString string) (*model.JWTClaims, error) {
+func (rcvr *common) ParseTokenUnverified(tokenString string) (*model.JWTClaims, error) {
 	parts := strings.Split(tokenString, ".")
 	if len(parts) != 3 {
 		return nil, errors.New("invalid token format")
@@ -355,8 +356,8 @@ func (cr *commonRepository) ParseTokenUnverified(tokenString string) (*model.JWT
 }
 
 // IsTokenInvalidated checks if a token's JTI exists in the Redis denylist.
-func (cr *commonRepository) IsTokenInvalidated(ctx context.Context, jti string) (bool, error) {
-	result, err := cr.RedisClient.Exists(ctx, jti).Result()
+func (rcvr *common) IsTokenInvalidated(ctx context.Context, jti string) (bool, error) {
+	result, err := rcvr.RedisClient.Exists(ctx, jti).Result()
 	if err != nil {
 		return true, fmt.Errorf("error checking token in redis: %w", err)
 	}
@@ -364,13 +365,13 @@ func (cr *commonRepository) IsTokenInvalidated(ctx context.Context, jti string) 
 }
 
 // helper: cache key builder
-func (cr *commonRepository) tokenCacheKey(token string) string {
+func (rcvr *common) tokenCacheKey(token string) string {
 	return "auth:token:" + token
 }
 
-// helper: store token claims in redis with 30m max TTL
-func (cr *commonRepository) cacheTokenClaims(token string, claims *model.JWTClaims) error {
-	if cr.RedisClient == nil || claims == nil {
+// helper: store token claims in redis with configurable TTL
+func (rcvr *common) cacheTokenClaims(token string, claims *model.JWTClaims) error {
+	if rcvr.RedisClient == nil || claims == nil {
 		return nil
 	}
 	data, err := json.Marshal(claims)
@@ -381,19 +382,24 @@ func (cr *commonRepository) cacheTokenClaims(token string, claims *model.JWTClai
 	if remaining <= 0 {
 		return nil
 	}
+	// Use configured TTL or default to 30 minutes
 	maxTTL := 30 * time.Minute
+	if rcvr.BaseConfig.YamlConfig.Application.Server.Redis.CacheTTL > 0 {
+		maxTTL = time.Duration(rcvr.BaseConfig.YamlConfig.Application.Server.Redis.CacheTTL) * time.Second
+	}
+	// Don't cache longer than token expiry
 	if remaining < maxTTL {
 		maxTTL = remaining
 	}
-	return cr.RedisClient.Set(context.Background(), cr.tokenCacheKey(token), string(data), maxTTL).Err()
+	return rcvr.RedisClient.Set(context.Background(), rcvr.tokenCacheKey(token), string(data), maxTTL).Err()
 }
 
 // helper: get token claims from redis cache
-func (cr *commonRepository) getCachedTokenClaims(token string) (*model.JWTClaims, error) {
-	if cr.RedisClient == nil {
+func (rcvr *common) getCachedTokenClaims(token string) (*model.JWTClaims, error) {
+	if rcvr.RedisClient == nil {
 		return nil, errors.New("redis client nil")
 	}
-	val, err := cr.RedisClient.Get(context.Background(), cr.tokenCacheKey(token)).Result()
+	val, err := rcvr.RedisClient.Get(context.Background(), rcvr.tokenCacheKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -405,20 +411,20 @@ func (cr *commonRepository) getCachedTokenClaims(token string) (*model.JWTClaims
 }
 
 // DeleteTokenCache removes cached claims for the given raw token string (if present)
-func (cr *commonRepository) DeleteTokenCache(token string) {
-	if cr.RedisClient == nil || token == "" {
+func (rcvr *common) DeleteTokenCache(token string) {
+	if rcvr.RedisClient == nil || token == "" {
 		return
 	}
-	_ = cr.RedisClient.Del(context.Background(), cr.tokenCacheKey(token)).Err()
+	_ = rcvr.RedisClient.Del(context.Background(), rcvr.tokenCacheKey(token)).Err()
 }
 
 // SendEmail sends an email using the configured mail settings
-func (cr *commonRepository) SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error {
-	if cr.MailConfig == nil || cr.MailConfig.Host == "" {
+func (rcvr *common) SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error {
+	if rcvr.MailConfig == nil || rcvr.MailConfig.Host == "" {
 		return errors.New("mail sender not configured")
 	}
 
-	auth := smtp.PlainAuth("", cr.MailConfig.Username, cr.MailConfig.Password, cr.MailConfig.Host)
+	auth := smtp.PlainAuth("", rcvr.MailConfig.Username, rcvr.MailConfig.Password, rcvr.MailConfig.Host)
 
 	contentType := "text/plain"
 	if isHTML {
@@ -431,44 +437,44 @@ func (cr *commonRepository) SendEmail(ctx context.Context, to, subject, body str
 		"Content-Type: %s; charset=UTF-8\r\n"+
 		"\r\n"+
 		"%s",
-		cr.MailConfig.From, to, subject, contentType, body)
+		rcvr.MailConfig.From, to, subject, contentType, body)
 
-	addr := fmt.Sprintf("%s:%d", cr.MailConfig.Host, cr.MailConfig.Port)
-	return smtp.SendMail(addr, auth, cr.MailConfig.From, []string{to}, []byte(message))
+	addr := fmt.Sprintf("%s:%d", rcvr.MailConfig.Host, rcvr.MailConfig.Port)
+	return smtp.SendMail(addr, auth, rcvr.MailConfig.From, []string{to}, []byte(message))
 }
 
 // SendWelcomeEmail sends a welcome email to a new user
-func (cr *commonRepository) SendWelcomeEmail(ctx context.Context, to, name string) error {
-	if cr.MailConfig == nil || cr.MailConfig.Host == "" {
+func (rcvr *common) SendWelcomeEmail(ctx context.Context, to, name string) error {
+	if rcvr.MailConfig == nil || rcvr.MailConfig.Host == "" {
 		return errors.New("mail sender not configured")
 	}
 
 	subject := "Welcome to Locky!"
 	body := fmt.Sprintf("Hello %s,\n\nWelcome to Locky! Your account has been created successfully.\n\nBest regards,\nThe Locky Team", name)
 
-	return cr.SendEmail(ctx, to, subject, body, false)
+	return rcvr.SendEmail(ctx, to, subject, body, false)
 }
 
 // SendPasswordResetEmail sends a password reset email to a user
-func (cr *commonRepository) SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error {
-	if cr.MailConfig == nil || cr.MailConfig.Host == "" {
+func (rcvr *common) SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error {
+	if rcvr.MailConfig == nil || rcvr.MailConfig.Host == "" {
 		return errors.New("mail sender not configured")
 	}
 
 	subject := "Password Reset Request"
 	body := fmt.Sprintf("Hello %s,\n\nYou have requested to reset your password. Please click the link below to reset your password:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nThe Locky Team", name, resetURL)
 
-	return cr.SendEmail(ctx, to, subject, body, false)
+	return rcvr.SendEmail(ctx, to, subject, body, false)
 }
 
-func NewCommonRepository(baseConfig config.BaseConfig, redisClient *redis.Client) CommonRepository {
+func NewCommon(baseConfig config.BaseConfig, redisClient *redis.Client) Common {
 	// Initialize mail config reference from base config
 	var mailConfig *config.Mail
 	if baseConfig.YamlConfig.Application.Mail.Host != "" {
 		mailConfig = &baseConfig.YamlConfig.Application.Mail
 	}
 
-	return &commonRepository{
+	return &common{
 		BaseConfig:  baseConfig,
 		RedisClient: redisClient,
 		MailConfig:  mailConfig,

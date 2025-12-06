@@ -10,66 +10,70 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type GroupUsecase interface {
-	Bootstrap(request request.GroupRequest, format string) string
-	GetInternal(request request.GroupRequest, format string) string
-	GetPrivate(request request.GroupRequest, format string) string
-	CreateInternal(request request.GroupRequest, format string) string
-	CreatePrivate(request request.GroupRequest, format string) string
-	UpdateInternal(request request.GroupRequest, format string) string
-	UpdatePrivate(request request.GroupRequest, format string) string
-	DeleteInternal(request request.GroupRequest, format string) string
-	DeletePrivate(request request.GroupRequest, format string) string
+type Group interface {
+	Bootstrap(request request.Group, format string) string
+	GetInternal(request request.Group, format string) string
+	GetPrivate(request request.Group, format string) string
+	CreateInternal(request request.Group, format string) string
+	CreatePrivate(request request.Group, format string) string
+	UpdateInternal(request request.Group, format string) string
+	UpdatePrivate(request request.Group, format string) string
+	DeleteInternal(request request.Group, format string) string
+	DeletePrivate(request request.Group, format string) string
 }
 
-type groupUsecase struct {
-	repo repository.GroupRepository
+type group struct {
+	internalRepo repository.GroupInternal
+	privateRepo  repository.GroupPrivate
 }
 
-func NewGroupUsecase(conf config.BaseConfig) GroupUsecase {
-	return &groupUsecase{repo: repository.NewGroupRepository(conf)}
+func NewGroup(conf config.BaseConfig) Group {
+	return &group{
+		internalRepo: repository.NewGroupInternal(conf),
+		privateRepo:  repository.NewGroupPrivate(conf),
+	}
 }
 
-func (u *groupUsecase) Bootstrap(req request.GroupRequest, format string) string {
-	resp := u.repo.BootstrapGroupForDB(req)
-	return Format(format, resp)
-}
-
-func (u *groupUsecase) GetInternal(req request.GroupRequest, format string) string {
-	resp := u.repo.GetGroupForInternal(req)
-	return Format(format, resp)
-}
-func (u *groupUsecase) GetPrivate(req request.GroupRequest, format string) string {
-	resp := u.repo.GetGroupForPrivate(req)
-	return Format(format, resp)
-}
-func (u *groupUsecase) CreateInternal(req request.GroupRequest, format string) string {
-	resp := u.repo.CreateGroupForInternal(req)
-	return Format(format, resp)
-}
-func (u *groupUsecase) CreatePrivate(req request.GroupRequest, format string) string {
-	resp := u.repo.CreateGroupForPrivate(req)
-	return Format(format, resp)
-}
-func (u *groupUsecase) UpdateInternal(req request.GroupRequest, format string) string {
-	resp := u.repo.UpdateGroupForInternal(req)
-	return Format(format, resp)
-}
-func (u *groupUsecase) UpdatePrivate(req request.GroupRequest, format string) string {
-	resp := u.repo.UpdateGroupForPrivate(req)
-	return Format(format, resp)
-}
-func (u *groupUsecase) DeleteInternal(req request.GroupRequest, format string) string {
-	resp := u.repo.DeleteGroupForInternal(req)
-	return Format(format, resp)
-}
-func (u *groupUsecase) DeletePrivate(req request.GroupRequest, format string) string {
-	resp := u.repo.DeleteGroupForPrivate(req)
+func (u *group) Bootstrap(req request.Group, format string) string {
+	resp := u.internalRepo.BootstrapGroupForDB(req)
 	return Format(format, resp)
 }
 
-// groupsTableString renders GroupResponse as a table string.
-func groupsTableString(res response.GroupResponse) string {
+func (u *group) GetInternal(req request.Group, format string) string {
+	resp := u.internalRepo.GetGroup(req)
+	return Format(format, resp)
+}
+func (u *group) GetPrivate(req request.Group, format string) string {
+	resp := u.privateRepo.GetGroup(req)
+	return Format(format, resp)
+}
+func (u *group) CreateInternal(req request.Group, format string) string {
+	resp := u.internalRepo.CreateGroup(req)
+	return Format(format, resp)
+}
+func (u *group) CreatePrivate(req request.Group, format string) string {
+	resp := u.privateRepo.CreateGroup(req)
+	return Format(format, resp)
+}
+func (u *group) UpdateInternal(req request.Group, format string) string {
+	resp := u.internalRepo.UpdateGroup(req)
+	return Format(format, resp)
+}
+func (u *group) UpdatePrivate(req request.Group, format string) string {
+	resp := u.privateRepo.UpdateGroup(req)
+	return Format(format, resp)
+}
+func (u *group) DeleteInternal(req request.Group, format string) string {
+	resp := u.internalRepo.DeleteGroup(req)
+	return Format(format, resp)
+}
+func (u *group) DeletePrivate(req request.Group, format string) string {
+	resp := u.privateRepo.DeleteGroup(req)
+	return Format(format, resp)
+}
+
+// groupsTableString renders Groups as a table string.
+func groupsTableString(res response.Groups) string {
 	w, buf := newTabWriterBuf()
 	fmt.Fprintln(w, strings.Join([]string{"ID", "UUID", "NAME"}, "\t"))
 	for _, g := range res.Groups {

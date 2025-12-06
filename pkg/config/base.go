@@ -7,29 +7,14 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-// MCode represents a message code with predefined messages
-type MCode struct {
-	Code    string
-	Message string
-}
-
-// PaddedCode returns the code padded for aligned log output
-// This will be set by middleware package's MaxCodeLength
-func (rcvr MCode) PaddedCode(maxLen int) string {
-	if len(rcvr.Code) >= maxLen {
-		return rcvr.Code
-	}
-	return rcvr.Code + strings.Repeat(" ", maxLen-len(rcvr.Code))
-}
-
 // LoggerConfig represents logger configuration
+// Logger implementation is provided by server/share or client/share packages
 type LoggerConfig struct {
 	Component    string `json:"component" yaml:"component"`
 	Service      string `json:"service" yaml:"service"`
@@ -39,30 +24,10 @@ type LoggerConfig struct {
 	Output       string `json:"output" yaml:"output"`
 }
 
-// LoggerInterface defines the logging interface
-type LoggerInterface interface {
-	DEBUG(mcode MCode, optionalMessage string, fields ...map[string]interface{})
-	INFO(mcode MCode, optionalMessage string, fields ...map[string]interface{})
-	WARN(mcode MCode, optionalMessage string, fields ...map[string]interface{})
-	ERROR(mcode MCode, optionalMessage string, fields ...map[string]interface{})
-	FATAL(mcode MCode, optionalMessage string, fields ...map[string]interface{})
-}
-
-// LoggerFactory is a function type that creates a LoggerInterface
-type LoggerFactory func(LoggerConfig, *BaseConfig) LoggerInterface
-
-// defaultLoggerFactory will be set by middleware package
-var defaultLoggerFactory LoggerFactory
-
-// SetLoggerFactory sets the logger factory function
-func SetLoggerFactory(factory LoggerFactory) {
-	defaultLoggerFactory = factory
-}
-
 type BaseConfig struct {
 	DBConnection *gorm.DB
 	YamlConfig   YamlConfig
-	Logger       LoggerInterface
+	Logger       interface{} // Logger implementation from server/share or client/share
 }
 
 type YamlConfig struct {
@@ -97,10 +62,18 @@ type Redis struct {
 	DB   IntOrString `yaml:"db"`
 }
 
+// RedisConfig defines Redis-related server configurations
+type RedisConfig struct {
+	JWTCache bool `yaml:"jwt_cache"` // Enable JWT token caching in Redis
+	CacheTTL int  `yaml:"cache_ttl"` // JWT cache TTL in seconds (0 = use token expiry)
+}
+
+// Server defines server-related configurations
 type Server struct {
-	Admin     Admin  `yaml:"admin"`
-	JWTSecret string `yaml:"jwt_secret"`
-	LogLevel  string `yaml:"log_level"` // Added: debug / info / warn / error
+	Admin     Admin       `yaml:"admin"`
+	JWTSecret string      `yaml:"jwt_secret"`
+	LogLevel  string      `yaml:"log_level"` // debug / info / warn / error
+	Redis     RedisConfig `yaml:"redis"`     // Redis-related configurations
 }
 
 type Mail struct {
@@ -216,7 +189,7 @@ func NewBaseConfigWithContext(ctx context.Context) *BaseConfig {
 	}
 
 initializeLogger:
-	// Initialize logger with default values if not configured
+	// Initialize logger config with default values if not configured
 	if config.Logger.Component == "" {
 		config.Logger.Component = "locky"
 	}
@@ -233,12 +206,6 @@ initializeLogger:
 	baseConfig := &BaseConfig{
 		YamlConfig:   config,
 		DBConnection: nil,
-	}
-
-	// Initialize logger
-	if defaultLoggerFactory != nil {
-		logger := defaultLoggerFactory(config.Logger, baseConfig)
-		baseConfig.Logger = logger
 	}
 
 	return baseConfig
@@ -273,7 +240,7 @@ func (bc *BaseConfig) ConnectDB() error {
 	if bc.DBConnection != nil {
 		return nil
 	}
-	db := NewDBConnection(bc.YamlConfig, bc.Logger)
+	db := NewDBConnection(bc.YamlConfig)
 	if db == nil {
 		return fmt.Errorf("failed to connect database")
 	}
@@ -281,29 +248,17 @@ func (bc *BaseConfig) ConnectDB() error {
 	return nil
 }
 
-func NewDBConnection(conf YamlConfig, logger LoggerInterface) *gorm.DB {
+func NewDBConnection(conf YamlConfig) *gorm.DB {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify", conf.MySQL.User, conf.MySQL.Pass, conf.MySQL.Host, conf.MySQL.Port, conf.MySQL.Db)
 
-	logger.DEBUG(MCode{Code: "C-NDBC-1", Message: "Attempting database connection"}, "", map[string]interface{}{
-		"host": conf.MySQL.Host,
-		"port": conf.MySQL.Port,
-		"db":   conf.MySQL.Db,
-	})
+	log.Printf("[C-NDBC-1] Attempting database connection to %s:%s/%s", conf.MySQL.Host, conf.MySQL.Port, conf.MySQL.Db)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logger.ERROR(MCode{Code: "C-NDBC-3", Message: "Failed to connect"}, fmt.Sprintf("%v", err), map[string]interface{}{
-			"host": conf.MySQL.Host,
-			"port": conf.MySQL.Port,
-			"db":   conf.MySQL.Db,
-		})
+		log.Printf("[C-NDBC-3] Failed to connect to database %s:%s/%s: %v", conf.MySQL.Host, conf.MySQL.Port, conf.MySQL.Db, err)
 		return nil
 	}
 
-	logger.INFO(MCode{Code: "C-NDBC-2", Message: "Database connection established"}, "", map[string]interface{}{
-		"host": conf.MySQL.Host,
-		"port": conf.MySQL.Port,
-		"db":   conf.MySQL.Db,
-	})
+	log.Printf("[C-NDBC-2] Database connection established to %s:%s/%s", conf.MySQL.Host, conf.MySQL.Port, conf.MySQL.Db)
 	return db
 }

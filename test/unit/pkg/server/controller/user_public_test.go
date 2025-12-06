@@ -5,47 +5,49 @@ import (
 
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/server/controller"
+	"github.com/ryo-arima/locky/pkg/server/repository"
 	"github.com/ryo-arima/locky/pkg/server/usecase"
-	mock "github.com/ryo-arima/locky/test/unit/mock/server"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewUserControllerForPublic(t *testing.T) {
-	userRepo := &mock.MockUserRepository{}
-	userUsecase := usecase.NewUserUsecase(userRepo)
-	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
-	conf := config.BaseConfig{}
+	cfg := config.BaseConfig{}
+	userRepo := repository.NewUser(cfg)
+	userUsecase := usecase.NewUser(userRepo)
+	commonRepo := repository.NewCommon(cfg, nil)
+	commonUsecase := usecase.NewCommon(commonRepo)
 
-	ctrl := controller.NewUserControllerForPublic(userUsecase, commonRepo, conf)
+	ctrl := controller.NewUserPublic(userUsecase, commonUsecase, cfg)
 
 	assert.NotNil(t, ctrl)
 }
 
 func TestNewUserControllerForInternal(t *testing.T) {
-	userRepo := &mock.MockUserRepository{}
-	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
-	userUsecase := usecase.NewUserUsecase(userRepo)
+	cfg := config.BaseConfig{}
+	userRepo := repository.NewUser(cfg)
+	userUsecase := usecase.NewUser(userRepo)
 
-	ctrl := controller.NewUserControllerForInternal(userUsecase, commonRepo)
+	ctrl := controller.NewUserInternal(userUsecase)
 
 	assert.NotNil(t, ctrl)
 }
 
 func TestNewUserControllerForPrivate(t *testing.T) {
-	userRepo := &mock.MockUserRepository{}
-	userUsecase := usecase.NewUserUsecase(userRepo)
-	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
+	cfg := config.BaseConfig{}
+	userRepo := repository.NewUser(cfg)
+	userUsecase := usecase.NewUser(userRepo)
 
-	ctrl := controller.NewUserControllerForPrivate(userUsecase, commonRepo)
+	ctrl := controller.NewUserPrivate(userUsecase)
 
 	assert.NotNil(t, ctrl)
 }
 
 // Test usecase initialization
 func TestUserUsecaseInitialization(t *testing.T) {
-	userRepo := &mock.MockUserRepository{}
+	cfg := config.BaseConfig{}
+	userRepo := repository.NewUser(cfg)
 
-	uc := usecase.NewUserUsecase(userRepo)
+	uc := usecase.NewUser(userRepo)
 
 	assert.NotNil(t, uc)
 }

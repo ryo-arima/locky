@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type MemberUsecase interface {
+type Member interface {
 	GetMembers(c *gin.Context) ([]response.Member, error)
 	GetMemberByUUID(c *gin.Context, uuid string) (*response.Member, error)
 	CreateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB)
@@ -18,17 +18,17 @@ type MemberUsecase interface {
 	CountMembers(c *gin.Context, filter repository.MemberQueryFilter) (int64, error)
 }
 
-type memberUsecase struct {
-	memberRepo repository.MemberRepository
+type member struct {
+	memberRepo repository.Member
 }
 
-func NewMemberUsecase(memberRepo repository.MemberRepository) MemberUsecase {
-	return &memberUsecase{
+func NewMember(memberRepo repository.Member) Member {
+	return &member{
 		memberRepo: memberRepo,
 	}
 }
 
-func (uc *memberUsecase) GetMembers(c *gin.Context) ([]response.Member, error) {
+func (uc *member) GetMembers(c *gin.Context) ([]response.Member, error) {
 	members := uc.memberRepo.GetMembers(c)
 
 	var responseMembers []response.Member
@@ -45,7 +45,7 @@ func (uc *memberUsecase) GetMembers(c *gin.Context) ([]response.Member, error) {
 	return responseMembers, nil
 }
 
-func (uc *memberUsecase) GetMemberByUUID(c *gin.Context, uuid string) (*response.Member, error) {
+func (uc *member) GetMemberByUUID(c *gin.Context, uuid string) (*response.Member, error) {
 	member, err := uc.memberRepo.GetMemberByUUID(c, uuid)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (uc *memberUsecase) GetMemberByUUID(c *gin.Context, uuid string) (*response
 	}, nil
 }
 
-func (uc *memberUsecase) CreateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB) {
+func (uc *member) CreateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB) {
 	resDB := uc.memberRepo.CreateMember(c, member)
 	if resDB.Error != nil {
 		return nil, resDB
@@ -75,7 +75,7 @@ func (uc *memberUsecase) CreateMember(c *gin.Context, member *model.Members) (*r
 	}, resDB
 }
 
-func (uc *memberUsecase) UpdateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB) {
+func (uc *member) UpdateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB) {
 	resDB := uc.memberRepo.UpdateMember(c, member)
 	if resDB.Error != nil {
 		return nil, resDB
@@ -90,11 +90,11 @@ func (uc *memberUsecase) UpdateMember(c *gin.Context, member *model.Members) (*r
 	}, resDB
 }
 
-func (uc *memberUsecase) DeleteMember(c *gin.Context, uuid string) *gorm.DB {
+func (uc *member) DeleteMember(c *gin.Context, uuid string) *gorm.DB {
 	return uc.memberRepo.DeleteMember(c, uuid)
 }
 
-func (uc *memberUsecase) ListMembers(c *gin.Context, filter repository.MemberQueryFilter) ([]response.Member, error) {
+func (uc *member) ListMembers(c *gin.Context, filter repository.MemberQueryFilter) ([]response.Member, error) {
 	members, err := uc.memberRepo.ListMembers(c, filter)
 	if err != nil {
 		return nil, err
@@ -114,6 +114,6 @@ func (uc *memberUsecase) ListMembers(c *gin.Context, filter repository.MemberQue
 	return responseMembers, nil
 }
 
-func (uc *memberUsecase) CountMembers(c *gin.Context, filter repository.MemberQueryFilter) (int64, error) {
+func (uc *member) CountMembers(c *gin.Context, filter repository.MemberQueryFilter) (int64, error) {
 	return uc.memberRepo.CountMembers(c, filter)
 }

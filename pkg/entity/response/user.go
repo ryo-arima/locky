@@ -2,9 +2,9 @@ package response
 
 import "time"
 
-// UserResponse represents the response body for user-related operations.
-// swagger:model UserResponse
-type UserResponse struct {
+// Users represents the response body for user-related operations.
+// swagger:model Users
+type Users struct {
 	// The response code.
 	//
 	// required: true

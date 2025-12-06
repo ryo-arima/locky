@@ -2,9 +2,9 @@ package request
 
 import "time"
 
-// GroupRequest represents the request body for group-related operations.
-// swagger:model GroupRequest
-type GroupRequest struct {
+// Group represents the request body for group-related operations.
+// swagger:model Group
+type Group struct {
 	// The ID of the group.
 	//
 	// required: false

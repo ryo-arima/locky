@@ -2,9 +2,9 @@ package request
 
 import "time"
 
-// MemberRequest represents the request body for member-related operations.
-// swagger:model MemberRequest
-type MemberRequest struct {
+// Member represents the request body for member-related operations.
+// swagger:model Member
+type Member struct {
 	// The ID of the member.
 	//
 	// required: false

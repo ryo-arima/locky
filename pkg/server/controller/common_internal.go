@@ -1,16 +1,16 @@
 package controller
 
 import (
-	"github.com/ryo-arima/locky/pkg/server/repository"
+	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
-type CommonControllerForInternal interface {
+type CommonInternal interface {
 }
 
-type commonControllerForInternal struct {
-	CommonRepository repository.CommonRepository
+type commonInternal struct {
+	CommonRepository share.Common
 }
 
-func NewCommonControllerForInternal(commonRepository repository.CommonRepository) CommonControllerForInternal {
-	return &commonControllerForInternal{CommonRepository: commonRepository}
+func NewCommonInternal(commonRepository share.Common) CommonInternal {
+	return &commonInternal{CommonRepository: commonRepository}
 }

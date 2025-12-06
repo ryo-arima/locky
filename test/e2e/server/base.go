@@ -10,9 +10,7 @@ import (
 
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
-	"github.com/ryo-arima/locky/pkg/logger"
 	"github.com/ryo-arima/locky/pkg/server"
-	"github.com/ryo-arima/locky/pkg/server/middleware"
 )
 
 var testServer *http.Server
@@ -43,13 +41,7 @@ func StartTestServer() error {
 
 	os.Setenv("CONFIG_FILE", testConfigPath)
 
-	// Set logger factory
-	config.SetLoggerFactory(middleware.NewLogger)
-
 	conf := config.NewBaseConfig()
-
-	// Initialize global logger
-	logger.Initialize(conf.YamlConfig.Logger)
 
 	if err := conf.ConnectDB(); err != nil {
 		return fmt.Errorf("failed to connect DB: %w", err)

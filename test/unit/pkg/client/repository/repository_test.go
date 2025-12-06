@@ -23,11 +23,11 @@ func TestNewCommonRepository(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewCommonRepository(cfg)
+	repo := repository.NewCommon(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewGroupRepository(t *testing.T) {
+func TestNewGroup(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -38,11 +38,11 @@ func TestNewGroupRepository(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewGroupRepository(cfg)
+	repo := repository.NewGroupInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewMemberRepository(t *testing.T) {
+func TestNewMember(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -53,11 +53,11 @@ func TestNewMemberRepository(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewMemberRepository(cfg)
+	repo := repository.NewMemberInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewRoleRepository(t *testing.T) {
+func TestNewRole(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -68,11 +68,11 @@ func TestNewRoleRepository(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewRoleRepository(cfg)
+	repo := repository.NewRoleInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewUserRepository(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			Application: config.Application{
@@ -83,12 +83,12 @@ func TestNewUserRepository(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewUserRepository(cfg)
+	repo := repository.NewUserInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
 func TestLoginRequest_Structure(t *testing.T) {
-	loginReq := request.LoginRequest{
+	loginReq := request.Login{
 		Email:    "user@example.com",
 		Password: "securepassword123",
 	}
@@ -111,9 +111,9 @@ func TestRepositoryInterfaces(t *testing.T) {
 	}
 
 	// Verify all repositories implement their interfaces
-	var _ repository.CommonRepository = repository.NewCommonRepository(cfg)
-	var _ repository.GroupRepository = repository.NewGroupRepository(cfg)
-	var _ repository.MemberRepository = repository.NewMemberRepository(cfg)
-	var _ repository.RoleRepository = repository.NewRoleRepository(cfg)
-	var _ repository.UserRepository = repository.NewUserRepository(cfg)
+	var _ repository.Common = repository.NewCommon(cfg)
+	var _ repository.GroupInternal = repository.NewGroupInternal(cfg)
+	var _ repository.MemberInternal = repository.NewMemberInternal(cfg)
+	var _ repository.RoleInternal = repository.NewRoleInternal(cfg)
+	var _ repository.UserInternal = repository.NewUserInternal(cfg)
 }

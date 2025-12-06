@@ -5,7 +5,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/repository"
 )
 
-type RoleUsecase interface {
+type Role interface {
 	ListRoles(c *gin.Context) ([]string, error)
 	GetRolePermissions(c *gin.Context, role string) ([]repository.RolePermission, error)
 	CreateRole(c *gin.Context, role string, perms []repository.RolePermission) error
@@ -13,32 +13,32 @@ type RoleUsecase interface {
 	DeleteRole(c *gin.Context, role string) error
 }
 
-type roleUsecase struct {
-	roleRepo repository.RoleRepository
+type role struct {
+	roleRepo repository.Role
 }
 
-func NewRoleUsecase(roleRepo repository.RoleRepository) RoleUsecase {
-	return &roleUsecase{
+func NewRole(roleRepo repository.Role) Role {
+	return &role{
 		roleRepo: roleRepo,
 	}
 }
 
-func (uc *roleUsecase) ListRoles(c *gin.Context) ([]string, error) {
+func (uc *role) ListRoles(c *gin.Context) ([]string, error) {
 	return uc.roleRepo.ListRoles(c)
 }
 
-func (uc *roleUsecase) GetRolePermissions(c *gin.Context, role string) ([]repository.RolePermission, error) {
+func (uc *role) GetRolePermissions(c *gin.Context, role string) ([]repository.RolePermission, error) {
 	return uc.roleRepo.GetRolePermissions(c, role)
 }
 
-func (uc *roleUsecase) CreateRole(c *gin.Context, role string, perms []repository.RolePermission) error {
+func (uc *role) CreateRole(c *gin.Context, role string, perms []repository.RolePermission) error {
 	return uc.roleRepo.CreateRole(c, role, perms)
 }
 
-func (uc *roleUsecase) UpdateRole(c *gin.Context, role string, perms []repository.RolePermission) error {
+func (uc *role) UpdateRole(c *gin.Context, role string, perms []repository.RolePermission) error {
 	return uc.roleRepo.UpdateRole(c, role, perms)
 }
 
-func (uc *roleUsecase) DeleteRole(c *gin.Context, role string) error {
+func (uc *role) DeleteRole(c *gin.Context, role string) error {
 	return uc.roleRepo.DeleteRole(c, role)
 }

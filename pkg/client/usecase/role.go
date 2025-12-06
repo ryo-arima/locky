@@ -6,7 +6,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/request"
 )
 
-type RoleUsecase interface {
+type Role interface {
 	ListInternal(id, format string) string
 	ListPrivate(id, format string) string
 	Create(role string, perms []request.RolePermissionItem, format string) string
@@ -14,29 +14,35 @@ type RoleUsecase interface {
 	Delete(role string, format string) string
 }
 
-type roleUsecase struct{ repo repository.RoleRepository }
-
-func NewRoleUsecase(conf config.BaseConfig) RoleUsecase {
-	return &roleUsecase{repo: repository.NewRoleRepository(conf)}
+type role struct {
+	internalRepo repository.RoleInternal
+	privateRepo  repository.RolePrivate
 }
 
-func (u *roleUsecase) ListInternal(id, format string) string {
-	resp := u.repo.ListRolesInternal(repository.RoleFilter{ID: id})
+func NewRole(conf config.BaseConfig) Role {
+	return &role{
+		internalRepo: repository.NewRoleInternal(conf),
+		privateRepo:  repository.NewRolePrivate(conf),
+	}
+}
+
+func (u *role) ListInternal(id, format string) string {
+	resp := u.internalRepo.ListRoles(repository.RoleFilter{ID: id})
 	return Format(format, resp)
 }
-func (u *roleUsecase) ListPrivate(id, format string) string {
-	resp := u.repo.ListRolesPrivate(repository.RoleFilter{ID: id})
+func (u *role) ListPrivate(id, format string) string {
+	resp := u.privateRepo.ListRoles(repository.RoleFilter{ID: id})
 	return Format(format, resp)
 }
-func (u *roleUsecase) Create(role string, perms []request.RolePermissionItem, format string) string {
-	resp := u.repo.CreateRole(request.RolePermissionRequest{Role: role, Permissions: perms})
+func (u *role) Create(role string, perms []request.RolePermissionItem, format string) string {
+	resp := u.privateRepo.CreateRole(request.RolePermission{Role: role, Permissions: perms})
 	return Format(format, resp)
 }
-func (u *roleUsecase) Update(role string, perms []request.RolePermissionItem, format string) string {
-	resp := u.repo.UpdateRole(role, request.RolePermissionRequest{Role: role, Permissions: perms})
+func (u *role) Update(role string, perms []request.RolePermissionItem, format string) string {
+	resp := u.privateRepo.UpdateRole(role, request.RolePermission{Role: role, Permissions: perms})
 	return Format(format, resp)
 }
-func (u *roleUsecase) Delete(role string, format string) string {
-	resp := u.repo.DeleteRole(role)
+func (u *role) Delete(role string, format string) string {
+	resp := u.privateRepo.DeleteRole(role)
 	return Format(format, resp)
 }

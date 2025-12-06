@@ -24,12 +24,12 @@ func TestNewCommonRepository(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 	assert.NotNil(t, repo)
 	assert.Equal(t, cfg, repo.GetBaseConfig())
 }
 
-func TestNewGroupRepository(t *testing.T) {
+func TestNewGroup(t *testing.T) {
 	cfg := config.BaseConfig{
 		YamlConfig: config.YamlConfig{
 			MySQL: config.MySQL{
@@ -38,31 +38,31 @@ func TestNewGroupRepository(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewGroupRepository(cfg)
+	repo := repository.NewGroup(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewMemberRepository(t *testing.T) {
+func TestNewMember(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewMemberRepository(cfg)
+	repo := repository.NewMember(cfg)
 	assert.NotNil(t, repo)
 }
 
-func TestNewRoleRepository(t *testing.T) {
+func TestNewRole(t *testing.T) {
 	// RoleRepository requires casbin enforcers, skip basic initialization test
 	// Test covered in E2E tests
 	t.Skip("RoleRepository requires casbin enforcers")
 }
 
-func TestNewUserRepository(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewUserRepository(cfg)
+	repo := repository.NewUser(cfg)
 	assert.NotNil(t, repo)
 }
 
 func TestHashPassword(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	password := "SecurePassword123!"
 	hashed, err := repo.HashPassword(password)
@@ -74,7 +74,7 @@ func TestHashPassword(t *testing.T) {
 
 func TestVerifyPassword(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	password := "SecurePassword123!"
 	hashed, err := repo.HashPassword(password)
@@ -91,7 +91,7 @@ func TestVerifyPassword(t *testing.T) {
 
 func TestValidatePasswordStrength(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	tests := []struct {
 		name     string
@@ -144,7 +144,7 @@ func TestValidatePasswordStrength(t *testing.T) {
 
 func TestGenerateJWTSecret(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	secret, err := repo.GenerateJWTSecret()
 	require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestGenerateJWTSecret(t *testing.T) {
 
 func TestValidateJWTSecretStrength(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	tests := []struct {
 		name    string
@@ -200,7 +200,7 @@ func TestGenerateTokenPair(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	tokens, err := repo.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
 
@@ -221,7 +221,7 @@ func TestValidateJWTToken(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	// Generate a token
 	tokens, err := repo.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
@@ -244,7 +244,7 @@ func TestParseTokenUnverified(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	// Generate a token
 	tokens, err := repo.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
@@ -258,7 +258,7 @@ func TestParseTokenUnverified(t *testing.T) {
 
 func TestIsTokenInvalidated(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	// Without Redis, this should return false (token is valid)
 	invalidated, err := repo.IsTokenInvalidated(context.Background(), "test-jti")

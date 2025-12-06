@@ -10,73 +10,79 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
-type UserUsecase interface {
-	Bootstrap(request request.UserRequest, format string) string
-	GetInternal(request request.UserRequest, format string) string
-	GetPrivate(request request.UserRequest, format string) string
-	CreatePublic(request request.UserRequest, format string) string
-	CreatePrivate(request request.UserRequest, format string) string
-	UpdateInternal(request request.UserRequest, format string) string
-	UpdatePrivate(request request.UserRequest, format string) string
-	DeleteInternal(request request.UserRequest, format string) string
-	DeletePrivate(request request.UserRequest, format string) string
+type User interface {
+	Bootstrap(request request.User, format string) string
+	GetInternal(request request.User, format string) string
+	GetPrivate(request request.User, format string) string
+	CreatePublic(request request.User, format string) string
+	CreatePrivate(request request.User, format string) string
+	UpdateInternal(request request.User, format string) string
+	UpdatePrivate(request request.User, format string) string
+	DeleteInternal(request request.User, format string) string
+	DeletePrivate(request request.User, format string) string
 }
 
-type userUsecase struct {
-	repo repository.UserRepository
+type user struct {
+	internalRepo repository.UserInternal
+	privateRepo  repository.UserPrivate
+	publicRepo   repository.UserPublic
 }
 
-func NewUserUsecase(conf config.BaseConfig) UserUsecase {
-	return &userUsecase{repo: repository.NewUserRepository(conf)}
+func NewUser(conf config.BaseConfig) User {
+	return &user{
+		internalRepo: repository.NewUserInternal(conf),
+		privateRepo:  repository.NewUserPrivate(conf),
+		publicRepo:   repository.NewUserPublic(conf),
+	}
 }
 
-func (u *userUsecase) Bootstrap(req request.UserRequest, format string) string {
-	resp := u.repo.BootstrapUserForDB(req)
+func (u *user) Bootstrap(req request.User, format string) string {
+	resp := u.internalRepo.BootstrapUserForDB(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) GetInternal(req request.UserRequest, format string) string {
-	resp := u.repo.GetUserForInternal(req)
+func (u *user) GetInternal(req request.User, format string) string {
+	resp := u.internalRepo.GetUser(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) GetPrivate(req request.UserRequest, format string) string {
-	resp := u.repo.GetUserForPrivate(req)
+func (u *user) GetPrivate(req request.User, format string) string {
+	resp := u.privateRepo.GetUser(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) CreatePublic(req request.UserRequest, format string) string {
-	resp := u.repo.CreateUserForPublic(req)
+func (u *user) CreatePublic(req request.User, format string) string {
+	resp := u.publicRepo.CreateUser(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) CreatePrivate(req request.UserRequest, format string) string {
-	resp := u.repo.CreateUserForPrivate(req)
+func (u *user) CreatePrivate(req request.User, format string) string {
+	resp := u.privateRepo.CreateUser(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) UpdateInternal(req request.UserRequest, format string) string {
-	resp := u.repo.UpdateUserForInternal(req)
+func (u *user) UpdateInternal(req request.User, format string) string {
+	resp := u.internalRepo.UpdateUser(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) UpdatePrivate(req request.UserRequest, format string) string {
-	resp := u.repo.UpdateUserForPrivate(req)
+func (u *user) UpdatePrivate(req request.User, format string) string {
+	resp := u.privateRepo.UpdateUser(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) DeleteInternal(req request.UserRequest, format string) string {
-	resp := u.repo.DeleteUserForInternal(req)
+func (u *user) DeleteInternal(req request.User, format string) string {
+	resp := u.internalRepo.DeleteUser(req)
 	return Format(format, resp)
 }
 
-func (u *userUsecase) DeletePrivate(req request.UserRequest, format string) string {
-	resp := u.repo.DeleteUserForPrivate(req)
+func (u *user) DeletePrivate(req request.User, format string) string {
+	resp := u.privateRepo.DeleteUser(req)
 	return Format(format, resp)
 }
 
-// usersTableString renders UserResponse as a table string.
-func usersTableString(res response.UserResponse) string {
+// usersTableString renders Users as a table string.
+func usersTableString(res response.Users) string {
 	w, buf := newTabWriterBuf()
 	fmt.Fprintln(w, strings.Join([]string{"ID", "UUID", "EMAIL", "NAME"}, "\t"))
 	for _, u := range res.Users {

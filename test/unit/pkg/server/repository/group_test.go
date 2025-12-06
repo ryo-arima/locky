@@ -10,13 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// TestGroupRepository_NewGroupRepository tests repository creation without database dependency
-func TestGroupRepository_NewGroupRepository(t *testing.T) {
+// TestGroupRepository_NewGroup tests repository creation without database dependency
+func TestGroupRepository_NewGroup(t *testing.T) {
 	// Setup
 	baseConfig := CreateTestConfig()
 
 	// Test
-	groupRepo := repository.NewGroupRepository(baseConfig)
+	groupRepo := repository.NewGroup(baseConfig)
 
 	// Assert using go-cmp with nil comparison
 	if diff := cmp.Diff(false, groupRepo == nil); diff != "" {
@@ -25,7 +25,7 @@ func TestGroupRepository_NewGroupRepository(t *testing.T) {
 
 	// Additional verification - check if the repository has expected methods
 	// This uses interface satisfaction check
-	var _ repository.GroupRepository = groupRepo
+	var _ repository.Group = groupRepo
 }
 
 // TestGroupRepository_InterfaceCompliance tests that the repository implements the expected interface
@@ -34,10 +34,10 @@ func TestGroupRepository_InterfaceCompliance(t *testing.T) {
 	baseConfig := CreateTestConfig()
 
 	// Test
-	groupRepo := repository.NewGroupRepository(baseConfig)
+	groupRepo := repository.NewGroup(baseConfig)
 
 	// Assert - verify interface compliance
-	var _ repository.GroupRepository = groupRepo
+	var _ repository.Group = groupRepo
 
 	// Test that the repository is not nil
 	if diff := cmp.Diff(false, groupRepo == nil); diff != "" {
@@ -87,7 +87,7 @@ func TestGroupRepository_TableDriven(t *testing.T) {
 			}
 
 			// Test
-			groupRepo := repository.NewGroupRepository(baseConfig)
+			groupRepo := repository.NewGroup(baseConfig)
 
 			// Assert
 			isNil := groupRepo == nil
@@ -97,7 +97,7 @@ func TestGroupRepository_TableDriven(t *testing.T) {
 
 			if !tt.expectNil {
 				// Verify interface compliance
-				var _ repository.GroupRepository = groupRepo
+				var _ repository.Group = groupRepo
 			}
 		})
 	}
@@ -141,7 +141,7 @@ func TestGroupRepository_ConfigurationValidation(t *testing.T) {
 			}
 
 			// Test
-			groupRepo := repository.NewGroupRepository(baseConfig)
+			groupRepo := repository.NewGroup(baseConfig)
 
 			// Assert
 			if diff := cmp.Diff(false, groupRepo == nil); diff != "" {
@@ -149,7 +149,7 @@ func TestGroupRepository_ConfigurationValidation(t *testing.T) {
 			}
 
 			// Verify interface compliance
-			var _ repository.GroupRepository = groupRepo
+			var _ repository.Group = groupRepo
 		})
 	}
 }
@@ -190,7 +190,7 @@ func TestGroupRepository_EdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Test
-			groupRepo := repository.NewGroupRepository(tt.baseConfig)
+			groupRepo := repository.NewGroup(tt.baseConfig)
 
 			// Assert - repository should still be created even with minimal config
 			isNil := groupRepo == nil
@@ -200,7 +200,7 @@ func TestGroupRepository_EdgeCases(t *testing.T) {
 
 			if !tt.expectNil {
 				// Verify interface compliance
-				var _ repository.GroupRepository = groupRepo
+				var _ repository.Group = groupRepo
 			}
 		})
 	}
@@ -210,10 +210,10 @@ func TestGroupRepository_EdgeCases(t *testing.T) {
 func TestGroupRepository_MethodsExist(t *testing.T) {
 	// Setup
 	baseConfig := CreateTestConfig()
-	groupRepo := repository.NewGroupRepository(baseConfig)
+	groupRepo := repository.NewGroup(baseConfig)
 
 	// Assert - verify interface compliance at compile time
-	var _ repository.GroupRepository = groupRepo
+	var _ repository.Group = groupRepo
 
 	// Verify that the repository is not nil
 	if diff := cmp.Diff(false, groupRepo == nil); diff != "" {
@@ -225,11 +225,11 @@ func TestGroupRepository_MethodsExist(t *testing.T) {
 func TestGroupRepository_GetGroups_WithoutDB(t *testing.T) {
 	// Setup
 	baseConfig := CreateTestConfig()
-	groupRepo := repository.NewGroupRepository(baseConfig)
+	groupRepo := repository.NewGroup(baseConfig)
 
 	// Test would normally call GetGroups() but it requires a DB connection
 	// Instead, we verify the repository structure and interface compliance
-	var _ repository.GroupRepository = groupRepo
+	var _ repository.Group = groupRepo
 
 	// Verify repository configuration
 	if diff := cmp.Diff(false, groupRepo == nil); diff != "" {
@@ -241,7 +241,7 @@ func TestGroupRepository_GetGroups_WithoutDB(t *testing.T) {
 func TestGroupRepository_MethodSignatures(t *testing.T) {
 	// Setup
 	baseConfig := CreateTestConfig()
-	groupRepo := repository.NewGroupRepository(baseConfig)
+	groupRepo := repository.NewGroup(baseConfig)
 
 	// Test - verify interface compliance without calling methods that require DB
 	tests := []struct {
@@ -269,7 +269,7 @@ func TestGroupRepository_MethodSignatures(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Assert - verify interface compliance (methods exist with correct signatures)
-			var _ repository.GroupRepository = groupRepo
+			var _ repository.Group = groupRepo
 
 			if diff := cmp.Diff(false, groupRepo == nil); diff != "" {
 				t.Errorf("Repository should have method %s (-want +got):\n%s", tt.name, diff)

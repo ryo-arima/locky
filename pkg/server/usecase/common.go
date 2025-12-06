@@ -8,7 +8,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/repository"
 )
 
-type CommonUsecase interface {
+type Common interface {
 	GetBaseConfig() config.BaseConfig
 	GenerateJWTToken(claims model.JWTClaims) (string, error)
 	ValidateJWTToken(tokenString string) (*model.JWTClaims, error)
@@ -27,76 +27,76 @@ type CommonUsecase interface {
 	SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error
 }
 
-type commonUsecase struct {
-	commonRepo repository.CommonRepository
+type common struct {
+	commonRepo repository.Common
 }
 
-func NewCommonUsecase(commonRepo repository.CommonRepository) CommonUsecase {
-	return &commonUsecase{
+func NewCommon(commonRepo repository.Common) Common {
+	return &common{
 		commonRepo: commonRepo,
 	}
 }
 
-func (uc *commonUsecase) GetBaseConfig() config.BaseConfig {
+func (uc *common) GetBaseConfig() config.BaseConfig {
 	return uc.commonRepo.GetBaseConfig()
 }
 
-func (uc *commonUsecase) GenerateJWTToken(claims model.JWTClaims) (string, error) {
+func (uc *common) GenerateJWTToken(claims model.JWTClaims) (string, error) {
 	return uc.commonRepo.GenerateJWTToken(claims)
 }
 
-func (uc *commonUsecase) ValidateJWTToken(tokenString string) (*model.JWTClaims, error) {
+func (uc *common) ValidateJWTToken(tokenString string) (*model.JWTClaims, error) {
 	return uc.commonRepo.ValidateJWTToken(tokenString)
 }
 
-func (uc *commonUsecase) ParseTokenUnverified(tokenString string) (*model.JWTClaims, error) {
+func (uc *common) ParseTokenUnverified(tokenString string) (*model.JWTClaims, error) {
 	return uc.commonRepo.ParseTokenUnverified(tokenString)
 }
 
-func (uc *commonUsecase) IsTokenInvalidated(ctx context.Context, jti string) (bool, error) {
+func (uc *common) IsTokenInvalidated(ctx context.Context, jti string) (bool, error) {
 	return uc.commonRepo.IsTokenInvalidated(ctx, jti)
 }
 
-func (uc *commonUsecase) InvalidateToken(ctx context.Context, tokenString string) error {
+func (uc *common) InvalidateToken(ctx context.Context, tokenString string) error {
 	return uc.commonRepo.InvalidateToken(ctx, tokenString)
 }
 
-func (uc *commonUsecase) GenerateTokenPair(userID uint, userUUID, email, name, role string) (*model.TokenPair, error) {
+func (uc *common) GenerateTokenPair(userID uint, userUUID, email, name, role string) (*model.TokenPair, error) {
 	return uc.commonRepo.GenerateTokenPair(userID, userUUID, email, name, role)
 }
 
-func (uc *commonUsecase) GenerateJWTSecret() (string, error) {
+func (uc *common) GenerateJWTSecret() (string, error) {
 	return uc.commonRepo.GenerateJWTSecret()
 }
 
-func (uc *commonUsecase) ValidateJWTSecretStrength(secret string) error {
+func (uc *common) ValidateJWTSecretStrength(secret string) error {
 	return uc.commonRepo.ValidateJWTSecretStrength(secret)
 }
 
-func (uc *commonUsecase) HashPassword(password string) (string, error) {
+func (uc *common) HashPassword(password string) (string, error) {
 	return uc.commonRepo.HashPassword(password)
 }
 
-func (uc *commonUsecase) VerifyPassword(hashedPassword, password string) error {
+func (uc *common) VerifyPassword(hashedPassword, password string) error {
 	return uc.commonRepo.VerifyPassword(hashedPassword, password)
 }
 
-func (uc *commonUsecase) ValidatePasswordStrength(password string) error {
+func (uc *common) ValidatePasswordStrength(password string) error {
 	return uc.commonRepo.ValidatePasswordStrength(password)
 }
 
-func (uc *commonUsecase) DeleteTokenCache(token string) {
+func (uc *common) DeleteTokenCache(token string) {
 	uc.commonRepo.DeleteTokenCache(token)
 }
 
-func (uc *commonUsecase) SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error {
+func (uc *common) SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error {
 	return uc.commonRepo.SendEmail(ctx, to, subject, body, isHTML)
 }
 
-func (uc *commonUsecase) SendWelcomeEmail(ctx context.Context, to, name string) error {
+func (uc *common) SendWelcomeEmail(ctx context.Context, to, name string) error {
 	return uc.commonRepo.SendWelcomeEmail(ctx, to, name)
 }
 
-func (uc *commonUsecase) SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error {
+func (uc *common) SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error {
 	return uc.commonRepo.SendPasswordResetEmail(ctx, to, name, resetURL)
 }

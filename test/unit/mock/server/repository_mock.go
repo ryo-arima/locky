@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// MockUserRepository implements repository.UserRepository for testing
+// MockUserRepository implements repository.User for testing
 type MockUserRepository struct {
 	Users          []model.Users
 	GetUsersFunc   func(c *gin.Context) []model.Users
@@ -79,7 +79,7 @@ func (m *MockUserRepository) CountUsers(c *gin.Context, filter repository.UserQu
 	return int64(len(m.Users)), nil
 }
 
-// MockGroupRepository implements repository.GroupRepository for testing
+// MockGroupRepository implements repository.Group for testing
 type MockGroupRepository struct {
 	Groups             []model.Groups
 	GetGroupsFunc      func(c *gin.Context) []model.Groups
@@ -175,7 +175,7 @@ func (m *MockGroupRepository) CountGroups(c *gin.Context, filter repository.Grou
 	return int64(len(m.Groups)), nil
 }
 
-// MockMemberRepository implements repository.MemberRepository for testing
+// MockMemberRepository implements repository.Member for testing
 type MockMemberRepository struct {
 	Members             []model.Members
 	GetMembersFunc      func(c *gin.Context) []model.Members
@@ -255,7 +255,7 @@ func (m *MockMemberRepository) CountMembers(c *gin.Context, filter repository.Me
 	return int64(len(m.Members)), nil
 }
 
-// MockCommonRepository implements repository.CommonRepository for testing
+// MockCommonRepository implements repository.Common for testing
 type MockCommonRepository struct {
 	JWTSecret          string
 	InvalidatedTokens  map[string]bool

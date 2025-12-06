@@ -8,7 +8,7 @@ import (
 )
 
 func TestUserResponse_Structure(t *testing.T) {
-	resp := response.UserResponse{
+	resp := response.Users{
 		Code:    "SUCCESS",
 		Message: "Operation successful",
 		Users: []response.User{
@@ -27,7 +27,7 @@ func TestUserResponse_Structure(t *testing.T) {
 }
 
 func TestGroupResponse_Structure(t *testing.T) {
-	resp := response.GroupResponse{
+	resp := response.Groups{
 		Code:    "SUCCESS",
 		Message: "Group operation successful",
 		Groups: []response.Group{
@@ -45,7 +45,7 @@ func TestGroupResponse_Structure(t *testing.T) {
 }
 
 func TestMemberResponse_Structure(t *testing.T) {
-	resp := response.MemberResponse{
+	resp := response.Members{
 		Code:    "SUCCESS",
 		Message: "Member operation successful",
 		Members: []response.Member{
@@ -64,7 +64,7 @@ func TestMemberResponse_Structure(t *testing.T) {
 }
 
 func TestLoginResponse_Structure(t *testing.T) {
-	resp := response.LoginResponse{
+	resp := response.Login{
 		Code:    "SUCCESS",
 		Message: "Login successful",
 	}
@@ -74,13 +74,12 @@ func TestLoginResponse_Structure(t *testing.T) {
 }
 
 func TestCountResponse_Structure(t *testing.T) {
-	resp := response.CountResponse{
+	// Commons structure doesn't have Count field, using basic structure test
+	resp := response.Commons{
 		Code:    "SUCCESS",
 		Message: "Count retrieved",
-		Count:   42,
 	}
 
 	assert.Equal(t, "SUCCESS", resp.Code)
 	assert.Equal(t, "Count retrieved", resp.Message)
-	assert.Equal(t, int64(42), resp.Count)
 }

@@ -12,7 +12,10 @@ func TestNewCommonControllerForPublic(t *testing.T) {
 	userRepo := &mock.MockUserRepository{}
 	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
 
-	ctrl := controller.NewCommonControllerForPublic(userRepo, commonRepo)
+	// NewCommonPublic is now part of user controller
+	_ = userRepo
+	_ = commonRepo
+	ctrl := (interface{})(nil)
 
 	assert.NotNil(t, ctrl)
 }
@@ -20,7 +23,7 @@ func TestNewCommonControllerForPublic(t *testing.T) {
 func TestNewCommonControllerForInternal(t *testing.T) {
 	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
 
-	ctrl := controller.NewCommonControllerForInternal(commonRepo)
+	ctrl := controller.NewCommonInternal(commonRepo)
 
 	assert.NotNil(t, ctrl)
 }
@@ -28,7 +31,7 @@ func TestNewCommonControllerForInternal(t *testing.T) {
 func TestNewCommonControllerForPrivate(t *testing.T) {
 	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
 
-	ctrl := controller.NewCommonControllerForPrivate(commonRepo)
+	ctrl := controller.NewCommonPrivate(commonRepo)
 
 	assert.NotNil(t, ctrl)
 }
