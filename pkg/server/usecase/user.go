@@ -184,5 +184,5 @@ func (uc *user) GetUserModelByEmail(c *gin.Context, email string) (*model.Users,
 	if len(users) == 0 {
 		return nil, nil
 	}
-return &users[0], nil
+	return &users[0], nil
 }

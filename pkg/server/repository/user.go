@@ -4,9 +4,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ryo-arima/locky/pkg/global"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
+	"github.com/ryo-arima/locky/pkg/global"
 	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
