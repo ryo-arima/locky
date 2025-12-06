@@ -5,13 +5,30 @@ import (
 	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
-// Local aliases for cleaner logging code
-var (
-	INFO  = share.GetServerLogger().INFO
-	DEBUG = share.GetServerLogger().DEBUG
-	WARN  = share.GetServerLogger().WARN
-	ERROR = share.GetServerLogger().ERROR
-)
+// Local aliases for cleaner logging code - use functions to get logger dynamically
+func INFO(requestID string, mcode global.MCode, message string) {
+	if logger := share.GetServerLogger(); logger != nil {
+		logger.INFO(requestID, mcode, message)
+	}
+}
+
+func DEBUG(requestID string, mcode global.MCode, message string, fields ...map[string]interface{}) {
+	if logger := share.GetServerLogger(); logger != nil {
+		logger.DEBUG(requestID, mcode, message, fields...)
+	}
+}
+
+func WARN(requestID string, mcode global.MCode, message string) {
+	if logger := share.GetServerLogger(); logger != nil {
+		logger.WARN(requestID, mcode, message)
+	}
+}
+
+func ERROR(requestID string, mcode global.MCode, message string) {
+	if logger := share.GetServerLogger(); logger != nil {
+		logger.ERROR(requestID, mcode, message)
+	}
+}
 
 // Local MCode definitions
 var (
