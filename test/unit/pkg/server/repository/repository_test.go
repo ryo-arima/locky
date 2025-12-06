@@ -91,7 +91,7 @@ func TestVerifyPassword(t *testing.T) {
 
 func TestValidatePasswordStrength(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	tests := []struct {
 		name     string
@@ -144,7 +144,7 @@ func TestValidatePasswordStrength(t *testing.T) {
 
 func TestGenerateJWTSecret(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	secret, err := repo.GenerateJWTSecret()
 	require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestGenerateJWTSecret(t *testing.T) {
 
 func TestValidateJWTSecretStrength(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	tests := []struct {
 		name    string
@@ -200,7 +200,7 @@ func TestGenerateTokenPair(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	tokens, err := repo.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
 
@@ -221,7 +221,7 @@ func TestValidateJWTToken(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	// Generate a token
 	tokens, err := repo.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
@@ -244,7 +244,7 @@ func TestParseTokenUnverified(t *testing.T) {
 			},
 		},
 	}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	// Generate a token
 	tokens, err := repo.GenerateTokenPair(1, "user-uuid-123", "test@example.com", "Test User", "user")
@@ -258,7 +258,7 @@ func TestParseTokenUnverified(t *testing.T) {
 
 func TestIsTokenInvalidated(t *testing.T) {
 	cfg := config.BaseConfig{}
-	repo := repository.NewCommonRepository(cfg, nil)
+	repo := repository.NewCommon(cfg, nil)
 
 	// Without Redis, this should return false (token is valid)
 	invalidated, err := repo.IsTokenInvalidated(context.Background(), "test-jti")

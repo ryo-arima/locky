@@ -23,28 +23,29 @@ func TestNewUserControllerForPublic(t *testing.T) {
 }
 
 func TestNewUserControllerForInternal(t *testing.T) {
-	userRepo := &mock.MockUserRepository{}
-	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
+	cfg := config.BaseConfig{}
+	userRepo := repository.NewUser(cfg)
 	userUsecase := usecase.NewUser(userRepo)
 
-	ctrl := controller.NewUserInternal(userUsecase, commonRepo)
+	ctrl := controller.NewUserInternal(userUsecase)
 
 	assert.NotNil(t, ctrl)
 }
 
 func TestNewUserControllerForPrivate(t *testing.T) {
-	userRepo := &mock.MockUserRepository{}
+	cfg := config.BaseConfig{}
+	userRepo := repository.NewUser(cfg)
 	userUsecase := usecase.NewUser(userRepo)
-	commonRepo := &mock.MockCommonRepository{JWTSecret: "test"}
 
-	ctrl := controller.NewUserPrivate(userUsecase, commonRepo)
+	ctrl := controller.NewUserPrivate(userUsecase)
 
 	assert.NotNil(t, ctrl)
 }
 
 // Test usecase initialization
 func TestUserUsecaseInitialization(t *testing.T) {
-	userRepo := &mock.MockUserRepository{}
+	cfg := config.BaseConfig{}
+	userRepo := repository.NewUser(cfg)
 
 	uc := usecase.NewUser(userRepo)
 

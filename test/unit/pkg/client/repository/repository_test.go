@@ -3,6 +3,7 @@ package client
 import (
 	"testing"
 
+	"github.com/ryo-arima/locky/pkg/client/repository"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,7 @@ func TestNewCommonRepository(t *testing.T) {
 		},
 	}
 
-	repo := share.NewCommonRepository(cfg)
+	repo := repository.NewCommon(cfg)
 	assert.NotNil(t, repo)
 }
 
@@ -37,7 +38,7 @@ func TestNewGroup(t *testing.T) {
 		},
 	}
 
-	repo := share.NewGroup(cfg)
+	repo := repository.NewGroupInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
@@ -52,7 +53,7 @@ func TestNewMember(t *testing.T) {
 		},
 	}
 
-	repo := share.NewMember(cfg)
+	repo := repository.NewMemberInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
@@ -67,7 +68,7 @@ func TestNewRole(t *testing.T) {
 		},
 	}
 
-	repo := share.NewRole(cfg)
+	repo := repository.NewRoleInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
@@ -82,12 +83,12 @@ func TestNewUser(t *testing.T) {
 		},
 	}
 
-	repo := share.NewUser(cfg)
+	repo := repository.NewUserInternal(cfg)
 	assert.NotNil(t, repo)
 }
 
 func TestLoginRequest_Structure(t *testing.T) {
-	loginReq := request.LoginRequest{
+	loginReq := request.Login{
 		Email:    "user@example.com",
 		Password: "securepassword123",
 	}
@@ -110,9 +111,9 @@ func TestRepositoryInterfaces(t *testing.T) {
 	}
 
 	// Verify all repositories implement their interfaces
-	var _ share.CommonRepository = share.NewCommonRepository(cfg)
-	var _ share.GroupRepository = share.NewGroup(cfg)
-	var _ share.MemberRepository = share.NewMember(cfg)
-	var _ share.RoleRepository = share.NewRole(cfg)
-	var _ share.UserRepository = share.NewUser(cfg)
+	var _ repository.Common = repository.NewCommon(cfg)
+	var _ repository.GroupInternal = repository.NewGroupInternal(cfg)
+	var _ repository.MemberInternal = repository.NewMemberInternal(cfg)
+	var _ repository.RoleInternal = repository.NewRoleInternal(cfg)
+	var _ repository.UserInternal = repository.NewUserInternal(cfg)
 }

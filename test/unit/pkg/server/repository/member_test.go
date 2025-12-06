@@ -53,7 +53,7 @@ func TestMemberRepository_NewMember(t *testing.T) {
 
 	// Additional verification - check if the repository has expected methods
 	// This uses interface satisfaction check
-	var _ repository.MemberRepository = memberRepo
+	var _ repository.Member = memberRepo
 }
 
 // TestMemberRepository_InterfaceCompliance tests that the repository implements the expected interface
@@ -80,7 +80,7 @@ func TestMemberRepository_InterfaceCompliance(t *testing.T) {
 	memberRepo := repository.NewMember(baseConfig)
 
 	// Assert - verify interface compliance
-	var _ repository.MemberRepository = memberRepo
+	var _ repository.Member = memberRepo
 
 	// Test that the repository is not nil
 	if diff := cmp.Diff(false, memberRepo == nil); diff != "" {
@@ -228,7 +228,7 @@ func TestMemberRepository_EdgeCases(t *testing.T) {
 			}
 
 			// Verify interface compliance
-			var _ repository.MemberRepository = memberRepo
+			var _ repository.Member = memberRepo
 		})
 	}
 }

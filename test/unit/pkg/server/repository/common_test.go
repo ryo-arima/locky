@@ -320,7 +320,7 @@ func TestCommonRepository_InterfaceCompliance(t *testing.T) {
 	commonRepo := repository.NewCommon(baseConfig, nil)
 
 	// Assert - verify interface compliance at compile time
-	var _ repository.CommonRepository = commonRepo
+	var _ repository.Common = commonRepo
 
 	// Runtime verification that all methods are available
 	config := commonRepo.GetBaseConfig()
