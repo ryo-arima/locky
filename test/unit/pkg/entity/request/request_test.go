@@ -8,7 +8,7 @@ import (
 )
 
 func TestUserRequest_Structure(t *testing.T) {
-	req := request.UserRequest{
+	req := request.User{
 		UUID:     "user-uuid-123",
 		Email:    "test@example.com",
 		Password: "password123",

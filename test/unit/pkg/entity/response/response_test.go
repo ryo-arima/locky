@@ -8,7 +8,7 @@ import (
 )
 
 func TestUserResponse_Structure(t *testing.T) {
-	resp := response.UserResponse{
+	resp := response.Users{
 		Code:    "SUCCESS",
 		Message: "Operation successful",
 		Users: []response.User{

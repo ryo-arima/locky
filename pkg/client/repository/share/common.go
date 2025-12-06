@@ -15,11 +15,11 @@ import (
 )
 
 type Common interface {
-	Login(request request.LoginRequest) (response response.LoginResponse)
-	RefreshToken(refreshToken string) (response response.RefreshTokenResponse)
-	Logout(accessToken string) (response response.CommonResponse)
-	ValidateToken(accessToken string) (response response.ValidateTokenResponse)
-	GetUserInfo(accessToken string) (response response.CommonResponse)
+	Login(request request.LoginRequest) response.LoginResponse
+	RefreshToken(refreshToken string) response.RefreshTokenResponse
+	Logout(accessToken string) response.CommonResponse
+	ValidateToken(accessToken string) response.ValidateTokenResponse
+	GetUserInfo(accessToken string) response.CommonResponse
 }
 
 type common struct {
