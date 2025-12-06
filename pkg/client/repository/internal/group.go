@@ -3,7 +3,7 @@ package internal
 import (
 	"fmt"
 
-	"github.com/ryo-arima/locky/pkg/client/repository"
+	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"

@@ -10,40 +10,59 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ryo-arima/locky/pkg/config"
+	"github.com/ryo-arima/locky/pkg/global"
 )
 
-// LogLevel represents the log level
-type LogLevel int
+// ServerLoggerConfig represents server logger configuration
+type ServerLoggerConfig struct {
+	Component    string `json:"component" yaml:"component"`
+	Service      string `json:"service" yaml:"service"`
+	Level        string `json:"level" yaml:"level"`
+	Structured   bool   `json:"structured" yaml:"structured"`
+	EnableCaller bool   `json:"enable_caller" yaml:"enable_caller"`
+	Output       string `json:"output" yaml:"output"`
+}
+
+// ServerLoggerInterface defines the server logging interface
+type ServerLoggerInterface interface {
+	DEBUG(requestID string, mcode global.MCode, optionalMessage string, fields ...map[string]interface{})
+	INFO(requestID string, mcode global.MCode, optionalMessage string)
+	WARN(requestID string, mcode global.MCode, optionalMessage string)
+	ERROR(requestID string, mcode global.MCode, optionalMessage string)
+	FATAL(requestID string, mcode global.MCode, optionalMessage string)
+}
+
+// ServerLogLevel represents the log level
+type ServerLogLevel int
 
 const (
-	DEBUG LogLevel = iota
-	INFO
-	WARN
-	ERROR
-	FATAL
+	SERVER_DEBUG ServerLogLevel = iota
+	SERVER_INFO
+	SERVER_WARN
+	SERVER_ERROR
+	SERVER_FATAL
 )
 
-// String returns string representation of log level with padding to 7 characters
-func (rcvr LogLevel) String() string {
-	switch rcvr {
-	case DEBUG:
+// String returns string representation of log level
+func (l ServerLogLevel) String() string {
+	switch l {
+	case SERVER_DEBUG:
 		return "DEBUG  "
-	case INFO:
+	case SERVER_INFO:
 		return "INFO   "
-	case WARN:
+	case SERVER_WARN:
 		return "WARN   "
-	case ERROR:
+	case SERVER_ERROR:
 		return "ERROR  "
-	case FATAL:
+	case SERVER_FATAL:
 		return "FATAL  "
 	default:
 		return "UNKNOWN"
 	}
 }
 
-// LogEntry represents a structured log entry
-type LogEntry struct {
+// ServerLogEntry represents a structured log entry
+type ServerLogEntry struct {
 	Timestamp string                 `json:"timestamp"`
 	Level     string                 `json:"level"`
 	Code      string                 `json:"code"`
@@ -60,17 +79,46 @@ type LogEntry struct {
 	Error     string                 `json:"error,omitempty"`
 }
 
-// Logger represents the application logger
-type Logger struct {
-	config     *config.LoggerConfig
-	level      LogLevel
+// ServerLogger represents the server application logger
+type ServerLogger struct {
+	config     *ServerLoggerConfig
+	level      ServerLogLevel
 	output     io.Writer
-	baseConfig *config.BaseConfig
+	baseConfig interface{}
 }
 
-// NewLogger creates a new logger instance
-func NewLogger(loggerConfig config.LoggerConfig, baseConfig *config.BaseConfig) config.LoggerInterface {
-	logger := &Logger{
+// Global server logger instance
+var globalServerLogger *ServerLogger
+
+// GetServerLogger returns the global server logger instance
+func GetServerLogger() *ServerLogger {
+	return globalServerLogger
+}
+
+// SetServerLogger sets the global server logger instance
+func SetServerLogger(logger *ServerLogger) {
+	globalServerLogger = logger
+}
+
+// Backward compatibility aliases
+type MCode = global.MCode
+type LoggerConfig = ServerLoggerConfig
+type LoggerInterface = ServerLoggerInterface
+type LogLevel = ServerLogLevel
+type LogEntry = ServerLogEntry
+type Logger = ServerLogger
+
+const (
+	DEBUG = SERVER_DEBUG
+	INFO  = SERVER_INFO
+	WARN  = SERVER_WARN
+	ERROR = SERVER_ERROR
+	FATAL = SERVER_FATAL
+)
+
+// NewServerLogger creates a new server logger instance
+func NewServerLogger(loggerConfig ServerLoggerConfig, baseConfig interface{}) ServerLoggerInterface {
+	logger := &ServerLogger{
 		config:     &loggerConfig,
 		baseConfig: baseConfig,
 		output:     os.Stdout,
@@ -79,17 +127,17 @@ func NewLogger(loggerConfig config.LoggerConfig, baseConfig *config.BaseConfig) 
 	// Set log level
 	switch strings.ToUpper(loggerConfig.Level) {
 	case "DEBUG":
-		logger.level = DEBUG
+		logger.level = SERVER_DEBUG
 	case "INFO":
-		logger.level = INFO
+		logger.level = SERVER_INFO
 	case "WARN":
-		logger.level = WARN
+		logger.level = SERVER_WARN
 	case "ERROR":
-		logger.level = ERROR
+		logger.level = SERVER_ERROR
 	case "FATAL":
-		logger.level = FATAL
+		logger.level = SERVER_FATAL
 	default:
-		logger.level = INFO
+		logger.level = SERVER_INFO
 	}
 
 	// Set output
@@ -111,36 +159,33 @@ func NewLogger(loggerConfig config.LoggerConfig, baseConfig *config.BaseConfig) 
 	return logger
 }
 
-// ToConfigMCode converts share.MCode to config.MCode
-func ToConfigMCode(m MCode) config.MCode {
-	return config.MCode{
-		Code:    m.Code,
-		Message: m.Message,
-	}
+// NewLogger creates a new logger instance (backward compatibility)
+func NewLogger(loggerConfig LoggerConfig, baseConfig interface{}) LoggerInterface {
+	return NewServerLogger(loggerConfig, baseConfig)
 }
 
-// FormatWithOptional formats the message with optional additional message
-func formatWithOptional(mcode config.MCode, optionalMessage string) string {
+// formatServerWithOptional formats the message with optional additional message
+func formatServerWithOptional(mcode global.MCode, optionalMessage string) string {
 	if optionalMessage == "" {
 		return mcode.Message
 	}
 	return fmt.Sprintf("%s: %s", mcode.Message, optionalMessage)
 }
 
-// log writes a log entry using MCode
-func (l *Logger) log(level LogLevel, mcode config.MCode, optionalMessage string, fields map[string]interface{}) {
+// log writes a log entry using global.MCode
+func (l *ServerLogger) log(level ServerLogLevel, requestID string, mcode global.MCode, optionalMessage string, fields map[string]interface{}) {
 	if level < l.level {
 		return
 	}
 
-	finalMessage := formatWithOptional(mcode, optionalMessage)
+	finalMessage := formatServerWithOptional(mcode, optionalMessage)
 
 	// Get current time in UTC and format with " UTC" string (with space before UTC)
 	now := time.Now().UTC()
 	// Format: 2025-11-08T05:01:15.791560000 UTC
 	timestamp := now.Format("2006-01-02T15:04:05.000000000") + " UTC"
 
-	entry := LogEntry{
+	entry := ServerLogEntry{
 		Timestamp: timestamp,
 		Level:     level.String(),
 		Code:      mcode.PaddedCode(GetMaxCodeLength()),
@@ -148,15 +193,16 @@ func (l *Logger) log(level LogLevel, mcode config.MCode, optionalMessage string,
 		Service:   l.config.Service,
 		Message:   finalMessage,
 		Fields:    fields,
+		RequestID: requestID,
 	}
 
 	l.writeLogEntry(entry)
 }
 
 // writeLogEntry writes the actual log entry to output
-func (l *Logger) writeLogEntry(entry LogEntry) {
+func (l *ServerLogger) writeLogEntry(entry ServerLogEntry) {
 	// Add caller information if enabled or DEBUG level
-	if l.config.EnableCaller || l.level == DEBUG {
+	if l.config.EnableCaller || l.level == SERVER_DEBUG {
 		if pc, file, line, ok := runtime.Caller(4); ok {
 			entry.File = file
 			entry.Line = line
@@ -218,55 +264,39 @@ func (l *Logger) writeLogEntry(entry LogEntry) {
 	}
 }
 
-// DEBUG logs a debug message using MCode
-func (l *Logger) DEBUG(mcode config.MCode, optionalMessage string, fields ...map[string]interface{}) {
+// DEBUG logs a debug message using global.MCode
+func (l *ServerLogger) DEBUG(requestID string, mcode global.MCode, optionalMessage string, fields ...map[string]interface{}) {
 	var f map[string]interface{}
 	if len(fields) > 0 {
 		f = fields[0]
 	}
-	l.log(DEBUG, mcode, optionalMessage, f)
+	l.log(SERVER_DEBUG, requestID, mcode, optionalMessage, f)
 }
 
-// INFO logs an info message using MCode
-func (l *Logger) INFO(mcode config.MCode, optionalMessage string, fields ...map[string]interface{}) {
-	var f map[string]interface{}
-	if len(fields) > 0 {
-		f = fields[0]
-	}
-	l.log(INFO, mcode, optionalMessage, f)
+// INFO logs an info message using global.MCode
+func (l *ServerLogger) INFO(requestID string, mcode global.MCode, optionalMessage string) {
+	l.log(SERVER_INFO, requestID, mcode, optionalMessage, nil)
 }
 
-// WARN logs a warning message using MCode
-func (l *Logger) WARN(mcode config.MCode, optionalMessage string, fields ...map[string]interface{}) {
-	var f map[string]interface{}
-	if len(fields) > 0 {
-		f = fields[0]
-	}
-	l.log(WARN, mcode, optionalMessage, f)
+// WARN logs a warning message using global.MCode
+func (l *ServerLogger) WARN(requestID string, mcode global.MCode, optionalMessage string) {
+	l.log(SERVER_WARN, requestID, mcode, optionalMessage, nil)
 }
 
-// ERROR logs an error message using MCode
-func (l *Logger) ERROR(mcode config.MCode, optionalMessage string, fields ...map[string]interface{}) {
-	var f map[string]interface{}
-	if len(fields) > 0 {
-		f = fields[0]
-	}
-	l.log(ERROR, mcode, optionalMessage, f)
+// ERROR logs an error message using global.MCode
+func (l *ServerLogger) ERROR(requestID string, mcode global.MCode, optionalMessage string) {
+	l.log(SERVER_ERROR, requestID, mcode, optionalMessage, nil)
 }
 
-// FATAL logs a fatal message using MCode and exits
-func (l *Logger) FATAL(mcode config.MCode, optionalMessage string, fields ...map[string]interface{}) {
-	var f map[string]interface{}
-	if len(fields) > 0 {
-		f = fields[0]
-	}
-	l.log(FATAL, mcode, optionalMessage, f)
+// FATAL logs a fatal message using global.MCode and exits
+func (l *ServerLogger) FATAL(requestID string, mcode global.MCode, optionalMessage string) {
+	l.log(SERVER_FATAL, requestID, mcode, optionalMessage, nil)
 	os.Exit(1)
 }
 
-// GinLoggerWriter wraps our custom logger to implement io.Writer for Gin
+// GinLoggerWriter wraps our custom server logger to implement io.Writer for Gin
 type GinLoggerWriter struct {
-	logger config.LoggerInterface
+	logger ServerLoggerInterface
 }
 
 // Write implements io.Writer interface for Gin logging
@@ -290,7 +320,7 @@ func (w *GinLoggerWriter) Write(p []byte) (n int, err error) {
 	}
 
 	// Parse Gin debug/warning/error messages - use empty message to avoid redundancy
-	mcode := ToConfigMCode(MCode{"GINLOG", ""})
+	mcode := global.MCode{"GINLOG", ""}
 
 	// Clean up the message - remove [GIN-debug], [GIN-warning], etc prefixes and redundant [WARNING], [ERROR] text
 	cleanMsg := msg
@@ -309,25 +339,25 @@ func (w *GinLoggerWriter) Write(p []byte) (n int, err error) {
 
 	// Determine log level based on message content
 	if strings.Contains(msg, "[WARNING]") || strings.Contains(msg, "[GIN-warning]") || strings.Contains(msg, "WARNING") {
-		w.logger.WARN(mcode, cleanMsg, nil)
+		w.logger.WARN(mcode, cleanMsg)
 	} else if strings.Contains(msg, "[ERROR]") || strings.Contains(msg, "[GIN-error]") || strings.Contains(msg, "ERROR") {
-		w.logger.ERROR(mcode, cleanMsg, nil)
+		w.logger.ERROR(mcode, cleanMsg)
 	} else if strings.Contains(msg, "[GIN-debug]") || strings.Contains(msg, "[debug]") {
 		w.logger.DEBUG(mcode, cleanMsg, nil)
 	} else {
-		w.logger.INFO(mcode, cleanMsg, nil)
+		w.logger.INFO(mcode, cleanMsg)
 	}
 
 	return len(p), nil
 }
 
 // NewGinLoggerWriter creates a new GinLoggerWriter
-func NewGinLoggerWriter(logger config.LoggerInterface) *GinLoggerWriter {
+func NewGinLoggerWriter(logger ServerLoggerInterface) *GinLoggerWriter {
 	return &GinLoggerWriter{logger: logger}
 }
 
 // LoggerWithConfig returns a Gin middleware for HTTP request logging
-func LoggerWithConfig(conf config.BaseConfig) gin.HandlerFunc {
+func LoggerWithConfig(logger ServerLoggerInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
@@ -365,11 +395,11 @@ func LoggerWithConfig(conf config.BaseConfig) gin.HandlerFunc {
 		requestInfo := fmt.Sprintf("%s %s %d", c.Request.Method, path, status)
 
 		if status >= 500 {
-			conf.Logger.ERROR(ToConfigMCode(MLWC5), requestInfo, fields)
+			logger.ERROR(global.SMLWC5, requestInfo)
 		} else if status >= 400 {
-			conf.Logger.WARN(ToConfigMCode(MLWC4), requestInfo, fields)
+			logger.WARN(global.SMLWC4, requestInfo)
 		} else {
-			conf.Logger.INFO(ToConfigMCode(MLWC3), requestInfo, fields)
+			logger.INFO(global.SMLWC3, requestInfo)
 		}
 	}
 }

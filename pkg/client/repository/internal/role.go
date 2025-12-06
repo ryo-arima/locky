@@ -3,13 +3,13 @@ package internal
 import (
 	"net/http"
 
-	"github.com/ryo-arima/locky/pkg/client/repository"
+	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 )
 
 type Role interface {
-	ListRoles(filter repository.RoleFilter) response.RoleResponse
+	ListRoles(filter share.RoleFilter) response.RoleResponse
 }
 
 type role struct {
@@ -28,7 +28,7 @@ func (r *role) authReq(method, url string, body interface{}, out *response.RoleR
 	return repository.SendRequest(method, url, body, out)
 }
 
-func (r *role) ListRoles(filter repository.RoleFilter) response.RoleResponse {
+func (r *role) ListRoles(filter share.RoleFilter) response.RoleResponse {
 	url := r.endpoint("/v1/internal/roles")
 	if filter.ID != "" {
 		url += "?id=" + filter.ID

@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/ryo-arima/locky/pkg/client/repository"
+	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
@@ -24,7 +24,7 @@ type Common interface {
 }
 
 type common struct {
-	repo repository.Common
+	repo share.Common
 }
 
 func NewCommon(conf config.BaseConfig) Common {

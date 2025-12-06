@@ -13,9 +13,11 @@ import (
 )
 
 func InitRouter(conf config.BaseConfig) *gin.Engine {
-	// Set Gin to use our custom logger
-	gin.DefaultWriter = share.NewGinLoggerWriter(conf.Logger)
-	gin.DefaultErrorWriter = share.NewGinLoggerWriter(conf.Logger)
+	// Set Gin to use our custom logger (if available)
+	if logger, ok := conf.Logger.(share.LoggerInterface); ok {
+		gin.DefaultWriter = share.NewGinLoggerWriter(logger)
+		gin.DefaultErrorWriter = share.NewGinLoggerWriter(logger)
+	}
 
 	redisClient, err := repository.NewRedisClient(conf.YamlConfig.Redis)
 	if err != nil {
@@ -65,6 +67,11 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	internalRoleController := controller.NewRoleInternal(roleUsecase, appEnforcer)
 	privateRoleController := controller.NewRolePrivate(roleUsecase, appEnforcer)
 
+	resourceRepository := repository.NewResource(conf)
+	resourceUsecase := usecase.NewResource(resourceRepository, memberRepository)
+	internalResourceController := controller.NewResourceInternal(resourceUsecase)
+	privateResourceController := controller.NewResourcePrivate(resourceUsecase)
+
 	// CommonController for authentication endpoints
 	commonShareController := controller.NewCommonShare(userUsecase, commonUsecase)
 
@@ -75,7 +82,12 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	loggerMW := share.LoggerWithConfig(conf)
+	var loggerMW gin.HandlerFunc
+	if logger, ok := conf.Logger.(share.LoggerInterface); ok {
+		loggerMW = share.LoggerWithConfig(logger)
+	} else {
+		loggerMW = func(c *gin.Context) { c.Next() } // No-op middleware
+	}
 	requestIDMW := share.RequestID()
 	authz := share.CasbinAuthorization
 
@@ -152,6 +164,18 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	privateAPI.POST("/role", authz(appEnforcer, "roles", "write"), privateRoleController.CreateRole)
 	privateAPI.PUT("/role/:id", authz(appEnforcer, "roles", "write"), privateRoleController.UpdateRole)
 	privateAPI.DELETE("/role/:id", authz(appEnforcer, "roles", "write"), privateRoleController.DeleteRole)
+
+	// ============ RESOURCE ENDPOINTS ============
+	internalAPI.GET("/resources", authz(appEnforcer, "resources", "read"), internalResourceController.GetResources)
+	internalAPI.GET("/resources/count", authz(appEnforcer, "resources", "read"), internalResourceController.CountResources)
+	internalAPI.POST("/resource", authz(appEnforcer, "resources", "write"), internalResourceController.CreateResource)
+	internalAPI.PUT("/resource/:id", authz(appEnforcer, "resources", "write"), internalResourceController.UpdateResource)
+	internalAPI.DELETE("/resource/:id", authz(appEnforcer, "resources", "write"), internalResourceController.DeleteResource)
+	privateAPI.GET("/resources", authz(appEnforcer, "resources", "read"), privateResourceController.GetResources)
+	privateAPI.GET("/resources/count", authz(appEnforcer, "resources", "read"), privateResourceController.CountResources)
+	privateAPI.POST("/resource", authz(appEnforcer, "resources", "write"), privateResourceController.CreateResource)
+	privateAPI.PUT("/resource/:id", authz(appEnforcer, "resources", "write"), privateResourceController.UpdateResource)
+	privateAPI.DELETE("/resource/:id", authz(appEnforcer, "resources", "write"), privateResourceController.DeleteResource)
 
 	return router
 }

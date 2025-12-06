@@ -77,19 +77,20 @@ package main
 
 import (
 	"github.com/ryo-arima/locky/pkg/config"
-	"github.com/ryo-arima/locky/pkg/logger"
 	"github.com/ryo-arima/locky/pkg/server"
 	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
 func main() {
-	// Set logger factory
-	config.SetLoggerFactory(share.NewLogger)
-
+	// Load configuration
 	conf := config.NewBaseConfig()
 
-	// Initialize global logger
-	logger.Initialize(conf.YamlConfig.Logger)
+	// Initialize logger from share package
+	serverLogger := share.NewServerLogger(conf.YamlConfig.Logger, conf)
+	conf.Logger = serverLogger
+	
+	// Set global server logger for repository/usecase/controller access
+	share.SetServerLogger(serverLogger)
 
 	// サーバー起動時にのみ DB 接続
 	_ = conf.ConnectDB()

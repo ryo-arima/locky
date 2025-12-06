@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ryo-arima/locky/pkg/client/repository"
+	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 )
 
@@ -16,8 +16,8 @@ func TestAuthIntegration_UserCreationAndLogin(t *testing.T) {
 	defer testHelper.CleanupDB()
 
 	// Create repositories
-	userRepo := repository.NewUserRepository(testHelper.BaseConfig)
-	commonRepo := repository.NewCommonRepository(testHelper.BaseConfig)
+	userRepo := share.NewUserRepository(testHelper.BaseConfig)
+	commonRepo := share.NewCommonRepository(testHelper.BaseConfig)
 
 	// Test data
 	testUser := request.UserRequest{
@@ -123,17 +123,17 @@ func TestAuthIntegration_EdgeCases(t *testing.T) {
 	testHelper := NewTestHelper()
 	defer testHelper.CleanupDB()
 
-	commonRepo := repository.NewCommonRepository(testHelper.BaseConfig)
+	commonRepo := share.NewCommonRepository(testHelper.BaseConfig)
 
 	testCases := []struct {
 		name        string
 		description string
-		testFunc    func(t *testing.T, repo repository.CommonRepository)
+		testFunc    func(t *testing.T, repo share.CommonRepository)
 	}{
 		{
 			name:        "login_with_invalid_credentials",
 			description: "Should handle login with invalid credentials gracefully",
-			testFunc: func(t *testing.T, repo repository.CommonRepository) {
+			testFunc: func(t *testing.T, repo share.CommonRepository) {
 				invalidLogin := request.LoginRequest{
 					Email:    "nonexistent@example.com",
 					Password: "wrongpassword",
@@ -152,7 +152,7 @@ func TestAuthIntegration_EdgeCases(t *testing.T) {
 		{
 			name:        "validate_invalid_token",
 			description: "Should handle token validation with invalid token",
-			testFunc: func(t *testing.T, repo repository.CommonRepository) {
+			testFunc: func(t *testing.T, repo share.CommonRepository) {
 				invalidToken := "invalid.jwt.token"
 
 				response := repo.ValidateToken(invalidToken)
@@ -168,7 +168,7 @@ func TestAuthIntegration_EdgeCases(t *testing.T) {
 		{
 			name:        "refresh_with_invalid_token",
 			description: "Should handle refresh with invalid token",
-			testFunc: func(t *testing.T, repo repository.CommonRepository) {
+			testFunc: func(t *testing.T, repo share.CommonRepository) {
 				invalidRefreshToken := "invalid.refresh.token"
 
 				response := repo.RefreshToken(invalidRefreshToken)
@@ -184,7 +184,7 @@ func TestAuthIntegration_EdgeCases(t *testing.T) {
 		{
 			name:        "logout_without_token",
 			description: "Should handle logout without token",
-			testFunc: func(t *testing.T, repo repository.CommonRepository) {
+			testFunc: func(t *testing.T, repo share.CommonRepository) {
 				response := repo.Logout("")
 
 				// Should get a response
@@ -209,8 +209,8 @@ func TestAuthIntegration_PasswordValidation(t *testing.T) {
 	testHelper := NewTestHelper()
 	defer testHelper.CleanupDB()
 
-	userRepo := repository.NewUserRepository(testHelper.BaseConfig)
-	commonRepo := repository.NewCommonRepository(testHelper.BaseConfig)
+	userRepo := share.NewUserRepository(testHelper.BaseConfig)
+	commonRepo := share.NewCommonRepository(testHelper.BaseConfig)
 
 	passwordTests := []struct {
 		name        string
@@ -282,7 +282,7 @@ func TestAuthIntegration_ConcurrentAccess(t *testing.T) {
 	testHelper := NewTestHelper()
 	defer testHelper.CleanupDB()
 
-	commonRepo := repository.NewCommonRepository(testHelper.BaseConfig)
+	commonRepo := share.NewCommonRepository(testHelper.BaseConfig)
 
 	// Test concurrent login attempts
 	t.Run("concurrent_login_attempts", func(t *testing.T) {

@@ -7,6 +7,9 @@ Application:
         - "admin@example.com"
     jwt_secret: "CHANGE_THIS_JWT_SECRET_IN_PRODUCTION"
     log_level: "debug"
+    redis:
+      jwt_cache: true  # Enable JWT token caching in Redis for better performance
+      cache_ttl: 1800  # JWT cache TTL in seconds (1800 = 30 minutes, 0 = use token expiry)
     jwt:
       key: "CHANGE_THIS_JWT_KEY"
     mail:

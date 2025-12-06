@@ -19,15 +19,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
+	"github.com/ryo-arima/locky/pkg/server/share"
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Common interface for repository layer
 type Common interface {
+	share.Common // Embed share.Common for middleware compatibility
 	GetBaseConfig() config.BaseConfig
 	GenerateJWTToken(claims model.JWTClaims) (string, error)
-	ValidateJWTToken(tokenString string) (*model.JWTClaims, error)
-	ParseTokenUnverified(tokenString string) (*model.JWTClaims, error)
-	IsTokenInvalidated(ctx context.Context, jti string) (bool, error)
 	InvalidateToken(ctx context.Context, tokenString string) error
 	GenerateTokenPair(userID uint, userUUID, email, name, role string) (*model.TokenPair, error)
 	GenerateJWTSecret() (string, error)
@@ -35,12 +35,13 @@ type Common interface {
 	HashPassword(password string) (string, error)
 	VerifyPassword(hashedPassword, password string) error
 	ValidatePasswordStrength(password string) error
-	DeleteTokenCache(token string) // Added: Cache deletion on logout
+	DeleteTokenCache(token string)
 	SendEmail(ctx context.Context, to, subject, body string, isHTML bool) error
 	SendWelcomeEmail(ctx context.Context, to, name string) error
 	SendPasswordResetEmail(ctx context.Context, to, name, resetURL string) error
 }
 
+// common implements Common interface
 type common struct {
 	BaseConfig  config.BaseConfig
 	RedisClient *redis.Client
@@ -99,8 +100,8 @@ func (rcvr *common) GenerateJWTToken(claims model.JWTClaims) (string, error) {
 
 // ValidateJWTToken validates and parses a JWT token
 func (rcvr *common) ValidateJWTToken(tokenString string) (*model.JWTClaims, error) {
-	// 1. Try cache first
-	if rcvr.RedisClient != nil {
+	// 1. Try cache first if enabled
+	if rcvr.RedisClient != nil && rcvr.BaseConfig.YamlConfig.Application.Server.Redis.JWTCache {
 		if cached, err := rcvr.getCachedTokenClaims(tokenString); err == nil && cached != nil {
 			// Ensure not expired
 			if cached.ExpiresAt >= time.Now().Unix() {
@@ -138,8 +139,8 @@ func (rcvr *common) ValidateJWTToken(tokenString string) (*model.JWTClaims, erro
 		return nil, errors.New("token expired")
 	}
 
-	// Cache claims (TTL = min(30m, remaining lifetime))
-	if rcvr.RedisClient != nil {
+	// Cache claims if enabled
+	if rcvr.RedisClient != nil && rcvr.BaseConfig.YamlConfig.Application.Server.Redis.JWTCache {
 		_ = rcvr.cacheTokenClaims(tokenString, &claims)
 	}
 
@@ -368,7 +369,7 @@ func (rcvr *common) tokenCacheKey(token string) string {
 	return "auth:token:" + token
 }
 
-// helper: store token claims in redis with 30m max TTL
+// helper: store token claims in redis with configurable TTL
 func (rcvr *common) cacheTokenClaims(token string, claims *model.JWTClaims) error {
 	if rcvr.RedisClient == nil || claims == nil {
 		return nil
@@ -381,7 +382,12 @@ func (rcvr *common) cacheTokenClaims(token string, claims *model.JWTClaims) erro
 	if remaining <= 0 {
 		return nil
 	}
+	// Use configured TTL or default to 30 minutes
 	maxTTL := 30 * time.Minute
+	if rcvr.BaseConfig.YamlConfig.Application.Server.Redis.CacheTTL > 0 {
+		maxTTL = time.Duration(rcvr.BaseConfig.YamlConfig.Application.Server.Redis.CacheTTL) * time.Second
+	}
+	// Don't cache longer than token expiry
 	if remaining < maxTTL {
 		maxTTL = remaining
 	}
@@ -461,7 +467,7 @@ func (rcvr *common) SendPasswordResetEmail(ctx context.Context, to, name, resetU
 	return rcvr.SendEmail(ctx, to, subject, body, false)
 }
 
-func NewCommon(baseConfig config.BaseConfig, redisClient *redis.Client) Common {
+func NewCommon(baseConfig config.BaseConfig, redisClient *redis.Client) share.Common {
 	// Initialize mail config reference from base config
 	var mailConfig *config.Mail
 	if baseConfig.YamlConfig.Application.Mail.Host != "" {

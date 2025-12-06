@@ -8,7 +8,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 	"github.com/ryo-arima/locky/pkg/entity/response"
-	"github.com/ryo-arima/locky/pkg/logger"
+	// "github.com/ryo-arima/locky/pkg/logger"
 	"github.com/ryo-arima/locky/pkg/server/repository"
 )
 

@@ -7,11 +7,12 @@ import (
 	"github.com/ryo-arima/locky/pkg/code"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
-	"github.com/ryo-arima/locky/pkg/logger"
+	// "github.com/ryo-arima/locky/pkg/logger"
 )
 
 type User interface {
 	GetUsers(c *gin.Context) []model.Users
+	GetUserByEmail(c *gin.Context, email string) (*model.Users, error)
 	CreateUser(c *gin.Context, user model.Users) model.Users
 	UpdateUser(c *gin.Context, user model.Users) model.Users
 	DeleteUser(c *gin.Context, user model.Users) model.Users
@@ -33,6 +34,14 @@ func (rcvr user) GetUsers(c *gin.Context) []model.Users {
 
 	logger.Info(code.RURP1, reqID, "Retrieved users from database")
 	return users
+}
+
+func (rcvr user) GetUserByEmail(c *gin.Context, email string) (*model.Users, error) {
+	var user model.Users
+	if err := rcvr.BaseConfig.DBConnection.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (rcvr user) CreateUser(c *gin.Context, user model.Users) model.Users {

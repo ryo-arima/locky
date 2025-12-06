@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/ryo-arima/locky/pkg/client/repository"
+	"github.com/ryo-arima/locky/pkg/client/repository/share"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/request"
 )
@@ -21,11 +21,11 @@ func NewRole(conf config.BaseConfig) Role {
 }
 
 func (u *role) ListInternal(id, format string) string {
-	resp := u.repo.ListRolesInternal(repository.RoleFilter{ID: id})
+	resp := u.repo.ListRolesInternal(share.RoleFilter{ID: id})
 	return Format(format, resp)
 }
 func (u *role) ListPrivate(id, format string) string {
-	resp := u.repo.ListRolesPrivate(repository.RoleFilter{ID: id})
+	resp := u.repo.ListRolesPrivate(share.RoleFilter{ID: id})
 	return Format(format, resp)
 }
 func (u *role) Create(role string, perms []request.RolePermissionItem, format string) string {

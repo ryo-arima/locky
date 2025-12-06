@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ryo-arima/locky/pkg/config"
 	"github.com/ryo-arima/locky/pkg/entity/model"
-	"github.com/ryo-arima/locky/pkg/server/repository"
 )
 
 func ForPublic(conf config.BaseConfig) gin.HandlerFunc {
@@ -20,7 +19,7 @@ func ForPublic(conf config.BaseConfig) gin.HandlerFunc {
 	}
 }
 
-func ForShare(commonRepo repository.Common, enforcer *casbin.Enforcer) gin.HandlerFunc {
+func ForShare(commonRepo Common, enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := validateJWTToken(c, commonRepo); err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -35,7 +34,7 @@ func ForShare(commonRepo repository.Common, enforcer *casbin.Enforcer) gin.Handl
 	}
 }
 
-func ForInternal(commonRepo repository.Common, enforcer *casbin.Enforcer) gin.HandlerFunc {
+func ForInternal(commonRepo Common, enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := validateJWTToken(c, commonRepo); err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -52,7 +51,7 @@ func ForInternal(commonRepo repository.Common, enforcer *casbin.Enforcer) gin.Ha
 }
 
 // ForPrivate: determine if email is included in admin.emails (not dependent solely on role claims)
-func ForPrivate(commonRepo repository.Common, enforcer *casbin.Enforcer) gin.HandlerFunc {
+func ForPrivate(commonRepo Common, enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := validateJWTToken(c, commonRepo); err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -95,7 +94,7 @@ func CasbinAuthorization(enforcer *casbin.Enforcer, resource string, action stri
 }
 
 // validateJWTToken validates JWT token and sets user context
-func validateJWTToken(c *gin.Context, commonRepo repository.Common) error {
+func validateJWTToken(c *gin.Context, commonRepo Common) error {
 	// Get token from Authorization header
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
