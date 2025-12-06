@@ -14,9 +14,9 @@ import (
 
 type User interface {
 	GetUsers(c *gin.Context) ([]response.User, error)
-	CreateUser(c *gin.Context, req request.UserRequest) (*response.User, error)
-	UpdateUser(c *gin.Context, req request.UserRequest) (*response.User, error)
-	DeleteUser(c *gin.Context, req request.UserRequest) error
+	CreateUser(c *gin.Context, req request.User) (*response.User, error)
+	UpdateUser(c *gin.Context, req request.User) (*response.User, error)
+	DeleteUser(c *gin.Context, req request.User) error
 	ListUsers(c *gin.Context, filter repository.UserQueryFilter) ([]response.User, error)
 	CountUsers(c *gin.Context, filter repository.UserQueryFilter) (int64, error)
 	GetUserModelByEmail(c *gin.Context, email string) (*model.Users, error)
@@ -53,7 +53,7 @@ func (uc *user) GetUsers(c *gin.Context) ([]response.User, error) {
 	return responseUsers, nil
 }
 
-func (uc *user) CreateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
+func (uc *user) CreateUser(c *gin.Context, req request.User) (*response.User, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUCR1, reqID, "Creating user: "+req.Email)
@@ -84,7 +84,7 @@ func (uc *user) CreateUser(c *gin.Context, req request.UserRequest) (*response.U
 	}, nil
 }
 
-func (uc *user) UpdateUser(c *gin.Context, req request.UserRequest) (*response.User, error) {
+func (uc *user) UpdateUser(c *gin.Context, req request.User) (*response.User, error) {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUUP1, reqID, "Updating user: "+req.UUID)
@@ -113,7 +113,7 @@ func (uc *user) UpdateUser(c *gin.Context, req request.UserRequest) (*response.U
 	}, nil
 }
 
-func (uc *user) DeleteUser(c *gin.Context, req request.UserRequest) error {
+func (uc *user) DeleteUser(c *gin.Context, req request.User) error {
 	requestID, _ := c.Get("requestID")
 	reqID := requestID.(string)
 	logger.Info(code.UUDL1, reqID, "Deleting user: "+req.UUID)

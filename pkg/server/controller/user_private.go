@@ -76,131 +76,131 @@ func (rcvr userPrivate) GetUsers(c *gin.Context) {
 	}
 	users, err := rcvr.UserUsecase.ListUsers(c, filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Users: []response.User{}})
+		c.JSON(http.StatusInternalServerError, &response.Users{Code: "SERVER_CONTROLLER_GET__FOR__002", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "Users retrieved successfully", Users: users})
+	c.JSON(http.StatusOK, &response.Users{Code: "SUCCESS", Message: "Users retrieved successfully", Users: users})
 }
 
 // CreateUser creates a new user (admin only).
 //
 // Route: POST /v1/private/users
 // Security: Bearer token (admin)
+// swagger:operation POST /private/users users createUserPrivate
+// ---
+// summary: Create a new user.
+// description: Create a new user with the provided information.
+// parameters:
+// - name: user
+//   in: body
+//   description: The user to create.
+//   required: true
+//   schema:
+//     $ref: "#/definitions/UserRequest"
+// responses:
+//   "200":
+//     description: The created user.
+//     schema:
+//       $ref: "#/definitions/UserResponse"
+//   "400":
+//     description: Bad request.
+//     schema:
+//       $ref: "#/definitions/UserResponse"
 func (rcvr userPrivate) CreateUser(c *gin.Context) {
-	// swagger:operation POST /private/users users createUserPrivate
-	// ---
-	// summary: Create a new user.
-	// description: Create a new user with the provided information.
-	// parameters:
-	// - name: user
-	//   in: body
-	//   description: The user to create.
-	//   required: true
-	//   schema:
-	//     $ref: "#/definitions/UserRequest"
-	// responses:
-	//   "200":
-	//     description: The created user.
-	//     schema:
-	//       $ref: "#/definitions/UserResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/UserResponse"
-	var userRequest request.UserRequest
+	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__001", Message: err.Error(), Users: []response.User{}})
+		c.JSON(http.StatusBadRequest, &response.Users{Code: "SERVER_CONTROLLER_CREATE__FOR__001", Message: err.Error(), Users: []response.User{}})
 		return
 	}
 
 	createdUser, err := rcvr.UserUsecase.CreateUser(c, userRequest)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: err.Error(), Users: []response.User{}})
+		c.JSON(http.StatusInternalServerError, &response.Users{Code: "SERVER_CONTROLLER_CREATE__FOR__002", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "User created successfully", Users: []response.User{*createdUser}})
+	c.JSON(http.StatusOK, &response.Users{Code: "SUCCESS", Message: "User created successfully", Users: []response.User{*createdUser}})
 }
 
 // UpdateUser updates a user by ID (admin only).
 //
 // Route: PUT /v1/private/users/{id}
 // Security: Bearer token (admin)
+// swagger:operation PUT /private/users/{id} users updateUserPrivate
+// ---
+// summary: Update a user.
+// description: Update a user with the provided information.
+// parameters:
+// - name: id
+//   in: path
+//   description: The ID of the user to update.
+//   required: true
+//   type: integer
+// - name: user
+//   in: body
+//   description: The user to update.
+//   required: true
+//   schema:
+//     $ref: "#/definitions/UserRequest"
+// responses:
+//   "200":
+//     description: The updated user.
+//     schema:
+//       $ref: "#/definitions/UserResponse"
+//   "400":
+//     description: Bad request.
+//     schema:
+//       $ref: "#/definitions/UserResponse"
 func (rcvr userPrivate) UpdateUser(c *gin.Context) {
-	// swagger:operation PUT /private/users/{id} users updateUserPrivate
-	// ---
-	// summary: Update a user.
-	// description: Update a user with the provided information.
-	// parameters:
-	// - name: id
-	//   in: path
-	//   description: The ID of the user to update.
-	//   required: true
-	//   type: integer
-	// - name: user
-	//   in: body
-	//   description: The user to update.
-	//   required: true
-	//   schema:
-	//     $ref: "#/definitions/UserRequest"
-	// responses:
-	//   "200":
-	//     description: The updated user.
-	//     schema:
-	//       $ref: "#/definitions/UserResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/UserResponse"
-	var userRequest request.UserRequest
+	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__001", Message: err.Error(), Users: []response.User{}})
+		c.JSON(http.StatusBadRequest, &response.Users{Code: "SERVER_CONTROLLER_UPDATE__FOR__001", Message: err.Error(), Users: []response.User{}})
 		return
 	}
 
 	updatedUser, err := rcvr.UserUsecase.UpdateUser(c, userRequest)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: err.Error(), Users: []response.User{}})
+		c.JSON(http.StatusInternalServerError, &response.Users{Code: "SERVER_CONTROLLER_UPDATE__FOR__002", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "User updated successfully", Users: []response.User{*updatedUser}})
+	c.JSON(http.StatusOK, &response.Users{Code: "SUCCESS", Message: "User updated successfully", Users: []response.User{*updatedUser}})
 }
 
 // DeleteUser deletes a user by ID (admin only).
 //
 // Route: DELETE /v1/private/users/{id}
 // Security: Bearer token (admin)
+// swagger:operation DELETE /private/users/{id} users deleteUserPrivate
+// ---
+// summary: Delete a user.
+// description: Delete a user by ID.
+// parameters:
+// - name: id
+//   in: path
+//   description: The ID of the user to delete.
+//   required: true
+//   type: integer
+// responses:
+//   "200":
+//     description: The deleted user.
+//     schema:
+//       $ref: "#/definitions/UserResponse"
+//   "400":
+//     description: Bad request.
+//     schema:
+//       $ref: "#/definitions/UserResponse"
 func (rcvr userPrivate) DeleteUser(c *gin.Context) {
-	// swagger:operation DELETE /private/users/{id} users deleteUserPrivate
-	// ---
-	// summary: Delete a user.
-	// description: Delete a user by ID.
-	// parameters:
-	// - name: id
-	//   in: path
-	//   description: The ID of the user to delete.
-	//   required: true
-	//   type: integer
-	// responses:
-	//   "200":
-	//     description: The deleted user.
-	//     schema:
-	//       $ref: "#/definitions/UserResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/UserResponse"
-	var userRequest request.UserRequest
+	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
-		c.JSON(http.StatusBadRequest, &response.UserResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__001", Message: err.Error(), Users: []response.User{}})
+		c.JSON(http.StatusBadRequest, &response.Users{Code: "SERVER_CONTROLLER_DELETE__FOR__001", Message: err.Error(), Users: []response.User{}})
 		return
 	}
 
 	err := rcvr.UserUsecase.DeleteUser(c, userRequest)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &response.UserResponse{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: err.Error(), Users: []response.User{}})
+		c.JSON(http.StatusInternalServerError, &response.Users{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: err.Error(), Users: []response.User{}})
 		return
 	}
-	c.JSON(http.StatusOK, &response.UserResponse{Code: "SUCCESS", Message: "User deleted successfully", Users: []response.User{}})
+	c.JSON(http.StatusOK, &response.Users{Code: "SUCCESS", Message: "User deleted successfully", Users: []response.User{}})
 }
 
 // CountUsers counts the number of users matching the filter (admin only).

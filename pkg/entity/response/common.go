@@ -6,7 +6,7 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/model"
 )
 
-type CommonResponse struct {
+type Commons struct {
 	Code    string   `json:"code"`
 	Message string   `json:"message"`
 	Commons []Common `json:"commons,omitempty"`
@@ -20,23 +20,23 @@ type Common struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
-// LoginResponse represents successful login response
-type LoginResponse struct {
+// Login represents successful login response
+type Login struct {
 	Code      string           `json:"code"`
 	Message   string           `json:"message"`
 	TokenPair *model.TokenPair `json:"token_pair,omitempty"`
 	User      *User            `json:"user,omitempty"`
 }
 
-// RefreshTokenResponse represents refresh token response
-type RefreshTokenResponse struct {
+// RefreshToken represents refresh token response
+type RefreshToken struct {
 	Code      string           `json:"code"`
 	Message   string           `json:"message"`
 	TokenPair *model.TokenPair `json:"token_pair,omitempty"`
 }
 
-// ValidateTokenResponse represents token validation response
-type ValidateTokenResponse struct {
+// ValidateToken represents token validation response
+type ValidateToken struct {
 	Code    string                 `json:"code"`
 	Message string                 `json:"message"`
 	Data    map[string]interface{} `json:"data,omitempty"`

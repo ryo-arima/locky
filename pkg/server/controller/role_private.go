@@ -32,28 +32,28 @@ func (rcvr *rolePrivate) ListRoles(c *gin.Context) {
 	if id := c.Query("id"); id != "" {
 		perms, err := rcvr.RoleUsecase.GetRolePermissions(c, id)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_GET_ERROR", Message: err.Error(), Roles: []string{}})
+			c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_GET_ERROR", Message: err.Error(), Roles: []string{}})
 			return
 		}
-		c.JSON(http.StatusOK, response.RoleResponse{Code: "SUCCESS", Message: "Role permissions retrieved", Roles: []string{id}, Detail: perms})
+		c.JSON(http.StatusOK, response.Roles{Code: "SUCCESS", Message: "Role permissions retrieved", Roles: []string{id}, Detail: perms})
 		return
 	}
 	roles, err := rcvr.RoleUsecase.ListRoles(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.RoleResponse{Code: "ROLE_LIST_ERROR", Message: err.Error(), Roles: []string{}})
+		c.JSON(http.StatusInternalServerError, response.Roles{Code: "ROLE_LIST_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
-	c.JSON(http.StatusOK, response.RoleResponse{Code: "SUCCESS", Message: "Roles retrieved", Roles: roles})
+	c.JSON(http.StatusOK, response.Roles{Code: "SUCCESS", Message: "Roles retrieved", Roles: roles})
 }
 
 func (rcvr *rolePrivate) CreateRole(c *gin.Context) {
-	var req request.RolePermissionRequest
+	var req request.RolePermission
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_CREATE_BIND_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
 	if req.Role == "" {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_CREATE_VALIDATION_ERROR", Message: "role required", Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_CREATE_VALIDATION_ERROR", Message: "role required", Roles: []string{}})
 		return
 	}
 	perms := make([]repository.RolePermission, 0, len(req.Permissions))
@@ -61,21 +61,21 @@ func (rcvr *rolePrivate) CreateRole(c *gin.Context) {
 		perms = append(perms, repository.RolePermission{Resource: p.Resource, Action: p.Action})
 	}
 	if err := rcvr.RoleUsecase.CreateRole(c, req.Role, perms); err != nil {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_CREATE_ERROR", Message: err.Error(), Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_CREATE_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
-	c.JSON(http.StatusOK, response.RoleResponse{Code: "SUCCESS", Message: "Role created", Roles: []string{req.Role}, Detail: perms})
+	c.JSON(http.StatusOK, response.Roles{Code: "SUCCESS", Message: "Role created", Roles: []string{req.Role}, Detail: perms})
 }
 
 func (rcvr *rolePrivate) UpdateRole(c *gin.Context) {
 	role := c.Param("id")
-	var req request.RolePermissionRequest
+	var req request.RolePermission
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_UPDATE_BIND_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
 	if role == "" {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_UPDATE_VALIDATION_ERROR", Message: "role id(path) required", Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_UPDATE_VALIDATION_ERROR", Message: "role id(path) required", Roles: []string{}})
 		return
 	}
 	perms := make([]repository.RolePermission, 0, len(req.Permissions))
@@ -83,20 +83,20 @@ func (rcvr *rolePrivate) UpdateRole(c *gin.Context) {
 		perms = append(perms, repository.RolePermission{Resource: p.Resource, Action: p.Action})
 	}
 	if err := rcvr.RoleUsecase.UpdateRole(c, role, perms); err != nil {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_UPDATE_ERROR", Message: err.Error(), Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_UPDATE_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
-	c.JSON(http.StatusOK, response.RoleResponse{Code: "SUCCESS", Message: "Role updated", Roles: []string{role}, Detail: perms})
+	c.JSON(http.StatusOK, response.Roles{Code: "SUCCESS", Message: "Role updated", Roles: []string{role}, Detail: perms})
 }
 
 func (rcvr *rolePrivate) DeleteRole(c *gin.Context) {
 	role := c.Param("id")
 	if role == "" {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_DELETE_VALIDATION_ERROR", Message: "role id(path) required", Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_DELETE_VALIDATION_ERROR", Message: "role id(path) required", Roles: []string{}})
 		return
 	}
 	if err := rcvr.RoleUsecase.DeleteRole(c, role); err != nil {
-		c.JSON(http.StatusBadRequest, response.RoleResponse{Code: "ROLE_DELETE_ERROR", Message: err.Error(), Roles: []string{}})
+		c.JSON(http.StatusBadRequest, response.Roles{Code: "ROLE_DELETE_ERROR", Message: err.Error(), Roles: []string{}})
 		return
 	}
 	c.JSON(http.StatusOK, response.RoleResponse{Code: "SUCCESS", Message: "Role deleted", Roles: []string{role}})

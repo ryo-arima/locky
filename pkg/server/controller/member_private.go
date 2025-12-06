@@ -26,20 +26,20 @@ type memberPrivate struct {
 	MemberUsecase usecase.Member
 }
 
+// swagger:operation GET /private/members members getMembersPrivate
+// ---
+// summary: Get a list of members.
+// description: Get a list of all members in the system.
+// responses:
+//   "200":
+//     description: A list of members.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
+//   "400":
+//     description: Bad request.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) GetMembers(c *gin.Context) {
-	// swagger:operation GET /private/members members getMembersPrivate
-	// ---
-	// summary: Get a list of members.
-	// description: Get a list of all members in the system.
-	// responses:
-	//   "200":
-	//     description: A list of members.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
 		if id64, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -121,28 +121,28 @@ func (rcvr memberPrivate) CountMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": "SUCCESS", "message": "Count retrieved", "count": cnt})
 }
 
+// swagger:operation POST /private/members members createMemberPrivate
+// ---
+// summary: Create a new member.
+// description: Create a new member with the provided information.
+// parameters:
+// - name: member
+//   in: body
+//   description: The member to create.
+//   required: true
+//   schema:
+//     $ref: "#/definitions/MemberRequest"
+// responses:
+//   "200":
+//     description: The created member.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
+//   "400":
+//     description: Bad request.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) CreateMember(c *gin.Context) {
-	// swagger:operation POST /private/members members createMemberPrivate
-	// ---
-	// summary: Create a new member.
-	// description: Create a new member with the provided information.
-	// parameters:
-	// - name: member
-	//   in: body
-	//   description: The member to create.
-	//   required: true
-	//   schema:
-	//     $ref: "#/definitions/MemberRequest"
-	// responses:
-	//   "200":
-	//     description: The created member.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	var memberRequest request.MemberRequest
+	var memberRequest request.Member
 	if err := c.Bind(&memberRequest); err != nil {
 		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_CREATE__FOR__001", Message: err.Error(), Members: []response.Member{}})
 		return
@@ -161,32 +161,32 @@ func (rcvr memberPrivate) CreateMember(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member created successfully", Members: []response.Member{{ID: m.ID, UUID: m.UUID, GroupUUID: m.GroupUUID, UserUUID: m.UserUUID, Role: m.Role}}})
 }
 
+// swagger:operation PUT /private/members/{id} members updateMemberPrivate
+// ---
+// summary: Update a member.
+// description: Update a member with the provided information.
+// parameters:
+// - name: id
+//   in: path
+//   description: The ID of the member to update.
+//   required: true
+//   type: integer
+// - name: member
+//   in: body
+//   description: The member to update.
+//   required: true
+//   schema:
+//     $ref: "#/definitions/MemberRequest"
+// responses:
+//   "200":
+//     description: The updated member.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
+//   "400":
+//     description: Bad request.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) UpdateMember(c *gin.Context) {
-	// swagger:operation PUT /private/members/{id} members updateMemberPrivate
-	// ---
-	// summary: Update a member.
-	// description: Update a member with the provided information.
-	// parameters:
-	// - name: id
-	//   in: path
-	//   description: The ID of the member to update.
-	//   required: true
-	//   type: integer
-	// - name: member
-	//   in: body
-	//   description: The member to update.
-	//   required: true
-	//   schema:
-	//     $ref: "#/definitions/MemberRequest"
-	// responses:
-	//   "200":
-	//     description: The updated member.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
 	idParam := c.Param("id")
 	idUint := uint(0)
 	if idParam != "" {
@@ -194,7 +194,7 @@ func (rcvr memberPrivate) UpdateMember(c *gin.Context) {
 			idUint = uint(parsed)
 		}
 	}
-	var memberRequest request.MemberRequest
+	var memberRequest request.Member
 	if err := c.Bind(&memberRequest); err != nil {
 		c.JSON(http.StatusBadRequest, &response.MemberResponse{Code: "SERVER_CONTROLLER_UPDATE__FOR__001", Message: err.Error(), Members: []response.Member{}})
 		return
@@ -216,26 +216,26 @@ func (rcvr memberPrivate) UpdateMember(c *gin.Context) {
 	c.JSON(http.StatusOK, &response.MemberResponse{Code: "SUCCESS", Message: "Member updated successfully", Members: []response.Member{{ID: upd.ID, UUID: upd.UUID, GroupUUID: upd.GroupUUID, UserUUID: upd.UserUUID, Role: upd.Role}}})
 }
 
+// swagger:operation DELETE /private/members/{id} members deleteMemberPrivate
+// ---
+// summary: Delete a member.
+// description: Delete a member by ID.
+// parameters:
+// - name: id
+//   in: path
+//   description: The ID of the member to delete.
+//   required: true
+//   type: integer
+// responses:
+//   "200":
+//     description: The deleted member.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
+//   "400":
+//     description: Bad request.
+//     schema:
+//       $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) DeleteMember(c *gin.Context) {
-	// swagger:operation DELETE /private/members/{id} members deleteMemberPrivate
-	// ---
-	// summary: Delete a member.
-	// description: Delete a member by ID.
-	// parameters:
-	// - name: id
-	//   in: path
-	//   description: The ID of the member to delete.
-	//   required: true
-	//   type: integer
-	// responses:
-	//   "200":
-	//     description: The deleted member.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
-	//   "400":
-	//     description: Bad request.
-	//     schema:
-	//       $ref: "#/definitions/MemberResponse"
 	uuidParam := c.Param("id") // route is :id but expects UUID
 	var memberRequest request.MemberRequest
 	if err := c.Bind(&memberRequest); err != nil {

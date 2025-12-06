@@ -160,7 +160,7 @@ func (rcvr commonPublic) GetUserInfo(c *gin.Context) {
 	}
 
 	// Return user information
-	c.JSON(http.StatusOK, &response.CommonResponse{
+	c.JSON(http.StatusOK, &response.Commons{
 		Code:    "SUCCESS",
 		Message: "User information retrieved successfully",
 		Commons: []response.Common{
@@ -193,7 +193,7 @@ func (rcvr commonPublic) GetUserInfo(c *gin.Context) {
 //	401: errorResponse
 //	500: errorResponse
 func (rcvr commonPublic) Login(c *gin.Context) {
-	var loginRequest request.LoginRequest
+	var loginRequest request.Login
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
 		c.JSON(http.StatusBadRequest, &response.LoginResponse{
 			Code:    "AUTH_LOGIN_001",
@@ -301,7 +301,7 @@ func (rcvr commonPublic) Login(c *gin.Context) {
 //	401: errorResponse
 //	500: errorResponse
 func (rcvr commonPublic) RefreshToken(c *gin.Context) {
-	var refreshRequest request.RefreshTokenRequest
+	var refreshRequest request.RefreshToken
 	if err := c.ShouldBindJSON(&refreshRequest); err != nil {
 		c.JSON(http.StatusBadRequest, &response.RefreshTokenResponse{
 			Code:    "AUTH_REFRESH_001",

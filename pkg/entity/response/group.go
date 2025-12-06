@@ -2,9 +2,9 @@ package response
 
 import "time"
 
-// GroupResponse represents the response body for group-related operations.
-// swagger:model GroupResponse
-type GroupResponse struct {
+// Groups represents the response body for group-related operations.
+// swagger:model Groups
+type Groups struct {
 	// The response code.
 	//
 	// required: true

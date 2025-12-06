@@ -7,9 +7,9 @@ type RolePermissionItem struct {
 	Action   string `json:"action"`
 }
 
-// RolePermissionRequest: role creation/update request body
-// swagger:model RolePermissionRequest
-type RolePermissionRequest struct {
+// RolePermission: role creation/update request body
+// swagger:model RolePermission
+type RolePermission struct {
 	Role        string               `json:"role"`        // role name
 	Permissions []RolePermissionItem `json:"permissions"` // permissions list
 }
