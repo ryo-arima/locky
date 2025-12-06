@@ -91,21 +91,23 @@ func (rcvr userPrivate) GetUsers(c *gin.Context) {
 // summary: Create a new user.
 // description: Create a new user with the provided information.
 // parameters:
-// - name: user
-//   in: body
-//   description: The user to create.
-//   required: true
-//   schema:
+//   - name: user
+//     in: body
+//     description: The user to create.
+//     required: true
+//     schema:
 //     $ref: "#/definitions/UserRequest"
+//
 // responses:
-//   "200":
-//     description: The created user.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: The created user.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userPrivate) CreateUser(c *gin.Context) {
 	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
@@ -130,26 +132,28 @@ func (rcvr userPrivate) CreateUser(c *gin.Context) {
 // summary: Update a user.
 // description: Update a user with the provided information.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the user to update.
-//   required: true
-//   type: integer
-// - name: user
-//   in: body
-//   description: The user to update.
-//   required: true
-//   schema:
+//   - name: id
+//     in: path
+//     description: The ID of the user to update.
+//     required: true
+//     type: integer
+//   - name: user
+//     in: body
+//     description: The user to update.
+//     required: true
+//     schema:
 //     $ref: "#/definitions/UserRequest"
+//
 // responses:
-//   "200":
-//     description: The updated user.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: The updated user.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userPrivate) UpdateUser(c *gin.Context) {
 	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
@@ -174,20 +178,22 @@ func (rcvr userPrivate) UpdateUser(c *gin.Context) {
 // summary: Delete a user.
 // description: Delete a user by ID.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the user to delete.
-//   required: true
-//   type: integer
+//   - name: id
+//     in: path
+//     description: The ID of the user to delete.
+//     required: true
+//     type: integer
+//
 // responses:
-//   "200":
-//     description: The deleted user.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: The deleted user.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userPrivate) DeleteUser(c *gin.Context) {
 	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {

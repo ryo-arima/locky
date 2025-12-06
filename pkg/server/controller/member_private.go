@@ -31,14 +31,15 @@ type memberPrivate struct {
 // summary: Get a list of members.
 // description: Get a list of all members in the system.
 // responses:
-//   "200":
-//     description: A list of members.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
+//
+//	"200":
+//	  description: A list of members.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) GetMembers(c *gin.Context) {
 	filter := repository.MemberQueryFilter{}
 	if v := c.Query("id"); v != "" {
@@ -126,21 +127,23 @@ func (rcvr memberPrivate) CountMembers(c *gin.Context) {
 // summary: Create a new member.
 // description: Create a new member with the provided information.
 // parameters:
-// - name: member
-//   in: body
-//   description: The member to create.
-//   required: true
-//   schema:
+//   - name: member
+//     in: body
+//     description: The member to create.
+//     required: true
+//     schema:
 //     $ref: "#/definitions/MemberRequest"
+//
 // responses:
-//   "200":
-//     description: The created member.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
+//
+//	"200":
+//	  description: The created member.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) CreateMember(c *gin.Context) {
 	var memberRequest request.Member
 	if err := c.Bind(&memberRequest); err != nil {
@@ -166,26 +169,28 @@ func (rcvr memberPrivate) CreateMember(c *gin.Context) {
 // summary: Update a member.
 // description: Update a member with the provided information.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the member to update.
-//   required: true
-//   type: integer
-// - name: member
-//   in: body
-//   description: The member to update.
-//   required: true
-//   schema:
+//   - name: id
+//     in: path
+//     description: The ID of the member to update.
+//     required: true
+//     type: integer
+//   - name: member
+//     in: body
+//     description: The member to update.
+//     required: true
+//     schema:
 //     $ref: "#/definitions/MemberRequest"
+//
 // responses:
-//   "200":
-//     description: The updated member.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
+//
+//	"200":
+//	  description: The updated member.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) UpdateMember(c *gin.Context) {
 	idParam := c.Param("id")
 	idUint := uint(0)
@@ -221,20 +226,22 @@ func (rcvr memberPrivate) UpdateMember(c *gin.Context) {
 // summary: Delete a member.
 // description: Delete a member by ID.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the member to delete.
-//   required: true
-//   type: integer
+//   - name: id
+//     in: path
+//     description: The ID of the member to delete.
+//     required: true
+//     type: integer
+//
 // responses:
-//   "200":
-//     description: The deleted member.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/MemberResponse"
+//
+//	"200":
+//	  description: The deleted member.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/MemberResponse"
 func (rcvr memberPrivate) DeleteMember(c *gin.Context) {
 	uuidParam := c.Param("id") // route is :id but expects UUID
 	var memberRequest request.MemberRequest

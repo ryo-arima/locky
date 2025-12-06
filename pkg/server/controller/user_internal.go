@@ -39,14 +39,15 @@ type userInternal struct {
 // summary: Get a list of users.
 // description: Get a list of all users in the system.
 // responses:
-//   "200":
-//     description: A list of users.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: A list of users.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userInternal) GetUsers(c *gin.Context) {
 	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
@@ -109,26 +110,28 @@ func (rcvr userInternal) GetUsers(c *gin.Context) {
 // summary: Update a user.
 // description: Update a user with the provided information.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the user to update.
-//   required: true
-//   type: integer
-// - name: user
-//   in: body
-//   description: The user to update.
-//   required: true
-//   schema:
+//   - name: id
+//     in: path
+//     description: The ID of the user to update.
+//     required: true
+//     type: integer
+//   - name: user
+//     in: body
+//     description: The user to update.
+//     required: true
+//     schema:
 //     $ref: "#/definitions/UserRequest"
+//
 // responses:
-//   "200":
-//     description: The updated user.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: The updated user.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userInternal) UpdateUser(c *gin.Context) {
 	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
@@ -153,20 +156,22 @@ func (rcvr userInternal) UpdateUser(c *gin.Context) {
 // summary: Delete a user.
 // description: Delete a user by ID.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the user to delete.
-//   required: true
-//   type: integer
+//   - name: id
+//     in: path
+//     description: The ID of the user to delete.
+//     required: true
+//     type: integer
+//
 // responses:
-//   "200":
-//     description: The deleted user.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: The deleted user.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userInternal) DeleteUser(c *gin.Context) {
 	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
@@ -191,21 +196,23 @@ func (rcvr userInternal) DeleteUser(c *gin.Context) {
 // summary: Create a new user.
 // description: Create a new user with the provided information.
 // parameters:
-// - name: user
-//   in: body
-//   description: The user to create.
-//   required: true
-//   schema:
-//       $ref: "#/definitions/UserRequest"
+//   - name: user
+//     in: body
+//     description: The user to create.
+//     required: true
+//     schema:
+//     $ref: "#/definitions/UserRequest"
+//
 // responses:
-//   "200":
-//     description: The created user.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: The created user.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userInternal) CreateUser(c *gin.Context) {
 	var userRequest request.User
 	if err := c.Bind(&userRequest); err != nil {
@@ -230,17 +237,18 @@ func (rcvr userInternal) CreateUser(c *gin.Context) {
 // summary: Get the count of users.
 // description: Get the total number of users in the system.
 // responses:
-//   "200":
-//     description: The count of users.
-//     schema:
-//       type: object
-//       properties:
-//         count:
-//           type: integer
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/UserResponse"
+//
+//	"200":
+//	  description: The count of users.
+//	  schema:
+//	    type: object
+//	    properties:
+//	      count:
+//	        type: integer
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/UserResponse"
 func (rcvr userInternal) CountUsers(c *gin.Context) {
 	filter := repository.UserQueryFilter{}
 	if v := c.Query("id"); v != "" {

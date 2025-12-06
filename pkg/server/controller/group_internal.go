@@ -44,14 +44,15 @@ type groupInternal struct {
 // summary: Get a list of groups.
 // description: Get a list of all groups in the system.
 // responses:
-//   "200":
-//     description: A list of groups.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
+//
+//	"200":
+//	  description: A list of groups.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
 func (rcvr groupInternal) GetGroups(c *gin.Context) {
 	var groupRequest request.Group
 	if err := c.Bind(&groupRequest); err != nil {
@@ -108,21 +109,23 @@ func (rcvr groupInternal) GetGroups(c *gin.Context) {
 // summary: Create a new group.
 // description: Create a new group with the provided information.
 // parameters:
-// - name: group
-//   in: body
-//   description: The group to create.
-//   required: true
-//   schema:
+//   - name: group
+//     in: body
+//     description: The group to create.
+//     required: true
+//     schema:
 //     $ref: "#/definitions/GroupRequest"
+//
 // responses:
-//   "200":
-//     description: The created group.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
+//
+//	"200":
+//	  description: The created group.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
 func (rcvr groupInternal) CreateGroup(c *gin.Context) {
 	var groupRequest request.Group
 	if err := c.Bind(&groupRequest); err != nil {
@@ -160,26 +163,28 @@ func (rcvr groupInternal) CreateGroup(c *gin.Context) {
 // summary: Update a group.
 // description: Update a group with the provided information.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the group to update.
-//   required: true
-//   type: integer
-// - name: group
-//   in: body
-//   description: The group to update.
-//   required: true
-//   schema:
+//   - name: id
+//     in: path
+//     description: The ID of the group to update.
+//     required: true
+//     type: integer
+//   - name: group
+//     in: body
+//     description: The group to update.
+//     required: true
+//     schema:
 //     $ref: "#/definitions/GroupRequest"
+//
 // responses:
-//   "200":
-//     description: The updated group.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
+//
+//	"200":
+//	  description: The updated group.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
 func (rcvr groupInternal) UpdateGroup(c *gin.Context) {
 	var groupRequest request.Group
 	if err := c.Bind(&groupRequest); err != nil {
@@ -195,7 +200,7 @@ func (rcvr groupInternal) UpdateGroup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.Groups{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: "group not found", Groups: []response.Group{}})
 		return
 	}
-	
+
 	now := time.Now()
 	updatedGroup := model.Groups{
 		ID:        g.ID,
@@ -203,7 +208,7 @@ func (rcvr groupInternal) UpdateGroup(c *gin.Context) {
 		Name:      g.Name,
 		UpdatedAt: &now,
 	}
-	
+
 	if groupRequest.Name != "" {
 		updatedGroup.Name = groupRequest.Name
 	}
@@ -225,20 +230,22 @@ func (rcvr groupInternal) UpdateGroup(c *gin.Context) {
 // summary: Delete a group.
 // description: Delete a group by ID.
 // parameters:
-// - name: id
-//   in: path
-//   description: The ID of the group to delete.
-//   required: true
-//   type: integer
+//   - name: id
+//     in: path
+//     description: The ID of the group to delete.
+//     required: true
+//     type: integer
+//
 // responses:
-//   "200":
-//     description: The deleted group.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
+//
+//	"200":
+//	  description: The deleted group.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
 func (rcvr groupInternal) DeleteGroup(c *gin.Context) {
 	var groupRequest request.Group
 	if err := c.Bind(&groupRequest); err != nil {
@@ -266,17 +273,18 @@ func (rcvr groupInternal) DeleteGroup(c *gin.Context) {
 // summary: Count groups.
 // description: Get the count of groups matching the filter.
 // responses:
-//   "200":
-//     description: The count of groups.
-//     schema:
-//       type: object
-//       properties:
-//         count:
-//           type: integer
-//   "400":
-//     description: Bad request.
-//     schema:
-//       $ref: "#/definitions/GroupResponse"
+//
+//	"200":
+//	  description: The count of groups.
+//	  schema:
+//	    type: object
+//	    properties:
+//	      count:
+//	        type: integer
+//	"400":
+//	  description: Bad request.
+//	  schema:
+//	    $ref: "#/definitions/GroupResponse"
 func (rcvr groupInternal) CountGroups(c *gin.Context) {
 	filter := repository.GroupQueryFilter{}
 	if v := c.Query("id"); v != "" {

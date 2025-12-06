@@ -54,12 +54,13 @@ func NewResourceInternal(resourceUsecase usecase.Resource) ResourceInternal {
 // summary: Get a list of resources the user has access to.
 // description: Get a list of resources filtered by user's group memberships.
 // responses:
-//   "200":
-//     description: A list of resources.
-//   "400":
-//     description: Bad request.
-//   "401":
-//     description: Unauthorized.
+//
+//	"200":
+//	  description: A list of resources.
+//	"400":
+//	  description: Bad request.
+//	"401":
+//	  description: Unauthorized.
 func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 	INFO(Mcode(SRNRSR1), "GetResources called")
 	var resourceRequest request.Resource
@@ -163,14 +164,15 @@ func (rcvr *resourceInternal) GetResources(c *gin.Context) {
 // summary: Create a new resource.
 // description: Create a new resource in a group the user has editor or owner access to.
 // responses:
-//   "200":
-//     description: Resource created.
-//   "400":
-//     description: Bad request.
-//   "401":
-//     description: Unauthorized.
-//   "403":
-//     description: Forbidden - user does not have editor/owner access.
+//
+//	"200":
+//	  description: Resource created.
+//	"400":
+//	  description: Bad request.
+//	"401":
+//	  description: Unauthorized.
+//	"403":
+//	  description: Forbidden - user does not have editor/owner access.
 func (rcvr *resourceInternal) CreateResource(c *gin.Context) {
 	INFO(Mcode(SRNRSR1), "CreateResource called")
 	var resourceRequest request.Resource
@@ -239,14 +241,15 @@ func (rcvr *resourceInternal) CreateResource(c *gin.Context) {
 // summary: Update an existing resource.
 // description: Update resource details. Requires editor or owner access to the resource's group.
 // responses:
-//   "200":
-//     description: Resource updated.
-//   "400":
-//     description: Bad request.
-//   "401":
-//     description: Unauthorized.
-//   "403":
-//     description: Forbidden - user does not have editor/owner access.
+//
+//	"200":
+//	  description: Resource updated.
+//	"400":
+//	  description: Bad request.
+//	"401":
+//	  description: Unauthorized.
+//	"403":
+//	  description: Forbidden - user does not have editor/owner access.
 func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
 	INFO(Mcode(SRNRSR1), "UpdateResource called")
 	id := c.Param("id")
@@ -322,10 +325,11 @@ func (rcvr *resourceInternal) UpdateResource(c *gin.Context) {
 // summary: Delete a resource.
 // description: Soft delete a resource by UUID.
 // responses:
-//   "200":
-//     description: Resource deleted.
-//   "400":
-//     description: Bad request.
+//
+//	"200":
+//	  description: Resource deleted.
+//	"400":
+//	  description: Bad request.
 func (rcvr *resourceInternal) DeleteResource(c *gin.Context) {
 	INFO(Mcode(SRNRSR1), "DeleteResource called")
 	id := c.Param("id")
@@ -363,8 +367,9 @@ func (rcvr *resourceInternal) DeleteResource(c *gin.Context) {
 // summary: Count resources.
 // description: Get the total count of resources.
 // responses:
-//   "200":
-//     description: Resource count.
+//
+//	"200":
+//	  description: Resource count.
 func (rcvr *resourceInternal) CountResources(c *gin.Context) {
 	INFO(Mcode(SRNRSR1), "CountResources called")
 	// Get user UUID

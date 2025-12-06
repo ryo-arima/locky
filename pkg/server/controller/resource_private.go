@@ -37,10 +37,11 @@ func NewResourcePrivate(resourceUsecase usecase.Resource) ResourcePrivate {
 // summary: Get a list of resources (admin).
 // description: Get a list of all resources in the system (administrative access).
 // responses:
-//   "200":
-//     description: A list of resources.
-//   "400":
-//     description: Bad request.
+//
+//	"200":
+//	  description: A list of resources.
+//	"400":
+//	  description: Bad request.
 func (rcvr *resourcePrivate) GetResources(c *gin.Context) {
 	var resourceRequest request.Resource
 	if err := c.Bind(&resourceRequest); err != nil {
@@ -93,10 +94,11 @@ func (rcvr *resourcePrivate) GetResources(c *gin.Context) {
 // summary: Create a new resource (admin).
 // description: Create a new resource in the system with administrative privileges.
 // responses:
-//   "200":
-//     description: Resource created.
-//   "400":
-//     description: Bad request.
+//
+//	"200":
+//	  description: Resource created.
+//	"400":
+//	  description: Bad request.
 func (rcvr *resourcePrivate) CreateResource(c *gin.Context) {
 	var resourceRequest request.Resource
 	if err := c.Bind(&resourceRequest); err != nil {
@@ -139,10 +141,11 @@ func (rcvr *resourcePrivate) CreateResource(c *gin.Context) {
 // summary: Update an existing resource (admin).
 // description: Update resource details by UUID with administrative privileges.
 // responses:
-//   "200":
-//     description: Resource updated.
-//   "400":
-//     description: Bad request.
+//
+//	"200":
+//	  description: Resource updated.
+//	"400":
+//	  description: Bad request.
 func (rcvr *resourcePrivate) UpdateResource(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -192,10 +195,11 @@ func (rcvr *resourcePrivate) UpdateResource(c *gin.Context) {
 // summary: Delete a resource (admin).
 // description: Soft delete a resource by UUID with administrative privileges.
 // responses:
-//   "200":
-//     description: Resource deleted.
-//   "400":
-//     description: Bad request.
+//
+//	"200":
+//	  description: Resource deleted.
+//	"400":
+//	  description: Bad request.
 func (rcvr *resourcePrivate) DeleteResource(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -216,8 +220,9 @@ func (rcvr *resourcePrivate) DeleteResource(c *gin.Context) {
 // summary: Count resources (admin).
 // description: Get the total count of resources with administrative access.
 // responses:
-//   "200":
-//     description: Resource count.
+//
+//	"200":
+//	  description: Resource count.
 func (rcvr *resourcePrivate) CountResources(c *gin.Context) {
 	count, err := rcvr.ResourceUsecase.CountResourcesAccessibleAdmin(c, "", repository.ResourceQueryFilter{})
 	if err != nil {
