@@ -13,45 +13,53 @@ import (
 
 type Member interface {
 	GetMembers(c *gin.Context) []model.Members
-	CreateMember(c *gin.Context, member *model.Members) *gorm.DB
-	UpdateMember(c *gin.Context, member *model.Members) *gorm.DB
-	DeleteMember(c *gin.Context, uuid string) *gorm.DB
+	CreateMember(c *gin.Context, member *model.Members) error
+	UpdateMember(c *gin.Context, member *model.Members) error
+	DeleteMember(c *gin.Context, uuid string) error
 	GetMemberByUUID(c *gin.Context, uuid string) (model.Members, error)
 	ListMembers(c *gin.Context, filter MemberQueryFilter) ([]model.Members, error)
 	CountMembers(c *gin.Context, filter MemberQueryFilter) (int64, error)
+	// WithTx returns a new Member repository that uses the given transaction.
+	// Use this to participate in a transaction managed by the usecase layer.
+	WithTx(tx *gorm.DB) Member
 }
 
 type member struct {
-	BaseConfig config.BaseConfig
+	db *gorm.DB
 }
 
-func (rcvr member) GetMembers(c *gin.Context) []model.Members {
+// WithTx returns a new Member backed by the given transaction.
+func (rcvr *member) WithTx(tx *gorm.DB) Member {
+	return &member{db: tx}
+}
+
+func (rcvr *member) GetMembers(c *gin.Context) []model.Members {
 	var members []model.Members
-	rcvr.BaseConfig.DBConnection.Find(&members)
+	rcvr.db.Find(&members)
 	return members
 }
 
-func (rcvr member) CreateMember(c *gin.Context, member *model.Members) *gorm.DB {
+func (rcvr *member) CreateMember(c *gin.Context, member *model.Members) error {
 	if member == nil {
-		return &gorm.DB{Error: errors.New("member is nil")}
+		return errors.New("member is nil")
 	}
-	return rcvr.BaseConfig.DBConnection.Create(member)
+	return rcvr.db.Create(member).Error
 }
 
-func (rcvr member) UpdateMember(c *gin.Context, member *model.Members) *gorm.DB {
+func (rcvr *member) UpdateMember(c *gin.Context, member *model.Members) error {
 	if member == nil {
-		return &gorm.DB{Error: errors.New("member is nil")}
+		return errors.New("member is nil")
 	}
-	return rcvr.BaseConfig.DBConnection.Model(&model.Members{}).Where("id = ?", member.ID).Updates(member)
+	return rcvr.db.Model(&model.Members{}).Where("id = ?", member.ID).Updates(member).Error
 }
 
-func (rcvr member) DeleteMember(c *gin.Context, uuid string) *gorm.DB {
-	return rcvr.BaseConfig.DBConnection.Model(&model.Members{}).Where("uuid = ?", uuid).Update("deleted_at", time.Now())
+func (rcvr *member) DeleteMember(c *gin.Context, uuid string) error {
+	return rcvr.db.Model(&model.Members{}).Where("uuid = ?", uuid).Update("deleted_at", time.Now()).Error
 }
 
-func (rcvr member) GetMemberByUUID(c *gin.Context, uuid string) (model.Members, error) {
+func (rcvr *member) GetMemberByUUID(c *gin.Context, uuid string) (model.Members, error) {
 	var m model.Members
-	res := rcvr.BaseConfig.DBConnection.Where("uuid = ?", uuid).First(&m)
+	res := rcvr.db.Where("uuid = ?", uuid).First(&m)
 	if res.Error != nil {
 		return model.Members{}, res.Error
 	}
@@ -81,9 +89,9 @@ func (f *MemberQueryFilter) normalize() {
 }
 
 // ListMembers filter + pagination
-func (rcvr member) ListMembers(c *gin.Context, filter MemberQueryFilter) ([]model.Members, error) {
+func (rcvr *member) ListMembers(c *gin.Context, filter MemberQueryFilter) ([]model.Members, error) {
 	filter.normalize()
-	q := rcvr.BaseConfig.DBConnection.Model(&model.Members{})
+	q := rcvr.db.Model(&model.Members{})
 	if filter.ID != nil {
 		q = q.Where("id = ?", *filter.ID)
 	}
@@ -114,8 +122,8 @@ func (rcvr member) ListMembers(c *gin.Context, filter MemberQueryFilter) ([]mode
 }
 
 // CountMembers get count
-func (rcvr member) CountMembers(c *gin.Context, filter MemberQueryFilter) (int64, error) {
-	q := rcvr.BaseConfig.DBConnection.Model(&model.Members{})
+func (rcvr *member) CountMembers(c *gin.Context, filter MemberQueryFilter) (int64, error) {
+	q := rcvr.db.Model(&model.Members{})
 	if filter.ID != nil {
 		q = q.Where("id = ?", *filter.ID)
 	}
@@ -145,5 +153,5 @@ func (rcvr member) CountMembers(c *gin.Context, filter MemberQueryFilter) (int64
 }
 
 func NewMember(conf config.BaseConfig) Member {
-	return &member{BaseConfig: conf}
+	return &member{db: conf.DBConnection}
 }

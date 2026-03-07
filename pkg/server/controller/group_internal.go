@@ -138,20 +138,24 @@ func (rcvr groupInternal) CreateGroup(c *gin.Context) {
 	}
 	now := time.Now()
 	g := model.Groups{UUID: uuid.New().String(), Name: groupRequest.Name, CreatedAt: &now, UpdatedAt: &now}
-	_, resDB := rcvr.GroupUsecase.CreateGroup(c, &g)
-	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Groups: []response.Group{}})
-		return
-	}
 
-	// Added: Register creating user as member (Owner)
+	// Atomically create the group and register the authenticated user as owner member.
 	claims, ok := share.GetUserClaims(c)
 	if ok && claims != nil {
-		memberRepo := repository.NewMember(rcvr.CommonUsecase.GetBaseConfig())
-		mem := model.Members{UUID: uuid.New().String(), GroupUUID: g.UUID, UserUUID: claims.UUID, Role: "owner", CreatedAt: &now, UpdatedAt: &now}
-		_ = memberRepo.CreateMember(c, &mem)
+		resp, err := rcvr.GroupUsecase.CreateGroupWithOwnerMember(c, &g, claims.UUID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: err.Error(), Groups: []response.Group{}})
+			return
+		}
+		c.JSON(http.StatusOK, &response.Groups{Code: "SUCCESS", Message: "Group created successfully", Groups: []response.Group{{ID: resp.ID, UUID: resp.UUID, Name: resp.Name}}})
+		return
 	}
-	c.JSON(http.StatusOK, &response.Groups{Code: "SUCCESS", Message: "Group created successfully", Groups: []response.Group{{ID: g.ID, UUID: g.UUID, Name: g.Name}}})
+	resp, err := rcvr.GroupUsecase.CreateGroup(c, &g)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: err.Error(), Groups: []response.Group{}})
+		return
+	}
+	c.JSON(http.StatusOK, &response.Groups{Code: "SUCCESS", Message: "Group created successfully", Groups: []response.Group{{ID: resp.ID, UUID: resp.UUID, Name: resp.Name}}})
 }
 
 // UpdateGroup updates a group (authenticated).
@@ -213,9 +217,9 @@ func (rcvr groupInternal) UpdateGroup(c *gin.Context) {
 		updatedGroup.Name = groupRequest.Name
 	}
 
-	_, resDB := rcvr.GroupUsecase.UpdateGroup(c, &updatedGroup)
-	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_UPDATE__FOR__004", Message: resDB.Error.Error(), Groups: []response.Group{}})
+	_, err := rcvr.GroupUsecase.UpdateGroup(c, &updatedGroup)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_UPDATE__FOR__004", Message: err.Error(), Groups: []response.Group{}})
 		return
 	}
 	c.JSON(http.StatusOK, &response.Groups{Code: "SUCCESS", Message: "Group updated successfully", Groups: []response.Group{{ID: updatedGroup.ID, UUID: updatedGroup.UUID, Name: updatedGroup.Name}}})
@@ -256,9 +260,8 @@ func (rcvr groupInternal) DeleteGroup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, &response.Groups{Code: "SERVER_CONTROLLER_DELETE__FOR__002", Message: "uuid is required", Groups: []response.Group{}})
 		return
 	}
-	resDB := rcvr.GroupUsecase.DeleteGroup(c, groupRequest.UUID)
-	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Groups: []response.Group{}})
+	if err := rcvr.GroupUsecase.DeleteGroup(c, groupRequest.UUID); err != nil {
+		c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: err.Error(), Groups: []response.Group{}})
 		return
 	}
 	c.JSON(http.StatusOK, &response.Groups{Code: "SUCCESS", Message: "Group deleted successfully", Groups: []response.Group{}})

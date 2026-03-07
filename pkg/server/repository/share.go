@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/ryo-arima/locky/pkg/global"
 	"github.com/ryo-arima/locky/pkg/server/share"
+	"gorm.io/gorm"
 )
 
 // Local aliases for cleaner logging code - use functions to get logger dynamically
@@ -36,3 +37,10 @@ var (
 	SRNRSR2 = global.SRNRSR2
 	Mcode   = global.Mcode
 )
+
+// RunInTx executes fn within a single database transaction.
+// The transaction is committed when fn returns nil, and rolled back on error.
+// Use this in the usecase layer to wrap multiple repository calls atomically.
+func RunInTx(db *gorm.DB, fn func(tx *gorm.DB) error) error {
+	return db.Transaction(fn)
+}

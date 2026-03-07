@@ -5,15 +5,15 @@ import (
 	"github.com/ryo-arima/locky/pkg/entity/model"
 	"github.com/ryo-arima/locky/pkg/entity/response"
 	"github.com/ryo-arima/locky/pkg/server/repository"
-	"gorm.io/gorm"
+	"github.com/ryo-arima/locky/pkg/server/share"
 )
 
 type Member interface {
 	GetMembers(c *gin.Context) ([]response.Member, error)
 	GetMemberByUUID(c *gin.Context, uuid string) (*response.Member, error)
-	CreateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB)
-	UpdateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB)
-	DeleteMember(c *gin.Context, uuid string) *gorm.DB
+	CreateMember(c *gin.Context, member *model.Members) (*response.Member, error)
+	UpdateMember(c *gin.Context, member *model.Members) (*response.Member, error)
+	DeleteMember(c *gin.Context, uuid string) error
 	ListMembers(c *gin.Context, filter repository.MemberQueryFilter) ([]response.Member, error)
 	CountMembers(c *gin.Context, filter repository.MemberQueryFilter) (int64, error)
 }
@@ -60,38 +60,51 @@ func (uc *member) GetMemberByUUID(c *gin.Context, uuid string) (*response.Member
 	}, nil
 }
 
-func (uc *member) CreateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB) {
-	resDB := uc.memberRepo.CreateMember(c, member)
-	if resDB.Error != nil {
-		return nil, resDB
+func (uc *member) CreateMember(c *gin.Context, member *model.Members) (*response.Member, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "CreateMember called")
+	if err := uc.memberRepo.CreateMember(c, member); err != nil {
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to create member: "+err.Error())
+		return nil, err
 	}
 
+	INFO(reqID, Mcode(SRNRSR1), "CreateMember succeeded")
 	return &response.Member{
 		ID:        member.ID,
 		UUID:      member.UUID,
 		GroupUUID: member.GroupUUID,
 		UserUUID:  member.UserUUID,
 		Role:      member.Role,
-	}, resDB
+	}, nil
 }
 
-func (uc *member) UpdateMember(c *gin.Context, member *model.Members) (*response.Member, *gorm.DB) {
-	resDB := uc.memberRepo.UpdateMember(c, member)
-	if resDB.Error != nil {
-		return nil, resDB
+func (uc *member) UpdateMember(c *gin.Context, member *model.Members) (*response.Member, error) {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "UpdateMember called")
+	if err := uc.memberRepo.UpdateMember(c, member); err != nil {
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to update member: "+err.Error())
+		return nil, err
 	}
 
+	INFO(reqID, Mcode(SRNRSR1), "UpdateMember succeeded")
 	return &response.Member{
 		ID:        member.ID,
 		UUID:      member.UUID,
 		GroupUUID: member.GroupUUID,
 		UserUUID:  member.UserUUID,
 		Role:      member.Role,
-	}, resDB
+	}, nil
 }
 
-func (uc *member) DeleteMember(c *gin.Context, uuid string) *gorm.DB {
-	return uc.memberRepo.DeleteMember(c, uuid)
+func (uc *member) DeleteMember(c *gin.Context, uuid string) error {
+	reqID := share.GetRequestID(c)
+	INFO(reqID, Mcode(SRNRSR1), "DeleteMember called")
+	if err := uc.memberRepo.DeleteMember(c, uuid); err != nil {
+		ERROR(reqID, Mcode(SRNRSR2), "Failed to delete member: "+err.Error())
+		return err
+	}
+	INFO(reqID, Mcode(SRNRSR1), "DeleteMember succeeded")
+	return nil
 }
 
 func (uc *member) ListMembers(c *gin.Context, filter repository.MemberQueryFilter) ([]response.Member, error) {
@@ -117,3 +130,4 @@ func (uc *member) ListMembers(c *gin.Context, filter repository.MemberQueryFilte
 func (uc *member) CountMembers(c *gin.Context, filter repository.MemberQueryFilter) (int64, error) {
 	return uc.memberRepo.CountMembers(c, filter)
 }
+
