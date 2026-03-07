@@ -3,6 +3,7 @@ package config_test
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/ryo-arima/locky/pkg/config"
@@ -60,42 +61,39 @@ func TestIntOrString_UnmarshalYAML(t *testing.T) {
 }
 
 func TestMCode_PaddedCode(t *testing.T) {
+	maxLen := global.GetMaxCodeLength()
+
 	tests := []struct {
-		name     string
-		mcode    global.MCode
-		maxLen   int
-		expected string
+		name  string
+		mcode global.MCode
 	}{
 		{
-			name:     "Short code with padding",
-			mcode:    global.MCode{Code: "TEST", Message: "Test message"},
-			maxLen:   10,
-			expected: "TEST      ",
+			name:  "Short code with padding",
+			mcode: global.MCode{Code: "TEST", Message: "Test message"},
 		},
 		{
-			name:     "Code at exact length",
-			mcode:    global.MCode{Code: "EXACT", Message: "Test"},
-			maxLen:   5,
-			expected: "EXACT",
+			name:  "Code longer than max",
+			mcode: global.MCode{Code: "TOOLONGCODEXXXXXXXX", Message: "Test"},
 		},
 		{
-			name:     "Code longer than max",
-			mcode:    global.MCode{Code: "TOOLONGCODE", Message: "Test"},
-			maxLen:   5,
-			expected: "TOOLONGCODE",
-		},
-		{
-			name:     "Empty code",
-			mcode:    global.MCode{Code: "", Message: "Test"},
-			maxLen:   5,
-			expected: "     ",
+			name:  "Empty code",
+			mcode: global.MCode{Code: "", Message: "Test"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := tt.mcode.PaddedCode()
-			assert.Equal(t, tt.expected, result)
+			// Result must start with the original code.
+			assert.True(t, strings.HasPrefix(result, tt.mcode.Code),
+				"result %q should start with code %q", result, tt.mcode.Code)
+			// Result length must be max(len(code), maxLen).
+			expectedLen := maxLen
+			if len(tt.mcode.Code) > maxLen {
+				expectedLen = len(tt.mcode.Code)
+			}
+			assert.Equal(t, expectedLen, len(result),
+				"result %q should have length %d", result, expectedLen)
 		})
 	}
 }

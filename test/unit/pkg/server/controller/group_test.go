@@ -13,8 +13,9 @@ import (
 func TestNewGroupControllerForInternal(t *testing.T) {
 	cfg := config.BaseConfig{}
 	groupRepo := repository.NewGroup(cfg)
+	memberRepo := repository.NewMember(cfg)
 	commonRepo := repository.NewCommon(cfg, nil)
-	groupUsecase := usecase.NewGroup(groupRepo)
+	groupUsecase := usecase.NewGroup(groupRepo, memberRepo, nil)
 	commonUsecase := usecase.NewCommon(commonRepo)
 	ctrl := controller.NewGroupInternal(groupUsecase, commonUsecase)
 	assert.NotNil(t, ctrl)
@@ -23,8 +24,9 @@ func TestNewGroupControllerForInternal(t *testing.T) {
 func TestNewGroupControllerForPrivate(t *testing.T) {
 	cfg := config.BaseConfig{}
 	groupRepo := repository.NewGroup(cfg)
+	memberRepo := repository.NewMember(cfg)
 	commonRepo := repository.NewCommon(cfg, nil)
-	groupUsecase := usecase.NewGroup(groupRepo)
+	groupUsecase := usecase.NewGroup(groupRepo, memberRepo, nil)
 	commonUsecase := usecase.NewCommon(commonRepo)
 	ctrl := controller.NewGroupPrivate(groupUsecase, commonUsecase)
 	assert.NotNil(t, ctrl)

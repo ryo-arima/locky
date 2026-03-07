@@ -20,7 +20,7 @@ func TestGetRequestID(t *testing.T) {
 	assert.Empty(t, requestID)
 
 	// Test with middleware
-	c.Set("request_id", "test-request-id-123")
+	c.Set(share.RequestIDKey, "test-request-id-123")
 	requestID = share.GetRequestID(c)
 	assert.Equal(t, "test-request-id-123", requestID)
 }
