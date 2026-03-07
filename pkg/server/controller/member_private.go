@@ -156,9 +156,9 @@ func (rcvr memberPrivate) CreateMember(c *gin.Context) {
 	}
 	now := time.Now()
 	m := model.Members{UUID: uuid.New().String(), GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, CreatedAt: &now, UpdatedAt: &now}
-	_, resDB := rcvr.MemberUsecase.CreateMember(c, &m)
-	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
+	_, err := rcvr.MemberUsecase.CreateMember(c, &m)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_CREATE__FOR__003", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
 	c.JSON(http.StatusOK, &response.Members{Code: "SUCCESS", Message: "Member created successfully", Members: []response.Member{{ID: m.ID, UUID: m.UUID, GroupUUID: m.GroupUUID, UserUUID: m.UserUUID, Role: m.Role}}})
@@ -213,9 +213,9 @@ func (rcvr memberPrivate) UpdateMember(c *gin.Context) {
 	}
 	now := time.Now()
 	upd := model.Members{ID: idUint, GroupUUID: memberRequest.GroupUUID, UserUUID: memberRequest.UserUUID, Role: memberRequest.Role, UpdatedAt: &now}
-	_, resDB := rcvr.MemberUsecase.UpdateMember(c, &upd)
-	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
+	_, err := rcvr.MemberUsecase.UpdateMember(c, &upd)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_UPDATE__FOR__003", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
 	c.JSON(http.StatusOK, &response.Members{Code: "SUCCESS", Message: "Member updated successfully", Members: []response.Member{{ID: upd.ID, UUID: upd.UUID, GroupUUID: upd.GroupUUID, UserUUID: upd.UserUUID, Role: upd.Role}}})
@@ -257,9 +257,8 @@ func (rcvr memberPrivate) DeleteMember(c *gin.Context) {
 	if uuidParam == "" {
 		uuidParam = memberRequest.UUID
 	}
-	resDB := rcvr.MemberUsecase.DeleteMember(c, uuidParam)
-	if resDB.Error != nil {
-		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: resDB.Error.Error(), Members: []response.Member{}})
+	if err := rcvr.MemberUsecase.DeleteMember(c, uuidParam); err != nil {
+		c.JSON(http.StatusInternalServerError, &response.Members{Code: "SERVER_CONTROLLER_DELETE__FOR__003", Message: err.Error(), Members: []response.Member{}})
 		return
 	}
 	c.JSON(http.StatusOK, &response.Members{Code: "SUCCESS", Message: "Member deleted successfully", Members: []response.Member{}})

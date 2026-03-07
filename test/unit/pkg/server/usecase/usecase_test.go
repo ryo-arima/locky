@@ -31,8 +31,9 @@ func TestNewCommonUsecase(t *testing.T) {
 func TestNewGroup(t *testing.T) {
 	cfg := config.BaseConfig{}
 	groupRepo := repository.NewGroup(cfg)
+	memberRepo := repository.NewMember(cfg)
 
-	uc := usecase.NewGroup(groupRepo)
+	uc := usecase.NewGroup(groupRepo, memberRepo, nil)
 	assert.NotNil(t, uc)
 }
 

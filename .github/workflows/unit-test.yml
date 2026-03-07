@@ -6,10 +6,10 @@ on:
       go-version:
         required: false
         type: string
-        default: '1.22'
+        default: '1.26'
 
 env:
-  GO_VERSION: ${{ inputs.go-version || '1.22' }}
+  GO_VERSION: ${{ inputs.go-version || '1.26' }}
 
 jobs:
   unit-test:

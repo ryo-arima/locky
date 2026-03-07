@@ -50,11 +50,11 @@ func InitRouter(conf config.BaseConfig) *gin.Engine {
 	privateUserController := controller.NewUserPrivate(userUsecase)
 
 	groupRepository := repository.NewGroup(conf)
-	groupUsecase := usecase.NewGroup(groupRepository)
+	memberRepository := repository.NewMember(conf)
+	groupUsecase := usecase.NewGroup(groupRepository, memberRepository, conf.DBConnection)
 	internalGroupController := controller.NewGroupInternal(groupUsecase, commonUsecase)
 	privateGroupController := controller.NewGroupPrivate(groupUsecase, commonUsecase)
 
-	memberRepository := repository.NewMember(conf)
 	memberUsecase := usecase.NewMember(memberRepository)
 	internalMemberController := controller.NewMemberInternal(memberUsecase)
 	privateMemberController := controller.NewMemberPrivate(memberUsecase)

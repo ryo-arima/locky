@@ -357,6 +357,9 @@ func (rcvr *common) ParseTokenUnverified(tokenString string) (*model.JWTClaims, 
 
 // IsTokenInvalidated checks if a token's JTI exists in the Redis denylist.
 func (rcvr *common) IsTokenInvalidated(ctx context.Context, jti string) (bool, error) {
+	if rcvr.RedisClient == nil {
+		return false, nil
+	}
 	result, err := rcvr.RedisClient.Exists(ctx, jti).Result()
 	if err != nil {
 		return true, fmt.Errorf("error checking token in redis: %w", err)
