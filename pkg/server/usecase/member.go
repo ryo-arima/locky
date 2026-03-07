@@ -130,4 +130,3 @@ func (uc *member) ListMembers(c *gin.Context, filter repository.MemberQueryFilte
 func (uc *member) CountMembers(c *gin.Context, filter repository.MemberQueryFilter) (int64, error) {
 	return uc.memberRepo.CountMembers(c, filter)
 }
-

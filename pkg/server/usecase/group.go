@@ -168,4 +168,3 @@ func (uc *group) ListGroups(c *gin.Context, filter repository.GroupQueryFilter) 
 func (uc *group) CountGroups(c *gin.Context, filter repository.GroupQueryFilter) (int64, error) {
 	return uc.groupRepo.CountGroups(c, filter)
 }
-
