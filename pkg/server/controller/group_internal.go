@@ -217,7 +217,7 @@ func (rcvr groupInternal) UpdateGroup(c *gin.Context) {
 		updatedGroup.Name = groupRequest.Name
 	}
 
-	_, err := rcvr.GroupUsecase.UpdateGroup(c, &updatedGroup)
+	_, err = rcvr.GroupUsecase.UpdateGroup(c, &updatedGroup)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &response.Groups{Code: "SERVER_CONTROLLER_UPDATE__FOR__004", Message: err.Error(), Groups: []response.Group{}})
 		return
